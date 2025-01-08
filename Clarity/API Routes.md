@@ -188,5 +188,27 @@ make sure to add demo userrrrr***
       "updatedAt": "timestamp"
     }
   ]
+
+
+### History
+
+#### GET /history/{userId}
+**Description:** Get a history of all logged workouts and meditation sessions for a user.
+- **Response:**
+  ```json
+  [
+    {
+      "type": "Workout",
+      "date": "date",
+      "durationMinutes": "integer"
+    },
+    {
+      "type": "MeditationSession",
+      "date": "date",
+      "durationMinutes": "integer"
+    }
+  ]
+  ```
+
   ```
 
