@@ -1,7 +1,6 @@
 'use strict';
 const {
-  Model
-} = require('sequelize');
+  Model} = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**
@@ -64,10 +63,13 @@ module.exports = (sequelize, DataTypes) => {
         isInt: { msg: "Meditation goal must be an integer" },
         min: { args: [0], msg: "Meditation goal must be greater than or equal to 0" },
       },
-  },
+   },
  }, {
     sequelize,
     modelName: 'User',
+    defaultScope: {
+      attributes: { exclude: ['hashedPassword', 'email', 'createdAt','updatedAt'] },
+    },
   });
   return User;
 };
