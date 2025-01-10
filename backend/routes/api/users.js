@@ -25,6 +25,18 @@ const validateSignup = [
       .exists({ checkFalsy: true })
       .isLength({ min: 6 })
       .withMessage('Password must be 6 characters or more.'),
+    check('exerciseGoalMinutes')
+      .optional()
+      .isInt({ min: 0 })
+      .withMessage('Exercise goal must be an integer greater than or equal to 0.'),
+    check('waterGoalOz')
+      .optional()
+      .isInt({ min: 0 })
+      .withMessage('Water goal must be an integer greater than or equal to 0.'),
+    check('meditationGoalMinutes')
+      .optional()
+      .isInt({ min: 0 })
+      .withMessage('Meditation goal must be an integer greater than or equal to 0.'),
     handleValidationErrors
   ];
 
@@ -34,9 +46,9 @@ router.post(
     '/',
     validateSignup,
     async (req, res) => {
-      const { email, password, username } = req.body;
+      const { email, password, username, exerciseGoalMinutes, waterGoalOz, meditationGoalMinutes } = req.body;
       const hashedPassword = bcrypt.hashSync(password);
-      const user = await User.create({ email, username, hashedPassword });
+      const user = await User.create({ email, username, hashedPassword, exerciseGoalMinutes, waterGoalOz, meditationGoalMinutes });
   
       const safeUser = {
         id: user.id,
@@ -44,6 +56,9 @@ router.post(
         username: user.username,
         firstName: user.firstName,
         lastName: user.lastName,
+        exerciseGoalMinutes: user.exerciseGoalMinutes,
+        waterGoalOz: user.waterGoalOz,
+        meditationGoalMinutes: user.meditationGoalMinutes,
       };
   
       await setTokenCookie(res, safeUser);
