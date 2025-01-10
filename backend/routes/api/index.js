@@ -43,7 +43,7 @@ router.use('/session', sessionRouter);
 
 router.use('/users', usersRouter);
 
-router.post('/test', (req, res) => {
+router.post('/test', (req, res) => { //keep this route to test frontend setup later on
     res.json({ requestBody: req.body });
   });
 

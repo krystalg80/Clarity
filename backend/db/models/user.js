@@ -38,6 +38,14 @@ module.exports = (sequelize, DataTypes) => {
         isEmail: { msg: "Please provide a valid email" },
       },
      },
+     firstName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     hashedPassword: {
       type: DataTypes.STRING,
       allowNull: false,

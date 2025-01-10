@@ -21,6 +21,14 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      firstName: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      lastName: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
       exerciseGoalMinutes: {
         type: Sequelize.INTEGER,
         allowNull: true,
