@@ -62,7 +62,7 @@ router.post(
   );
 // Log out
 router.delete(
-    '/delete',
+    '/logout',
     (_req, res) => {
       res.clearCookie('token');
       return res.json({ message: 'success' });
