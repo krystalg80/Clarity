@@ -3,18 +3,18 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class Water extends Model {
+  class Meditation extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      Water.belongsTo(models.User, { foreignKey: 'userId' });
+      Meditation.belongsTo(models.User, { foreignKey: 'userId' });
       // define association here
     }
   }
-  Water.init({
+  Meditation.init({
     userId: { 
       type: DataTypes.INTEGER, 
       allowNull: false,
@@ -22,7 +22,6 @@ module.exports = (sequelize, DataTypes) => {
         notNull: { msg: "Please provide a user ID" },
         notEmpty: { msg: "User ID cannot be empty" },
       },
-
     },
     date: { 
       type: DataTypes.DATE, 
@@ -32,23 +31,21 @@ module.exports = (sequelize, DataTypes) => {
         notEmpty: { msg: "Date cannot be empty" },
         isDate: { msg: "Must be a valid date" }
       },
-
     },
-    waterConsumedOz: { 
+    durationMinutes: { 
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
-        notNull: { msg: "Please provide a water intake" },
-        notEmpty: { msg: "Water intake cannot be empty" },
-        isInt: { msg: "Water intake must be an integer" },
-        min: { args: [1], msg: "Water intake must be greater than 0" }
+        notNull: { msg: "Please provide a duration" },
+        notEmpty: { msg: "Duration cannot be empty" },
+        isInt: { msg: "Duration must be an integer" },
+        min: { args: [1], msg: "Duration must be greater than 0" }
       },
-
-    }
+    },
   }, {
     sequelize,
-    modelName: 'Water',
-    tableName: 'WaterIntakes',
+    modelName: 'Meditation',
+    tableName: 'MeditationSessions',
   });
-  return Water;
+  return Meditation;
 };
