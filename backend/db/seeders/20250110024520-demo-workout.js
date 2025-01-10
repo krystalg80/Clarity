@@ -27,6 +27,7 @@ module.exports = {
     await queryInterface.bulkInsert('Workouts', [
       {
         userId: demoUser.id,
+        title: 'Run',
         date: new Date('2024-01-08'),
         durationMinutes: 45,
         createdAt: new Date(),
@@ -34,6 +35,7 @@ module.exports = {
       },
       {
         userId: user1.id,
+        title: 'Yoga',
         date: new Date('2024-01-08'),
         durationMinutes: 30,
         createdAt: new Date(),
@@ -41,6 +43,7 @@ module.exports = {
       },
       {
         userId: user2.id,
+        title: 'Lift',
         date: new Date('2024-01-08'),
         durationMinutes: 60,
         createdAt: new Date(),
