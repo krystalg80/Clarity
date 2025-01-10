@@ -43,7 +43,7 @@ const validateSignup = [
 
 // Sign up
 router.post(
-    '/',
+    '/register',
     validateSignup,
     async (req, res) => {
       const { email, password, username, exerciseGoalMinutes, waterGoalOz, meditationGoalMinutes } = req.body;
@@ -69,7 +69,38 @@ router.post(
     }
 );
 
-
+// GET /users/:id - Get user details
+router.get('/:id', requireAuth, async (req, res) => {
+    const { id } = req.params;
+  
+    try {
+      const user = await User.findByPk(id);  // Find user by ID
+  
+      if (!user) {
+        return res.status(404).json({
+          message: 'User not found'
+        });
+      }
+  
+      const userDetails = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        exerciseGoalMinutes: user.exerciseGoalMinutes,
+        waterGoalOz: user.waterGoalOz,
+        meditationGoalMinutes: user.meditationGoalMinutes,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      };
+  
+      return res.json({ user: userDetails });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({
+        message: 'An error occurred while fetching user details.'
+      });
+    }
+  });
 
 
 module.exports = router;

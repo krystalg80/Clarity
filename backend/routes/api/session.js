@@ -23,7 +23,7 @@ const validateLogin = [
   ];
 // Log in
 router.post(
-    '/',
+    '/login',
     validateLogin,
     async (req, res, next) => {
       const { credential, password } = req.body;
@@ -62,7 +62,7 @@ router.post(
   );
 // Log out
 router.delete(
-    '/',
+    '/delete',
     (_req, res) => {
       res.clearCookie('token');
       return res.json({ message: 'success' });
@@ -71,7 +71,7 @@ router.delete(
   
 // Restore session user
 router.get(
-    '/',
+    '/restore',
     (req, res) => {
       const { user } = req;
       if (user) {
