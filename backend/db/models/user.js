@@ -20,6 +20,12 @@ module.exports = (sequelize, DataTypes) => {
       validate: {
         notNull: { msg: "Please provide a username" },
         notEmpty: { msg: "Username cannot be empty" },
+        //username cant be email
+        isNotEmail(value) {
+          if (value.match(/@/)) {
+            throw new Error("Username cannot be an email");
+          }
+        }
       },
     },
     email: { 
