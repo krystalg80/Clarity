@@ -37,7 +37,7 @@ https://clarity.com
   }
   ```
 
-#### POST /users/login 
+#### POST /session/login 
 make sure to add demo userrrrr***
 **Description:** Log in an existing user.
 - **Request Body:**
