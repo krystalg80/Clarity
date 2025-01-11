@@ -125,4 +125,22 @@ router.delete('/delete/:id', async (req, res) => {
     });
   }
 });
+// GET /workouts/user/:userId/date/:date/summary - Get total workout duration for a user on a specific date
+router.get('/user/:userId/date/:date/summary', async (req, res) => {
+    const { userId, date } = req.params;
+  
+    try {
+      const totalWorkoutMinutes = await Workout.sum('durationMinutes', {
+        where: { userId, date }
+      });
+  
+      return res.json({ totalWorkoutMinutes });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        message: 'An error occurred while fetching total workout duration.'
+      });
+    }
+  });
+
 module.exports = router;

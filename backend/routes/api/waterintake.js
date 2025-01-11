@@ -122,8 +122,8 @@ router.delete('/delete/:id', async (req, res) => {
     }
   });
   
-// GET /waterintake/user/:userId/date/:date - Get total water intake for a user on a specific date
-router.get('/user/:userId/date/:date', async (req, res) => {
+// GET /waterintake/user/:userId/date/:date/summary - Get total water intake for a user on a specific date
+router.get('/user/:userId/date/:date/summary', async (req, res) => {
     const { userId, date } = req.params;
   
     try {

@@ -48,6 +48,7 @@ router.use('/workouts', workoutsRouter);
 
 router.use('/meditations', meditationsRouter);
 
+
 router.post('/test', (req, res) => { //keep this route to test frontend setup later on
     res.json({ requestBody: req.body });
   });
