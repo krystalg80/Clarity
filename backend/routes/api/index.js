@@ -7,6 +7,8 @@ const sessionRouter = require('./session.js');
 const usersRouter = require('./users.js');
 const workoutsRouter = require('./workouts.js');
 const meditationsRouter = require('./meditations.js');
+const waterintakeRouter = require('./waterintake.js');
+
 //Middleware tests (ALL PASSED)
 // router.post('/test', function(req, res) {
 //     res.json({ requestBody: req.body });
@@ -47,7 +49,7 @@ router.use('/workouts', workoutsRouter);
 
 router.use('/meditations', meditationsRouter);
 
-
+router.use('/waterintake', waterintakeRouter);
 
 
 router.post('/test', (req, res) => { //keep this route to test frontend setup later on

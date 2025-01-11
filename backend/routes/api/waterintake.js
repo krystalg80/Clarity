@@ -1,13 +1,14 @@
 const express = require('express');
 const { Water } = require('../../db/models');
 const router = express.Router();
+const { Op } = require('sequelize');
 
 // POST /waterintake/new - Log water intake
 router.post('/new', async (req, res) => {
     const { userId, date, waterConsumedOz } = req.body;
   
     try {
-      const newWaterIntake = await WaterIntake.create({
+      const newWaterIntake = await Water.create({
         userId,
         date,
         waterConsumedOz
@@ -27,7 +28,7 @@ router.get('/:id', async (req, res) => {
     const { id } = req.params;
   
     try {
-      const waterIntake = await WaterIntake.findByPk(id);
+      const waterIntake = await Water.findByPk(id);
   
       if (!waterIntake) {
         return res.status(404).json({
@@ -49,7 +50,7 @@ router.get('/user/:userId', async (req, res) => {
     const { userId } = req.params;
   
     try {
-      const waterIntake = await WaterIntake.findAll({
+      const waterIntake = await Water.findAll({
         where: { userId }
       });
   
@@ -74,7 +75,7 @@ router.put('/update/:id', async (req, res) => {
     const { date, waterConsumedOz } = req.body;
   
     try {
-      const waterIntake = await WaterIntake.findByPk(id);
+      const waterIntake = await Water.findByPk(id);
   
       if (!waterIntake) {
         return res.status(404).json({
@@ -101,7 +102,7 @@ router.delete('/delete/:id', async (req, res) => {
     const { id } = req.params;
   
     try {
-      const waterIntake = await WaterIntake.findByPk(id);
+      const waterIntake = await Water.findByPk(id);
   
       if (!waterIntake) {
         return res.status(404).json({
@@ -127,7 +128,7 @@ router.get('/user/:userId/date/:date/summary', async (req, res) => {
     const { userId, date } = req.params;
   
     try {
-      const totalWaterIntake = await WaterIntake.sum('waterConsumedOz', {
+      const totalWaterIntake = await Water.sum('waterConsumedOz', {
         where: {
           userId,
           date: {

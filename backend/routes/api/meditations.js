@@ -2,6 +2,7 @@
 const express = require('express');
 const { Meditation } = require('../../db/models');
 const router = express.Router();
+const { Op } = require('sequelize');
 
 // POST /meditations/new - Log a meditation
 router.post('/new', async (req, res) => {
