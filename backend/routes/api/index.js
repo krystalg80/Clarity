@@ -5,6 +5,7 @@ const { restoreUser } = require('../../utils/auth.js');
 const { requireAuth } = require('../../utils/auth.js');
 const sessionRouter = require('./session.js');
 const usersRouter = require('./users.js');
+const workoutsRouter = require('./workouts.js');
 
 
 //Middleware tests (ALL PASSED)
@@ -42,6 +43,8 @@ router.use(restoreUser);
 router.use('/session', sessionRouter);
 
 router.use('/users', usersRouter);
+
+router.use('/workouts', workoutsRouter);
 
 router.post('/test', (req, res) => { //keep this route to test frontend setup later on
     res.json({ requestBody: req.body });
