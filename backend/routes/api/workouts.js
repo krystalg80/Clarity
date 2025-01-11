@@ -101,7 +101,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /workouts/:id - Delete a workout
-router.delete('/:id', async (req, res) => {
+router.delete('/delete/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
