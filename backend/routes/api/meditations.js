@@ -123,7 +123,10 @@ router.get('/user/:userId/date/:date/summary', async (req, res) => {
   
     try {
       const totalMeditationMinutes = await Meditation.sum('durationMinutes', {
-        where: { userId, date }
+        where: { userId, 
+            date: {
+                [Op.startsWith]: date
+            } }
       });
   
       return res.json({ totalMeditationMinutes });

@@ -130,7 +130,9 @@ router.get('/user/:userId/date/:date/summary', async (req, res) => {
       const totalWaterIntake = await WaterIntake.sum('waterConsumedOz', {
         where: {
           userId,
-          date
+          date: {
+            [Op.startsWith]: date
+          }
         }
       });
   
