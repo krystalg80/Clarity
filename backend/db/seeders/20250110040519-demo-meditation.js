@@ -12,55 +12,41 @@ if (process.env.NODE_ENV === 'production') {
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    const demoUser = await User.findOne({
-      where: { username: 'Demo-lition' }
-    });
+    // const demoUser = await User.findOne({
+    //   where: { username: 'Demo-lition' }
+    // });
 
-    const user1 = await User.findOne({
-      where: { username: 'FakeUser1' }
-    });
+    // const user1 = await User.findOne({
+    //   where: { username: 'FakeUser1' }
+    // });
 
-    const user2 = await User.findOne({
-      where: { username: 'FakeUser2' }
-    });
+    // const user2 = await User.findOne({
+    //   where: { username: 'FakeUser2' }
+    // });
 
-    await queryInterface.bulkInsert('MeditationSessions', [
+    await MeditationSession.bulkCreate( [
       {
-        userId: demoUser.id,
+        userId: 1,
         date: new Date('2024-01-08'),
         durationMinutes: 10,
-        createdAt: new Date(),
-        updatedAt: new Date()
       },
       {
-        userId: user1.id,
+        userId: 2,
         date: new Date('2024-01-08'),
         durationMinutes: 10,
-        createdAt: new Date(),
-        updatedAt: new Date()
       },
       {
-        userId: user2.id,
+        userId: 3,
         date: new Date('2024-01-08'),
         durationMinutes: 10,
-        createdAt: new Date(),
-        updatedAt: new Date()
       }
-    ], {});
-    /**
-     * Add seed commands here.
-     *
-     * Example:
-     * await queryInterface.bulkInsert('People', [{
-     *   name: 'John Doe',
-     *   isBetaMember: false
-     * }], {});
-    */
+    ], { schema: options.schema,
+      validate: true });
   },
 
   async down (queryInterface, Sequelize) {
     options.tableName = 'MeditationSessions';
-    return queryInterface.bulkDelete(options, null, {});
+    return queryInterface.bulkDelete(options, null, { schema: options.schema });
     /**
      * Add commands to revert seed here.
      *

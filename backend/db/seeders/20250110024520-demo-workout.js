@@ -2,7 +2,6 @@
 const { query } = require('express');
 const { User } = require('../models');
 const bcrypt = require("bcryptjs");
-const user = require('../models/user');
 
 let options = {};
 if (process.env.NODE_ENV === 'production') {
@@ -12,54 +11,43 @@ if (process.env.NODE_ENV === 'production') {
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    const demoUser = await User.findOne({
-      where: { username: 'Demo-lition' }
-    });
+  //   const demoUser = await User.findOne({
+  //     where: { username: 'Demo-lition' }
+  //   });
 
-    const user1 = await User.findOne({
-      where: { username: 'FakeUser1' }
-    });
+  //   const user1 = await User.findOne({
+  //     where: { username: 'FakeUser1' }
+  //   });
 
-    const user2 = await User.findOne({
-      where: { username: 'FakeUser2' }
-    });
+  //   const user2 = await User.findOne({
+  //     where: { username: 'FakeUser2' }
+  //   });
 
-    await queryInterface.bulkInsert('Workouts', [
+    await Workout.bulkCreate( [
       {
-        userId: demoUser.id,
+        userId: 1,
         title: 'Run',
         date: new Date('2024-01-08'),
         durationMinutes: 45,
-        createdAt: new Date(),
-        updatedAt: new Date()
       },
       {
-        userId: user1.id,
+        userId: 2,
         title: 'Yoga',
         date: new Date('2024-01-08'),
         durationMinutes: 30,
-        createdAt: new Date(),
-        updatedAt: new Date()
       },
       {
-        userId: user2.id,
+        userId: 3,
         title: 'Lift',
         date: new Date('2024-01-08'),
         durationMinutes: 60,
-        createdAt: new Date(),
-        updatedAt: new Date()
       }
-    ], {});
+    ], { schema: options.schema,
+      validate: true });
   },
 
   async down (queryInterface, Sequelize) {
     options.tableName = 'Workouts';
-    return queryInterface.bulkDelete(options, null, {});
-    /**
-     * Add commands to revert seed here.
-     *
-     * Example:
-     * await queryInterface.bulkDelete('People', null, {});
-     */
+    return queryInterface.bulkDelete(options, null, { schema: options.schema });
   }
 };

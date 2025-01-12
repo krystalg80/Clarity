@@ -2,7 +2,6 @@
 const { query } = require('express');
 const { User } = require('../models');
 const bcrypt = require("bcryptjs");
-const user = require('../models/user');
 
 let options = {};
 if (process.env.NODE_ENV === 'production') {
@@ -12,41 +11,39 @@ if (process.env.NODE_ENV === 'production') {
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    const demoUser = await User.findOne({
-      where: { username: 'Demo-lition' }
-    });
+    // const demoUser = await User.findOne({
+    //   where: { username: 'Demo-lition' }
+    // });
 
-    const user1 = await User.findOne({
-      where: { username: 'FakeUser1' }
-    });
+    // const user1 = await User.findOne({
+    //   where: { username: 'FakeUser1' }
+    // });
 
-    const user2 = await User.findOne({
-      where: { username: 'FakeUser2' }
-    });
+    // const user2 = await User.findOne({
+    //   where: { username: 'FakeUser2' }
+    // });
 
-    await queryInterface.bulkInsert('WaterIntakes', [
+    await WaterIntake.bulkCreate( [
       {
-        userId: demoUser.id,
+        userId: 1,
         date: new Date('2024-01-08'),
         waterConsumedOz: 45,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        
       },
       {
-        userId: user1.id,
+        userId: 2,
         date: new Date('2024-01-08'),
         waterConsumedOz: 30,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        
       },
       {
-        userId: user2.id,
+        userId: 3,
         date: new Date('2024-01-08'),
         waterConsumedOz: 60,
-        createdAt: new Date(),
-        updatedAt: new Date()
+       
       }
-    ], {});
+    ], { schema: options.schema,
+      validate: true });
     /**
      * Add seed commands here.
      *
@@ -60,7 +57,7 @@ module.exports = {
 
   async down (queryInterface, Sequelize) {
     options.tableName = 'WaterIntakes';
-    return queryInterface.bulkDelete(options, null, {});
+    return queryInterface.bulkDelete(options, null, { schema: options.schema });
     /**
      * Add commands to revert seed here.
      *
