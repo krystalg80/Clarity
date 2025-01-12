@@ -19,7 +19,7 @@ module.exports = {
       }
     },
     define: {
-      schema: process.env.SCHEMA
+      schema: process.env.SCHEMA || 'clarity_schema'
     }
   }
 };
