@@ -54,6 +54,9 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Users');
+    await queryInterface.dropTable('Workouts'); // Drop dependent table first
+    await queryInterface.dropTable('WaterIntakes'); // Drop another dependent table
+    await queryInterface.dropTable('MeditationSessions'); // Drop another dependent table
+    await queryInterface.dropTable('Users'); // Finally drop the Users table
   }
 };
