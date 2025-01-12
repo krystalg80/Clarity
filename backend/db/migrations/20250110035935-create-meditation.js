@@ -6,7 +6,7 @@ if (process.env.NODE_ENV === 'production') {
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('MeditationSessions', {
+    await queryInterface.createTable('Meditations', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -39,7 +39,7 @@ module.exports = {
     }, options);
   },
   async down(queryInterface, Sequelize) {
-    options.tableName = 'MeditationSessions';
-    await queryInterface.dropTable('MeditationSessions');
+    options.tableName = 'Meditations';
+    await queryInterface.dropTable('Meditations');
   }
 };

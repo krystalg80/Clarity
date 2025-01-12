@@ -1,7 +1,7 @@
 'use strict';
-const { query } = require('express');
-const { User } = require('../models');
-const bcrypt = require("bcryptjs");
+
+const { Water } = require('../models');
+
 
 let options = {};
 if (process.env.NODE_ENV === 'production') {
@@ -23,7 +23,7 @@ module.exports = {
     //   where: { username: 'FakeUser2' }
     // });
 
-    await WaterIntake.bulkCreate( [
+    await Water.bulkCreate( [
       {
         userId: 1,
         date: new Date('2024-01-08'),
@@ -56,7 +56,7 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
-    options.tableName = 'WaterIntakes';
+    options.tableName = 'Waters';
     return queryInterface.bulkDelete(options, null, { schema: options.schema });
     /**
      * Add commands to revert seed here.

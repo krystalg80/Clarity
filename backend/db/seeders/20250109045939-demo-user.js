@@ -1,5 +1,5 @@
 'use strict';
-const { query } = require('express');
+
 const { User } = require('../models');
 const bcrypt = require("bcryptjs");
 
