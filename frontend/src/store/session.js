@@ -29,6 +29,27 @@ export const login = (user) => async (dispatch) => {
   return response;
 };
 
+export const signup = (user) => async (dispatch) => {
+    const { email, password, username, firstName, lastName, exerciseGoalMinutes, waterGoalOz, meditationGoalMinutes } = user;
+    const response = await csrfFetch('/api/users/register', {
+      method: 'POST',
+      body: JSON.stringify({
+        email,
+        password,
+        username,
+        firstName,
+        lastName,
+        exerciseGoalMinutes,
+        waterGoalOz,
+        meditationGoalMinutes,
+      }),
+    });
+    const data = await response.json();
+    dispatch(setSessionUser(data.user));
+    return response;
+  };
+  
+
 export const logout = () => async (dispatch) => {
   const response = await csrfFetch('/api/session/logout', {
     method: 'DELETE',
@@ -43,6 +64,8 @@ export const restoreUser = () => async (dispatch) => {
   dispatch(setSessionUser(data.user));
   return response;
 };
+
+
 
 // Initial State
 const initialState = { user: null };
