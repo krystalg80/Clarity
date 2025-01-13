@@ -53,9 +53,9 @@ router.use('/waterintake', waterintakeRouter);
 
 // router.use('/history', historyRouter);
 
-router.post('/test', (req, res) => { //keep this route to test frontend setup later on
-    res.json({ requestBody: req.body });
-  });
+// router.post('/test', (req, res) => { //keep this route to test frontend setup later on
+//     res.json({ requestBody: req.body });
+//   });
 
 
 module.exports = router;
