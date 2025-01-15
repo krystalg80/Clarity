@@ -45,7 +45,7 @@ function ProfileButton() {
       </button>
       <ul className={ulClassName} ref={ulRef}>
         <li>
-          <button onClick={() => navigate('/profile')}>View Profile</button>
+          <button onClick={() => navigate('/profile')}>Edit Profile</button>
         </li>
         <li>
           <button onClick={logout}>Logout</button>
