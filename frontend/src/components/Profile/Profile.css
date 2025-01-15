@@ -1,0 +1,42 @@
+.profile-page {
+    background-color: white;
+    display: block;
+    width: 1000px;
+    height: 500px;
+    border-radius: 15px;
+}
+.profile-card h1 {
+    font-size: 30px;
+    font-weight: lighter;
+    text-align: center;
+}
+
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    gap: 5px;
+    
+}
+.form-group .form-label{
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+  
+.profile-form label {
+    font-size: 16px;
+    font-weight: lighter;
+    margin-bottom: 10px;
+    word-spacing: 1px;
+    text-align: left;
+}
+
+.profile-page input{
+    background-color: rgb(244, 244, 244);
+    border-radius: 10px;
+    height: 10px;
+    width: 500px;
+}

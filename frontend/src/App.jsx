@@ -5,6 +5,7 @@ import WelcomePage from './components/Welcome/WelcomePage';
 import Dashboard from './components/Dashboard/Dashboard';
 import Navigation from './components/Navigation/Navigation';
 import * as sessionActions from './store/session';
+import Profile from './components/Profile/Profile';
 
 function Layout() {
   const dispatch = useDispatch();
@@ -57,7 +58,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/profile',
-        element: <div>Profile Page</div>, // Placeholder for Profile component
+        element: <Profile />, // Placeholder for Profile component
       },
     ],
   },
