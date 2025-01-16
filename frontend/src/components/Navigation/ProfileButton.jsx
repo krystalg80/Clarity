@@ -48,7 +48,7 @@ function ProfileButton() {
           <button onClick={() => navigate('/profile')}>Edit Profile</button>
         </li>
         <li>
-          <button onClick={logout}>Logout</button>
+          <button onClick={logout}>Signout</button>
         </li>
       </ul>
     </>
