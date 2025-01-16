@@ -28,9 +28,9 @@ function Navigation() {
           <NavLink to="/waterintake" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
             Water Intake
           </NavLink>
-          <NavLink to="/profile" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
+          {/* <NavLink to="/profile" className={({isActive}) => `nav-link ${isActive ? 'active' : ''}`}>
             Profile
-          </NavLink>
+          </NavLink> */}
         </nav>
         <main className="content">
           <Outlet />

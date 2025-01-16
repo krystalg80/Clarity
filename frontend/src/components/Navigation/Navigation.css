@@ -46,11 +46,6 @@
     padding: 8px;
     margin-right: 65px; /* Add some right margin */
   }
-.profile-icon {
-  height: 40px;
-  width: 40px;
-  border-radius: 50%;
-}
 
 .main-content {
   display: flex;
