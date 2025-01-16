@@ -86,6 +86,8 @@ router.get('/:id', requireAuth, async (req, res) => {
         id: user.id,
         username: user.username,
         email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
         exerciseGoalMinutes: user.exerciseGoalMinutes,
         waterGoalOz: user.waterGoalOz,
         meditationGoalMinutes: user.meditationGoalMinutes,
@@ -102,5 +104,51 @@ router.get('/:id', requireAuth, async (req, res) => {
     }
   });
 
+// PUT /users/:id - Update user details
+router.put('/:id', requireAuth, async (req, res) => {
+  const { id } = req.params;
+  const { username, email, firstName, lastName, exerciseGoalMinutes, waterGoalOz, meditationGoalMinutes } = req.body;
+
+  try {
+    const user = await User.findByPk(id);  // Find user by ID
+
+    if (!user) {
+      return res.status(404).json({
+        message: 'User not found'
+      });
+    }
+
+    // Update user details
+    user.username = username || user.username;
+    user.email = email || user.email;
+    user.firstName = firstName || user.firstName;
+    user.lastName = lastName || user.lastName;
+    user.exerciseGoalMinutes = exerciseGoalMinutes || user.exerciseGoalMinutes;
+    user.waterGoalOz = waterGoalOz || user.waterGoalOz;
+    user.meditationGoalMinutes = meditationGoalMinutes || user.meditationGoalMinutes;
+
+    await user.save();
+
+    const updatedUserDetails = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      exerciseGoalMinutes: user.exerciseGoalMinutes,
+      waterGoalOz: user.waterGoalOz,
+      meditationGoalMinutes: user.meditationGoalMinutes,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    };
+
+    return res.json({ user: updatedUserDetails });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      message: 'An error occurred while updating user details.'
+    });
+  }
+});
 
 module.exports = router;
