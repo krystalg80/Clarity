@@ -1,38 +1,111 @@
 .dashboard-page {
-    background-color: white;
-    display: block;
-    width: 1000px;
-    height: 500px;
-    border-radius: 15px;
-}
-.dashboard-page h1 {
-  margin-bottom: 20px;
-  text-align: center;
-  font-size: 2em;
-  color: #333;
-}
-
-.progress-bars {
-  display: flex;
-  justify-content: space-around;
-  width: 100%;
-  max-width: 800px;
-}
-
-.progress-bar {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 200px;
-  margin: 20px;
-  padding: 20px;
+  justify-content: center; /* Center content vertically */
+}
+.dashboard-page .notification-bar {
   background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 1rem;
+  padding: 5px;
+  margin: 1.5rem auto;
+  width: 100%;
+  max-width: 1050px;
+  display: flex;
+  align-items: center;
+  font-size: 22px;
+  word-spacing: 3px;
+  letter-spacing: 3px;
+  font-weight: 700;
+}
+.dashboard-page .affirmation-bar {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 5px;
+  height: 50px;
+  margin: 1.5rem auto;
+  width: 100%;
+  max-width: 1050px;
+  display: flex;
+  align-items: center;
+  font-size: 22px;
+  word-spacing: 3px;
+  letter-spacing: 3px;
+  font-weight: 700;
+}
+.progress-bars {
+  display: flex;
+  justify-content: center; /* Center the progress bars horizontally */
+  gap: 4rem;
+  width: 100%;
+  max-width: 1050px;
+  padding: 1rem;
+  .dashboard-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* Center content vertically */
+}
+
+.progress-bar {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  box-shadow: none;
+  margin: 0;
+  width: auto;
 }
 
 .progress-bar h2 {
-  margin-bottom: 10px;
-  font-size: 1.2em;
-  color: #666;
+  align-self: flex-start;
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+/* Style the CircularProgressbar component */
+.progress-bar > div {  /* This targets the CircularProgressbar wrapper */
+  width: 160px !important;
+  height: 160px !important;
+  margin: 1rem 0;
+}
+
+.progress-bar .CircularProgressbar-path {
+  stroke: #1a1a1a !important;
+}
+
+.progress-bar .CircularProgressbar-trail {
+  stroke: #e5e5e5 !important;
+}
+
+.progress-bar .CircularProgressbar-text {
+  fill: #1a1a1a !important;
+  font-size: 16px !important;
+  font-weight: 500;
+}
+
+
+
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .progress-bars {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .progress-bar {
+    padding: 1rem;
+  }
+
+  .progress-bar > div {
+    width: 120px !important;
+    height: 120px !important;
+  }
+}
 }
