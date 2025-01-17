@@ -2,7 +2,7 @@
     background-color: white;
     display: block;
     width: 1000px;
-    height: 500px;
+    height: auto;
     border-radius: 15px;
 }
 .profile-card h1 {

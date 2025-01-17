@@ -6,6 +6,7 @@ import Dashboard from './components/Dashboard/Dashboard';
 import Navigation from './components/Navigation/Navigation';
 import * as sessionActions from './store/session';
 import Profile from './components/Profile/Profile';
+import Meditation from './components/Meditation/Meditation';
 
 function Layout() {
   const dispatch = useDispatch();
@@ -50,7 +51,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/meditations',
-        element: <div>Meditations Page</div>, // Placeholder for Meditations component
+        element: <Meditation />, // Placeholder for Meditations component
       },
       {
         path: '/waterintake',
