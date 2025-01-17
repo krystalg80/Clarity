@@ -3,11 +3,13 @@ import { thunk } from 'redux-thunk';
 import sessionReducer from './session';
 import profileReducer from './profile';
 import summaryReducer from './summary';
+import meditationReducer from './meditation';
 
 const rootReducer = combineReducers({
     session: sessionReducer,
     profile: profileReducer,
     summary: summaryReducer,
+    meditation: meditationReducer,
 //add reducers here
 });
 

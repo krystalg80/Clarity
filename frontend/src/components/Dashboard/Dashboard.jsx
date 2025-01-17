@@ -6,6 +6,7 @@ import './Dashboard.css';
 import { fetchUserProfile } from '../../store/profile';
 import { fetchWorkoutSummary, fetchMeditationSummary, fetchWaterIntakeSummary, setUserGoals } from '../../store/summary';
 import affirmations from '../../data/affirmations';
+import { fetchMeditationsByUser } from '../../store/meditation';
 
 
 //lets make a generate random affirmation function
@@ -36,15 +37,37 @@ function Dashboard() {
 
   useEffect(() => {
     if (user) {
+      const today = new Date().toISOString().split('T')[0];
+
       dispatch(setUserGoals({
         exerciseGoalMinutes: user.exerciseGoalMinutes,
         meditationGoalMinutes: user.meditationGoalMinutes,
         waterGoalOz: user.waterGoalOz
       }));
 
-      const today = new Date().toISOString().split('T')[0];
+      const fetchData = async () => {
+        try {
+          console.log('Fetching meditation data...');
+          await dispatch(fetchMeditationsByUser(userId));
+          
+          console.log('Meditations fetched, now fetching summary...');
+          const summaryResult = await dispatch(fetchMeditationSummary({ userId, date: today }));
+          console.log('Meditation summary response:', summaryResult.payload);
+          
+          if (summaryResult.payload === null) {
+            console.error('Meditation summary is null. Current Redux state:', {
+              userId,
+              date: today,
+              meditationSummary: summaryResult.payload
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching meditation data:', error);
+        }
+      };
+
+      fetchData();
       dispatch(fetchWorkoutSummary({ userId, date: today }));
-      dispatch(fetchMeditationSummary({ userId, date: today }));
       dispatch(fetchWaterIntakeSummary({ userId, date: today }));
     }
   }, [dispatch, user, userId]);
