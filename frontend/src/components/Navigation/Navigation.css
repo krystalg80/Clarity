@@ -16,6 +16,7 @@
   background-color: #f8f9fa;
   padding: 0 24px;
   border-bottom: 1px solid #adadad;
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
 .logo-container {
@@ -51,6 +52,8 @@
   display: flex;
   flex: 1;
   width: 100%;
+  height: 100vh;
+  overflow: auto; 
 }
 
 .side-bar {
@@ -85,7 +88,9 @@
   flex-grow: 1;
   padding: 20px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: flex-start;
   align-items: center;
   background-color: #d2ddbf;
+  overflow-y: auto;
 }
