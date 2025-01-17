@@ -1,14 +1,34 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { csrfFetch } from './csrf'; // Assuming csrfFetch is defined in csrf.js
+import {csrfFetch} from './csrf';
 
-// Thunk action for logging a meditation session
+// Fetch meditations by user
+export const fetchMeditationsByUser = createAsyncThunk(
+  'meditation/fetchMeditationsByUser',
+  async (userId, { rejectWithValue }) => {
+    try {
+      const response = await csrfFetch(`/api/meditations/user/${userId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch meditations');
+      }
+      const data = await response.json();
+      return data.meditations;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+// Log a new meditation session
 export const logMeditation = createAsyncThunk(
   'meditation/logMeditation',
-  async ({ userId, date, durationMinutes }, { rejectWithValue }) => {
+  async (meditationData, { rejectWithValue }) => {
     try {
-      const response = await csrfFetch(`/api/meditations/new`, {
+      const response = await csrfFetch('/api/meditations/new', {
         method: 'POST',
-        body: JSON.stringify({ userId, date, durationMinutes }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(meditationData),
       });
       if (!response.ok) {
         throw new Error('Failed to log meditation session');
@@ -21,61 +41,30 @@ export const logMeditation = createAsyncThunk(
   }
 );
 
-// Thunk action for fetching meditation session details by ID
-export const fetchMeditationById = createAsyncThunk(
-  'meditation/fetchMeditationById',
-  async (id, { rejectWithValue }) => {
-    try {
-      const response = await csrfFetch(`/api/meditations/${id}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch meditation session details');
-      }
-      const data = await response.json();
-      return data.meditation;
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-// Thunk action for fetching all meditations for a user
-export const fetchMeditationsByUser = createAsyncThunk(
-  'meditation/fetchMeditationsByUser',
-  async (userId, { rejectWithValue }) => {
-    try {
-      const response = await csrfFetch(`/api/meditations/user/${userId}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch meditations for user');
-      }
-      const data = await response.json();
-      return data.meditations;
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-// Thunk action for updating a meditation session
+// Update a meditation session
 export const updateMeditation = createAsyncThunk(
   'meditation/updateMeditation',
-  async ({ id, date, durationMinutes }, { rejectWithValue }) => {
+  async (meditationData, { rejectWithValue }) => {
     try {
-      const response = await csrfFetch(`/api/meditations/update/${id}`, {
+      const response = await csrfFetch(`/api/meditations/update/${meditationData.id}`, {
         method: 'PUT',
-        body: JSON.stringify({ date, durationMinutes }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(meditationData),
       });
       if (!response.ok) {
         throw new Error('Failed to update meditation session');
       }
       const data = await response.json();
-      return data.meditation;
+      return data;
     } catch (error) {
       return rejectWithValue(error.message);
     }
   }
 );
 
-// Thunk action for deleting a meditation session
+// Delete a meditation session
 export const deleteMeditation = createAsyncThunk(
   'meditation/deleteMeditation',
   async (id, { rejectWithValue }) => {
@@ -87,23 +76,6 @@ export const deleteMeditation = createAsyncThunk(
         throw new Error('Failed to delete meditation session');
       }
       return id;
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-// Thunk action for getting total meditation duration for a user on a specific date
-export const fetchTotalMeditationDuration = createAsyncThunk(
-  'meditation/fetchTotalMeditationDuration',
-  async ({ userId, date }, { rejectWithValue }) => {
-    try {
-      const response = await csrfFetch(`/api/meditations/user/${userId}/date/${date}/summary`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch total meditation duration');
-      }
-      const data = await response.json();
-      return data.totalMeditationMinutes;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -127,21 +99,9 @@ const meditationSlice = createSlice({
       .addCase(logMeditation.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.sessions.push(action.payload);
+        state.totalDuration += action.payload.durationMinutes;
       })
       .addCase(logMeditation.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.payload;
-      })
-      .addCase(fetchMeditationById.pending, (state) => {
-        state.status = 'loading';
-      })
-      .addCase(fetchMeditationById.fulfilled, (state, action) => {
-        state.status = 'succeeded';
-        state.sessions = state.sessions.map((session) =>
-          session.id === action.payload.id ? action.payload : session
-        );
-      })
-      .addCase(fetchMeditationById.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
       })
@@ -151,45 +111,26 @@ const meditationSlice = createSlice({
       .addCase(fetchMeditationsByUser.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.sessions = action.payload;
+        state.totalDuration = action.payload.reduce((total, session) => total + session.durationMinutes, 0);
       })
       .addCase(fetchMeditationsByUser.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
       })
-      .addCase(updateMeditation.pending, (state) => {
-        state.status = 'loading';
-      })
       .addCase(updateMeditation.fulfilled, (state, action) => {
-        state.status = 'succeeded';
-        state.sessions = state.sessions.map((session) =>
-          session.id === action.payload.id ? action.payload : session
-        );
-      })
-      .addCase(updateMeditation.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.payload;
-      })
-      .addCase(deleteMeditation.pending, (state) => {
-        state.status = 'loading';
+        const index = state.sessions.findIndex(session => session.id === action.payload.id);
+        if (index !== -1) {
+          state.totalDuration -= state.sessions[index].durationMinutes;
+          state.sessions[index] = action.payload;
+          state.totalDuration += action.payload.durationMinutes;
+        }
       })
       .addCase(deleteMeditation.fulfilled, (state, action) => {
-        state.status = 'succeeded';
-        state.sessions = state.sessions.filter((session) => session.id !== action.payload);
-      })
-      .addCase(deleteMeditation.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.payload;
-      })
-      .addCase(fetchTotalMeditationDuration.pending, (state) => {
-        state.status = 'loading';
-      })
-      .addCase(fetchTotalMeditationDuration.fulfilled, (state, action) => {
-        state.status = 'succeeded';
-        state.totalDuration = action.payload;
-      })
-      .addCase(fetchTotalMeditationDuration.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.payload;
+        const index = state.sessions.findIndex(session => session.id === action.payload);
+        if (index !== -1) {
+          state.totalDuration -= state.sessions[index].durationMinutes;
+          state.sessions.splice(index, 1);
+        }
       });
   },
 });
