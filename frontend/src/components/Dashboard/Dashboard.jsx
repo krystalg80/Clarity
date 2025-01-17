@@ -6,6 +6,8 @@ import './Dashboard.css';
 import { fetchUserProfile } from '../../store/profile';
 import { fetchWorkoutSummary, fetchMeditationSummary, fetchWaterIntakeSummary, setUserGoals } from '../../store/summary';
 import affirmations from '../../data/affirmations';
+import flowers from '../../../../images/flowers.png';
+
 
 //lets make a generate random affirmation function
 function getRandomAffirmation() {
@@ -114,7 +116,8 @@ function Dashboard() {
         </div>
       )}
       <div className="affirmation-bar">
-        <p>{affirmation}</p>
+        <p>🌸 Daily Affirmation 🌸</p>
+        <h2>{affirmation}</h2>
       </div>
     </div>
   );
