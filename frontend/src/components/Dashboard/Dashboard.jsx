@@ -6,7 +6,6 @@ import './Dashboard.css';
 import { fetchUserProfile } from '../../store/profile';
 import { fetchWorkoutSummary, fetchMeditationSummary, fetchWaterIntakeSummary, setUserGoals } from '../../store/summary';
 import affirmations from '../../data/affirmations';
-import flowers from '../../../../images/flowers.png';
 
 
 //lets make a generate random affirmation function
