@@ -3,6 +3,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center; /* Center content vertically */
+
 }
 .dashboard-page .notification-bar {
   background-color: white;
@@ -22,11 +23,12 @@
   background-color: white;
   border-radius: 1rem;
   padding: 5px;
-  height: 50px;
+  height: 200px;
   margin: 1.5rem auto;
   width: 100%;
   max-width: 1050px;
   display: flex;
+  justify-content: center;
   align-items: center;
   font-size: 22px;
   word-spacing: 3px;
