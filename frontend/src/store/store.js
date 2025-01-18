@@ -4,12 +4,14 @@ import sessionReducer from './session';
 import profileReducer from './profile';
 import summaryReducer from './summary';
 import meditationReducer from './meditation';
+import workoutReducer from './workout';
 
 const rootReducer = combineReducers({
     session: sessionReducer,
     profile: profileReducer,
     summary: summaryReducer,
     meditation: meditationReducer,
+    workout: workoutReducer,
 //add reducers here
 });
 
