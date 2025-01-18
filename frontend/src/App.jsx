@@ -7,6 +7,7 @@ import Navigation from './components/Navigation/Navigation';
 import * as sessionActions from './store/session';
 import Profile from './components/Profile/Profile';
 import Meditation from './components/Meditation/Meditation';
+import Workout from './components/Workout/Workout';
 
 function Layout() {
   const dispatch = useDispatch();
@@ -47,7 +48,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/workouts',
-        element: <div>Workouts Page</div>, // Placeholder for Workouts component
+        element: <Workout />, // Placeholder for Workouts component
       },
       {
         path: '/meditations',
