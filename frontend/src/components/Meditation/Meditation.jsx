@@ -1,15 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { logMeditation } from '../../store/meditation';
+import { logMeditation, fetchMeditationsByUser, updateMeditation, deleteMeditation } from '../../store/meditation';
 import './Meditation.css';
 
 function Meditation() {
   const dispatch = useDispatch();
   const userId = useSelector((state) => state.session.user.id);
+  const meditations = useSelector((state) => state.meditation.sessions);
   const [formData, setFormData] = useState({
     date: '',
     durationMinutes: ''
   });
+  const [editMode, setEditMode] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const today = new Date().toISOString().split('T')[0];
+
+  useEffect(() => {
+    if (userId) {
+      dispatch(fetchMeditationsByUser(userId));
+    }
+  }, [dispatch, userId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,8 +31,24 @@ function Meditation() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    dispatch(logMeditation({ userId, ...formData }));
+    if (editMode) {
+      dispatch(updateMeditation({ id: editId, ...formData }));
+      setEditMode(false);
+      setEditId(null);
+    } else {
+      dispatch(logMeditation({ userId, ...formData }));
+    }
     setFormData({ date: '', durationMinutes: '' });
+  };
+
+  const handleEdit = (meditation) => {
+    setFormData({ date: meditation.date.split('T')[0], durationMinutes: meditation.durationMinutes });
+    setEditMode(true);
+    setEditId(meditation.id);
+  };
+
+  const handleDelete = (id) => {
+    dispatch(deleteMeditation(id));
   };
 
   const recommendedVideos = [
@@ -85,6 +111,19 @@ function Meditation() {
             </a>
           ))}
         </div>
+      </div>
+      <div className="meditation-log">
+        <h2 className="log-title">Meditation Log from Today</h2>
+        <ul className="log-list">
+          {meditations.filter(meditation => meditation.date.split('T')[0] === today).map((meditation) => (
+            <li key={meditation.id} className="log-item">
+              <span className="log-date">{meditation.date.split('T')[0]}</span>
+              <span className="log-duration">{meditation.durationMinutes} minutes</span>
+              <button onClick={() => handleEdit(meditation)} className="edit-button">Edit</button>
+              <button onClick={() => handleDelete(meditation.id)} className="delete-button">Delete</button>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
