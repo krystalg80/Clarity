@@ -37,7 +37,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <Navigate to="/dashboard" replace />,
+        element: <Navigate to="/welcome" replace />,
       },
       {
         path: '/welcome',
