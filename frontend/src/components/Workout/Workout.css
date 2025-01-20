@@ -129,3 +129,24 @@
   .edit-button:hover, .delete-button:hover {
     background-color: #a0bf92;
   }
+
+@media (max-width: 768px) {
+    .log-list {
+      width: 90%;
+    }
+  
+    .log-item {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+      text-align: center;
+    }
+  
+    .log-date, .log-ozconsumed {
+      margin: 0;
+    }
+  
+    .edit-button, .delete-button {
+      width: 100%;
+    }
+  }

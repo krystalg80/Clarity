@@ -99,12 +99,19 @@ function Dashboard() {
 
   const remainingWorkoutMinutes = exerciseGoalMinutes - workoutSummary;
 
+
+  //lets add a effect for when achieved!
+  // const showCelebration = (progress) => {
+  //   return progress >= 100 ? <span className="celebration-text">🎉 Goal Achieved!</span> : null;
+  // };
+
   return (
     <div className="dashboard-page">
       <div className="progress-bars">
         <div className="progress-bar">
           <h2>Workout</h2>
           <p className="goal-text">Goal: {exerciseGoalMinutes} minutes</p>
+          {/* {showCelebration(workoutProgress)} */}
           <CircularProgressbar
             value={workoutProgress}
             text={`${Math.round(workoutProgress)}%`}
@@ -117,6 +124,7 @@ function Dashboard() {
         <div className="progress-bar">
           <h2>Meditation</h2>
           <p className="goal-text">Goal: {meditationGoalMinutes} minutes</p>
+          {/* {showCelebration(meditationProgress)} */}
           <CircularProgressbar
             value={meditationProgress}
             text={`${Math.round(meditationProgress)}%`}
@@ -129,6 +137,7 @@ function Dashboard() {
         <div className="progress-bar">
           <h2>Water Intake</h2>
           <p className="goal-text">Goal: {waterGoalOz} Oz's</p>
+          {/* {showCelebration(waterIntakeProgress)} */}
           <CircularProgressbar
             value={waterIntakeProgress}
             text={`${Math.round(waterIntakeProgress)}%`}
