@@ -2,7 +2,8 @@
 const express = require('express');
 const { Meditation } = require('../../db/models');
 const router = express.Router();
-const { Op, fn, col } = require('sequelize');
+const { Op } = require('sequelize');
+const moment = require('moment'); 
 
 // POST /meditations/new - Log a meditation
 router.post('/new', async (req, res) => {
@@ -123,13 +124,16 @@ router.get('/user/:userId/date/:date/summary', async (req, res) => {
     const { userId, date } = req.params;
   
     try {
+      const startDate = moment(date).startOf('day').toDate();
+      const endDate = moment(date).endOf('day').toDate();
+
       const totalMeditationMinutes = await Meditation.sum('durationMinutes', {
         where: { userId, 
-          [Op.and]: [
-            fn('CAST', col('date'), 'TEXT'),
-            { [Op.like]: `${date}%` }
-          ]
-        }
+            date: {
+              [Op.gte]: startDate,  // Start of the day
+              [Op.lt]: endDate      // Before the next day
+            }
+           }
       });
   
       return res.json({ totalMeditationMinutes });
