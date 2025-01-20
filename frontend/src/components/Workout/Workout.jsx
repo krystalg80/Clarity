@@ -34,6 +34,10 @@ function Workout () {
         e.preventDefault();
         if (editMode) {
             await dispatch(updateWorkout({ id: editId, ...formData }));
+
+             // Re-fetch the workouts after update to reflect the changes
+            dispatch(fetchWorkoutsByUser(userId));
+            
             setEditMode(false);
             setEditId(null);
         } else {
