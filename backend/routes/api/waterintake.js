@@ -2,6 +2,7 @@ const express = require('express');
 const { Water } = require('../../db/models');
 const router = express.Router();
 const { Op } = require('sequelize');
+const moment = require('moment'); 
 
 // POST /waterintake/new - Log water intake
 router.post('/new', async (req, res) => {
@@ -128,11 +129,15 @@ router.get('/user/:userId/date/:date/summary', async (req, res) => {
     const { userId, date } = req.params;
   
     try {
+      const startDate = moment(date).startOf('day').toDate();
+      const endDate = moment(date).endOf('day').toDate();
+
       const totalWaterIntake = await Water.sum('waterConsumedOz', {
         where: {
           userId,
           date: {
-            [Op.startsWith]: date
+            [Op.gte]: startDate,  // Start of the day
+            [Op.lt]: endDate      // Before the next day
           }
         }
       });

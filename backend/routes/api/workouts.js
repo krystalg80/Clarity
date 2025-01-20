@@ -2,6 +2,7 @@ const express = require('express');
 const { Workout } = require('../../db/models');
 const { Op } = require('sequelize');
 const router = express.Router();
+const moment = require('moment'); 
 
 // POST /workouts/new - Log a workout
 router.post('/new', async (req, res) => {
@@ -131,11 +132,16 @@ router.get('/user/:userId/date/:date/summary', async (req, res) => {
     const { userId, date } = req.params;
   
     try {
+      const startDate = moment(date).startOf('day').toDate();
+      const endDate = moment(date).endOf('day').toDate();
+
       const totalWorkoutMinutes = await Workout.sum('durationMinutes', {
         where: { userId, 
             date: {
-                [Op.startsWith]: date
-            } }
+              [Op.gte]: startDate,  // Start of the day
+              [Op.lt]: endDate      // Before the next day
+            }
+           }
       });
   
       return res.json({ totalWorkoutMinutes });
