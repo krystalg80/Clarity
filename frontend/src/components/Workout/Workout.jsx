@@ -36,14 +36,8 @@ function Workout () {
             await dispatch(updateWorkout({ id: editId, ...formData }));
             setEditMode(false);
             setEditId(null);
-            //refresh the workouts
-            await dispatch(fetchWorkoutsByUser(userId));
         } else {
-          const logResponse = await dispatch(logWorkout({ userId, ...formData })).unwrap();
-          if (logResponse) {
-              // Force immediate re-fetch
-              await dispatch(fetchWorkoutsByUser(userId));
-          }
+            await dispatch(logWorkout({ userId, ...formData }));
         }
         setFormData({
             date: '',
@@ -60,8 +54,6 @@ function Workout () {
             durationMinutes: workout.durationMinutes,
             title: workout.title,
         });
-        //refresh the workouts
-        dispatch(fetchWorkoutsByUser(userId));
     };
 
     const handleDelete = (id) => {
