@@ -7,7 +7,6 @@ import { fetchUserProfile } from '../../store/profile';
 import { fetchWorkoutSummary, fetchMeditationSummary, fetchWaterIntakeSummary, setUserGoals } from '../../store/summary';
 import affirmations from '../../data/affirmations';
 import { fetchMeditationsByUser } from '../../store/meditation';
-import { Navigate } from 'react-router-dom';
 
 
 //lets make a generate random affirmation function
@@ -35,9 +34,7 @@ function Dashboard() {
   console.log('waterGoalOz:', waterGoalOz, 'Type:', typeof waterGoalOz);
 
   useEffect(() => {
-    if(userId === null) {
-      return <Navigate to="/welcome" />; 
-    } else {
+    if (userId) {
       dispatch(fetchUserProfile(userId));
     }
   }, [dispatch, userId]);

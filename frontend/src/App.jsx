@@ -1,6 +1,6 @@
-import  { useState, useEffect, Outlet } from 'react';
+import  { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { createBrowserRouter, RouterProvider,  Navigate, useLocation, Outlet } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate, useLocation } from 'react-router-dom';
 import WelcomePage from './components/Welcome/WelcomePage';
 import Dashboard from './components/Dashboard/Dashboard';
 import Navigation from './components/Navigation/Navigation';
@@ -14,28 +14,18 @@ function Layout() {
   const dispatch = useDispatch();
   const [isLoaded, setIsLoaded] = useState(false);
   const location = useLocation();
-  const userId = useSelector((state) => state.session.user.id);
+  
 
   useEffect(() => {
     dispatch(sessionActions.restoreUser()).then(() => setIsLoaded(true));
   }, [dispatch]);
-
-  console.log('userId:', userId);
-  
-  if (isLoaded && !userId && location.pathname !== '/welcome') {
-    return <Navigate to="/welcome" replace />;
-  }
-
-  if (isLoaded && userId && location.pathname === '/welcome') {
-    return <Navigate to="/dashboard" replace />;
-  }
 
   return (
     <>
       {isLoaded && (
         <div className="app-container">
           {location.pathname !== '/welcome' && <Navigation />}
-          <Outlet />
+          <WelcomePage />
         </div>
       )}
     </>
@@ -48,7 +38,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <Navigate to="/welcome" />,
+        element: <Navigate to="/dashboard" replace />,
       },
       {
         path: '/welcome',
