@@ -18,6 +18,7 @@ function getRandomAffirmation() {
 
 function Dashboard() {
   const dispatch = useDispatch();
+  const sessionUser = useSelector(state => state.session?.user);
   const user = useSelector((state) => state.profile.user);
   const userId = useSelector((state) => state.session.user.id);
   const workoutSummary = useSelector((state) => state.summary.workout);
@@ -28,7 +29,15 @@ function Dashboard() {
   const waterGoalOz = useSelector((state) => state.summary.waterGoalOz);
 
   const [affirmation, setAffirmation] = useState(getRandomAffirmation());
-
+  // Console logs for debugging
+  useEffect(() => {
+    console.log('Session State:', {
+      sessionUser,
+      profileUser: user,
+      userId,
+      fullState: useSelector(state => state)
+    });
+  }, [sessionUser, user, userId]);
 
   console.log('waterIntakeSummary:', waterIntakeSummary, 'Type:', typeof waterIntakeSummary);
   console.log('waterGoalOz:', waterGoalOz, 'Type:', typeof waterGoalOz);
