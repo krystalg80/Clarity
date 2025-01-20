@@ -1,4 +1,3 @@
-import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import './Navigation.css';
 import logo from '../../../../images/logo.png';

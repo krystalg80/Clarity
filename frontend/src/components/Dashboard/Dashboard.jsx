@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
@@ -136,7 +136,7 @@ function Dashboard() {
         </div>
         <div className="progress-bar">
           <h2>Water Intake</h2>
-          <p className="goal-text">Goal: {waterGoalOz} Oz's</p>
+          <p className="goal-text">Goal: {waterGoalOz} Ozs</p>
           {/* {showCelebration(waterIntakeProgress)} */}
           <CircularProgressbar
             value={waterIntakeProgress}

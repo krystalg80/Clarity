@@ -1,7 +1,7 @@
 // get user details and update user details profile thunks
 
 import { csrfFetch } from './csrf';
-import { createAsyncThunk, createSlice, isRejectedWithValue } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 
 
 //Thunk to fetch user profile details
