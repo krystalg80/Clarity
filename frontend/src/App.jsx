@@ -19,15 +19,19 @@ function Layout() {
     dispatch(sessionActions.restoreUser()).then(() => setIsLoaded(true));
   }, [dispatch]);
 
+  if (!isLoaded) return null;  // You can show a loading spinner here while waiting for the user to be loaded
+
+  // Redirect to /dashboard if the user is authenticated
+  if (user && location.pathname !== '/dashboard') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // Show /welcome if the user is not authenticated
   return (
-    <>
-      {isLoaded && (
-        <div className="app-container">
-          {location.pathname !== '/welcome' && <Navigation />}
-          <WelcomePage />
-        </div>
-      )}
-    </>
+    <div className="app-container">
+      {location.pathname !== '/welcome' && <Navigation />}
+      <WelcomePage />
+    </div>
   );
 }
 
