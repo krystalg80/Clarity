@@ -105,7 +105,7 @@ function Workout () {
             </form>
           </div>
           <div className="workout-log">
-            <h2 className="log-title">Meditation Log from Today</h2>
+            <h2 className="log-title">Workout Log from Today</h2>
             <ul className="log-list">
               {workouts.filter(workout => workout.date.split('T')[0] === today).map((workout) => (
                 <li key={workout.id} className="log-item">

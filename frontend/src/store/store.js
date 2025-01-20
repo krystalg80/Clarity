@@ -5,6 +5,7 @@ import profileReducer from './profile';
 import summaryReducer from './summary';
 import meditationReducer from './meditation';
 import workoutReducer from './workout';
+import waterIntakeReducer from './waterintake';
 
 const rootReducer = combineReducers({
     session: sessionReducer,
@@ -12,6 +13,7 @@ const rootReducer = combineReducers({
     summary: summaryReducer,
     meditation: meditationReducer,
     workout: workoutReducer,
+    water: waterIntakeReducer,
 //add reducers here
 });
 
