@@ -1,7 +1,7 @@
 import React, { useState, useEffect} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { logWorkout, fetchWorkoutsByUser, updateWorkout, deleteWorkout } from "../../store/workout";
-//import Workout.css from './Workout.css';
+import './Workout.css';
 
 function Workout () {
     const dispatch = useDispatch();

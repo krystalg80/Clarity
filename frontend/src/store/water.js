@@ -3,7 +3,7 @@ import { csrfFetch } from "./csrf";
 
 // Fetch water intake by user
 export const fetchWaterIntakeByUser = createAsyncThunk(
-    'waterIntake/fetchWaterIntakeByUser',
+    'water/fetchWaterIntakeByUser',
     async (userId, { rejectWithValue }) => {
         try {
             const response = await csrfFetch(`/api/waterintake/user/${userId}`);
@@ -11,7 +11,7 @@ export const fetchWaterIntakeByUser = createAsyncThunk(
                 throw new Error('Failed to fetch water intake');
             }
             const data = await response.json();
-            return data.waterIntake;
+            return data.waterIntake; //this HAS to match the key in the return object from the backend route
         } catch (error) {
             return rejectWithValue(error.message);
         }
@@ -20,7 +20,7 @@ export const fetchWaterIntakeByUser = createAsyncThunk(
 
 // Log water intake
 export const logWaterIntake = createAsyncThunk(
-    'waterIntake/logWaterIntake',
+    'water/logWaterIntake',
     async (waterData, { rejectWithValue }) => {
         try {
             const response = await csrfFetch('/api/waterintake/new', {
@@ -42,7 +42,7 @@ export const logWaterIntake = createAsyncThunk(
 
 // Update water intake
 export const updateWaterIntake = createAsyncThunk(
-    'waterIntake/updateWaterIntake',
+    'water/updateWaterIntake',
     async (waterData, { rejectWithValue }) => {
         try {
             const response = await csrfFetch(`/api/waterintake/update/${waterData.id}`, {
@@ -56,7 +56,7 @@ export const updateWaterIntake = createAsyncThunk(
                 throw new Error('Failed to update water intake');
             }
             const data = await response.json();
-            return data.waterIntake;
+            return data.water;
         } catch (error) {
             return rejectWithValue(error.message);
         }
@@ -65,7 +65,7 @@ export const updateWaterIntake = createAsyncThunk(
 
 // Delete water intake
 export const deleteWaterIntake = createAsyncThunk(
-    'waterIntake/deleteWaterIntake',
+    'water/deleteWaterIntake',
     async (id, { rejectWithValue }) => {
         try {
             const response = await csrfFetch(`/api/waterintake/delete/${id}`, {
@@ -79,10 +79,10 @@ export const deleteWaterIntake = createAsyncThunk(
     }
 );
 
-const waterIntakeSlice = createSlice({
-    name: 'waterIntake',
+const waterSlice = createSlice({
+    name: 'water',
     initialState: {
-        records: [],
+        sessions: [],
         totalOz: 0,
         status: 'idle',
         error: null,
@@ -95,7 +95,7 @@ const waterIntakeSlice = createSlice({
             })
             .addCase(logWaterIntake.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.records.push(action.payload);
+                state.sessions.push(action.payload);
                 state.totalOz += action.payload.waterConsumedOz;
             })
             .addCase(logWaterIntake.rejected, (state, action) => {
@@ -107,30 +107,30 @@ const waterIntakeSlice = createSlice({
             })
             .addCase(fetchWaterIntakeByUser.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.records = action.payload;
-                state.totalOz = action.payload.reduce((total, record) => 
-                    total + record.waterConsumedOz, 0);
+                state.sessions = action.payload;
+                state.totalOz = action.payload.reduce((total, session) => 
+                    total + session.waterConsumedOz, 0);
             })
             .addCase(fetchWaterIntakeByUser.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload;
             })
             .addCase(updateWaterIntake.fulfilled, (state, action) => {
-                const index = state.records.findIndex(record => record.id === action.payload.id);
+                const index = state.sessions.findIndex(session => session.id === action.payload.id);
                 if (index !== -1) {
-                    state.totalOz -= state.records[index].waterConsumedOz;
-                    state.records[index] = action.payload;
+                    state.totalOz -= state.sessions[index].waterConsumedOz;
+                    state.sessions[index] = action.payload;
                     state.totalOz += action.payload.waterConsumedOz;
                 }
             })
             .addCase(deleteWaterIntake.fulfilled, (state, action) => {
-                const index = state.records.findIndex(record => record.id === action.payload);
+                const index = state.sessions.findIndex(session => session.id === action.payload);
                 if (index !== -1) {
-                    state.totalOz -= state.records[index].waterConsumedOz;
-                    state.records.splice(index, 1);
+                    state.totalOz -= state.sessions[index].waterConsumedOz;
+                    state.sessions.splice(index, 1);
                 }
             });
     },
 });
 
-export default waterIntakeSlice.reducer;
+export default waterSlice.reducer;

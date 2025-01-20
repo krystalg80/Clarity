@@ -36,7 +36,7 @@ export const fetchWaterIntakeSummary = createAsyncThunk(
     try {
       const response = await csrfFetch(`/api/waterintake/user/${userId}/date/${date}/summary`);
       const data = await response.json();
-      return data.totalOunces;
+      return data.totalWaterIntake;
     } catch (err) {
       return rejectWithValue(err.message);
     }

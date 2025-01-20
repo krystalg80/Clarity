@@ -29,6 +29,10 @@ function Dashboard() {
 
   const [affirmation, setAffirmation] = useState(getRandomAffirmation());
 
+
+  console.log('waterIntakeSummary:', waterIntakeSummary, 'Type:', typeof waterIntakeSummary);
+  console.log('waterGoalOz:', waterGoalOz, 'Type:', typeof waterGoalOz);
+
   useEffect(() => {
     if (userId) {
       dispatch(fetchUserProfile(userId));

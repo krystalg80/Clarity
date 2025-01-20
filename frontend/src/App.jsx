@@ -8,6 +8,7 @@ import * as sessionActions from './store/session';
 import Profile from './components/Profile/Profile';
 import Meditation from './components/Meditation/Meditation';
 import Workout from './components/Workout/Workout';
+import Water from './components/Water/Water';
 
 function Layout() {
   const dispatch = useDispatch();
@@ -56,7 +57,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/waterintake',
-        element: <div>Water Intake Page</div>, // Placeholder for Water Intake component
+        element: <Water />, // Placeholder for Water Intake component
       },
       {
         path: '/profile',
