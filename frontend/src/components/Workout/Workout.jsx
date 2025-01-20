@@ -36,8 +36,13 @@ function Workout () {
             await dispatch(updateWorkout({ id: editId, ...formData }));
             setEditMode(false);
             setEditId(null);
+            //refresh the workouts
+            await dispatch(fetchWorkoutsByUser(userId));
         } else {
             await dispatch(logWorkout({ userId, ...formData }));
+
+            //refresh the workouts
+            await dispatch(fetchWorkoutsByUser(userId));
         }
         setFormData({
             date: '',
