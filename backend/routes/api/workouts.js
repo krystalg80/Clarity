@@ -74,7 +74,7 @@ router.get('/user/:userId', async (req, res) => {
   });
 
 // PUT /workouts/:id - Update a workout
-router.put('/:id', async (req, res) => {
+router.put('/update/:id', async (req, res) => {
   const { id } = req.params;
   const { date, title, durationMinutes } = req.body;
 
