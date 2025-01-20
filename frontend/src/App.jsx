@@ -1,6 +1,6 @@
-import  { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { createBrowserRouter, RouterProvider, Navigate, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { createBrowserRouter, RouterProvider, Navigate, useLocation, Outlet } from 'react-router-dom';
 import WelcomePage from './components/Welcome/WelcomePage';
 import Dashboard from './components/Dashboard/Dashboard';
 import Navigation from './components/Navigation/Navigation';
@@ -10,25 +10,29 @@ import Meditation from './components/Meditation/Meditation';
 import Workout from './components/Workout/Workout';
 import Water from './components/Water/Water';
 
+function ProtectedRoute({ children }) {
+  const user = useSelector(state => state.session.user);
+  if (!user) return <Navigate to="/welcome" replace />;
+  return children;
+}
+
 function Layout() {
   const dispatch = useDispatch();
   const [isLoaded, setIsLoaded] = useState(false);
   const location = useLocation();
-  
+  const user = useSelector(state => state.session.user);
 
   useEffect(() => {
     dispatch(sessionActions.restoreUser()).then(() => setIsLoaded(true));
   }, [dispatch]);
 
+  if (!isLoaded) return null;
+
   return (
-    <>
-      {isLoaded && (
-        <div className="app-container">
-          {location.pathname !== '/welcome' && <Navigation />}
-          <WelcomePage />
-        </div>
-      )}
-    </>
+    <div className="app-container">
+      {location.pathname !== '/welcome' && user && <Navigation />}
+      <Outlet />
+    </div>
   );
 }
 
@@ -38,7 +42,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <Navigate to="/dashboard" replace />,
+        element: <Navigate to="/welcome" />,
       },
       {
         path: '/welcome',
@@ -46,23 +50,23 @@ const router = createBrowserRouter([
       },
       {
         path: '/dashboard',
-        element: <Dashboard />,
+        element: <ProtectedRoute><Dashboard /></ProtectedRoute>,
       },
       {
         path: '/workouts',
-        element: <Workout />, // Placeholder for Workouts component
+        element: <ProtectedRoute><Workout /></ProtectedRoute>,
       },
       {
         path: '/meditations',
-        element: <Meditation />, // Placeholder for Meditations component
+        element: <ProtectedRoute><Meditation /></ProtectedRoute>,
       },
       {
         path: '/waterintake',
-        element: <Water />, // Placeholder for Water Intake component
+        element: <ProtectedRoute><Water /></ProtectedRoute>,
       },
       {
         path: '/profile',
-        element: <Profile />, // Placeholder for Profile component
+        element: <ProtectedRoute><Profile /></ProtectedRoute>,
       },
     ],
   },
