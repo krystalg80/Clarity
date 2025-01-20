@@ -14,10 +14,19 @@ function Layout() {
   const dispatch = useDispatch();
   const [isLoaded, setIsLoaded] = useState(false);
   const location = useLocation();
+  const userId = useSelector((state) => state.session.user.id);
 
   useEffect(() => {
     dispatch(sessionActions.restoreUser()).then(() => setIsLoaded(true));
   }, [dispatch]);
+
+  if (isLoaded && !userId && location.pathname !== '/welcome') {
+    return <Navigate to="/welcome" replace />;
+  }
+
+  if (isLoaded && userId && location.pathname === '/welcome') {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <>

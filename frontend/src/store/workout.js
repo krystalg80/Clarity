@@ -115,24 +115,13 @@ const workoutSlice = createSlice({
         state.status = 'failed';
         state.error = action.payload;
       })
-      .addCase(updateWorkout.pending, (state) => {
-        state.status = 'loading';
-        state.error = null;
-      })
       .addCase(updateWorkout.fulfilled, (state, action) => {
-        state.status = 'succeeded';
-        state.error = null;
         const index = state.sessions.findIndex(session => session.id === action.payload.id);
         if (index !== -1) {
           state.totalDuration -= state.sessions[index].durationMinutes;
           state.sessions[index] = action.payload;
           state.totalDuration += action.payload.durationMinutes;
         }
-        state.sessions = [...state.sessions];
-      })
-      .addCase(updateWorkout.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.payload;
       })
       .addCase(deleteWorkout.fulfilled, (state, action) => {
         const index = state.sessions.findIndex(session => session.id === action.payload);
