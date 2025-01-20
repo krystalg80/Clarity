@@ -20,6 +20,8 @@ function Layout() {
     dispatch(sessionActions.restoreUser()).then(() => setIsLoaded(true));
   }, [dispatch]);
 
+  console.log('userId:', userId);
+  
   if (isLoaded && !userId && location.pathname !== '/welcome') {
     return <Navigate to="/welcome" replace />;
   }
