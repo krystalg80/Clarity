@@ -104,6 +104,7 @@ function Dashboard() {
       <div className="progress-bars">
         <div className="progress-bar">
           <h2>Workout</h2>
+          <p className="goal-text">Goal: {exerciseGoalMinutes} minutes</p>
           <CircularProgressbar
             value={workoutProgress}
             text={`${Math.round(workoutProgress)}%`}
@@ -115,6 +116,7 @@ function Dashboard() {
         </div>
         <div className="progress-bar">
           <h2>Meditation</h2>
+          <p className="goal-text">Goal: {meditationGoalMinutes} minutes</p>
           <CircularProgressbar
             value={meditationProgress}
             text={`${Math.round(meditationProgress)}%`}
@@ -126,6 +128,7 @@ function Dashboard() {
         </div>
         <div className="progress-bar">
           <h2>Water Intake</h2>
+          <p className="goal-text">Goal: {waterGoalOz} Oz's</p>
           <CircularProgressbar
             value={waterIntakeProgress}
             text={`${Math.round(waterIntakeProgress)}%`}

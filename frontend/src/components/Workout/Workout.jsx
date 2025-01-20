@@ -91,7 +91,7 @@ function Workout () {
               </div>
                 <div className="form-group">
                     <label className="form-label">
-                        Title
+                        Workout Title
                         <input
                             type="text"
                             name="title"

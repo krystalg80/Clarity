@@ -1,18 +1,36 @@
 .meditation-page {
-    background-color: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 1000px;
-    height: auto;
-    border-radius: 15px;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 1000px;
+  height: auto;
+  border-radius: 20px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;  
+  padding: 2rem;
+  margin: 2rem auto;
 }
 
 .meditation-title {
-  font-size: 2rem;
-  margin-bottom: 1.5rem;
+  font-size: 2.25rem;
+  margin-bottom: 2rem;
   text-align: center;
-  color: #333;
+  color: #2c3e50;
+  font-weight: 600;
+  position: relative;
+  letter-spacing: 3px;
+}
+
+.meditation-title::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(to right, #a0bf92, #87a877);
+  margin: 0.75rem auto 0;
+  border-radius: 2px;
 }
 
 .meditation-form {
@@ -24,11 +42,13 @@
   margin-bottom: 1rem;
 }
 
-.form-label {
+.form-group label{
   display: flex;
   flex-direction: column;
-  font-size: 1rem;
-  color: #333;
+  font-size: 18px;
+  color: #4c4c4c;
+  font-style: oblique;
+  letter-spacing: 1px;
 }
 
 .form-input {
@@ -37,6 +57,11 @@
   border: 1px solid #ccc;
   border-radius: 0.25rem;
   margin-top: 0.5rem;
+}
+.form-input:focus {
+  outline: none;
+  border-color: #a0bf92;
+  box-shadow: 0 0 0 3px rgba(160, 191, 146, 0.2);
 }
 
 .log-button {
@@ -48,11 +73,13 @@
   border-radius: 0.25rem;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  letter-spacing: 2px;
 
 }
 
 .log-button:hover {
   background-color: #a0bf92;
+  box-shadow: 0 4px 12px rgba(160, 191, 146, 0.3);
 }
 
 .recommended-videos {
@@ -66,6 +93,7 @@
     margin-bottom: 1rem;
     text-align: center;
     color: #333;
+    letter-spacing: 3px;
   }
 .video-tiles {
     display: flex;
@@ -93,27 +121,36 @@
     margin-top: 0.5rem;
     font-size: 1rem;
     text-align: center;
+    letter-spacing: 1px;
   }
 
 .log-title {
   text-align: center;
+  letter-spacing: 3px;
 }
 .log-list {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 1rem;
   width: 100%;
+  max-width: 800px;
   padding: 0;
   list-style: none;
+  gap: 1rem;
+  letter-spacing: 3px;
 }
 .log-item {
-  padding: 15px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background-color: #f9f9f9;
-  list-style: none;
+  width: 100%;
+  padding: 1.25rem;
+  margin: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background-color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 .log-date, .log-duration {
   margin-right: 10px;
@@ -128,6 +165,7 @@
   cursor: pointer;
   transition: background-color 0.3s ease;
   border: none;
+  letter-spacing: 1px;
 }
 
 .edit-button:hover, .delete-button:hover {

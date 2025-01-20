@@ -58,6 +58,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
   position: relative;
   box-shadow: none;
   margin: 0;
@@ -65,12 +66,24 @@
 }
 
 .progress-bar h2 {
-  align-self: flex-start;
-  margin: 0 0 1rem 0;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  margin-bottom: 0.25rem;
   font-size: 1.25rem;
   color: #1a1a1a;
   font-weight: 600;
   letter-spacing: 4px;
+}
+.goal-text {
+  margin: 0;
+  padding: 0;
+  margin-bottom: 0.5rem; /* Reduced from 1rem */
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-style: italic;
+  letter-spacing: 1px;
 }
 
 /* Style the CircularProgressbar component */
@@ -94,6 +107,30 @@
   font-weight: 500;
 }
 
+@keyframes celebrate {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.progress-achieved {
+  animation: celebrate 0.5s ease-in-out;
+  position: relative;
+}
+
+.achievement-message {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(45deg, #FFD700, #FFA500);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  z-index: 10;
+}
 
 
 
