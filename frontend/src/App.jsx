@@ -10,6 +10,30 @@ import Meditation from './components/Meditation/Meditation';
 import Workout from './components/Workout/Workout';
 import Water from './components/Water/Water';
 
+// Error Boundary Component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('ErrorBoundary caught an error', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <h1>Something went wrong.</h1>;
+    }
+
+    return this.props.children; 
+  }
+}
+
 // Auth check component
 function RequireAuth({ children }) {
   const dispatch = useDispatch();
@@ -24,7 +48,6 @@ function RequireAuth({ children }) {
   useEffect(() => {
     console.log('RequireAuth user:', user);
   }, [user]);
-
 
   if (!isLoaded) {
     return <div>Loading...</div>;
@@ -61,7 +84,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <WelcomePage />
+        element: <Navigate to="/welcome" replace />
       },
       {
         path: '/welcome',
@@ -112,7 +135,11 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <ErrorBoundary>
+      <RouterProvider router={router} />
+    </ErrorBoundary>
+  );
 }
 
 export default App;
