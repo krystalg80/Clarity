@@ -72,6 +72,7 @@ router.post(
 // GET /users/:id - Get user details
 router.get('/:id', requireAuth, async (req, res) => {
     const { id } = req.params;
+    const { username, email, firstName, lastName, exerciseGoalMinutes, waterGoalOz, meditationGoalMinutes } = req.body;
   
     try {
       const user = await User.findByPk(id);  // Find user by ID
@@ -82,6 +83,17 @@ router.get('/:id', requireAuth, async (req, res) => {
         });
       }
   
+      // Update user details including email
+      if (username) user.username = username;
+      if (email) user.email = email;
+      if (firstName) user.firstName = firstName;
+      if (lastName) user.lastName = lastName;
+      if (exerciseGoalMinutes) user.exerciseGoalMinutes = exerciseGoalMinutes;
+      if (waterGoalOz) user.waterGoalOz = waterGoalOz;
+      if (meditationGoalMinutes) user.meditationGoalMinutes = meditationGoalMinutes;
+
+      await user.save();
+
       const userDetails = {
         id: user.id,
         username: user.username,
