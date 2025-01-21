@@ -34,7 +34,8 @@ function Meditation() {
     if (editMode) {
       await dispatch(updateMeditation({ id: editId, ...formData }));
 
-      dispatch(fetchMeditationsByUser)
+      dispatch(fetchMeditationsByUser(userId))
+
       setEditMode(false);
       setEditId(null);
     } else {

@@ -34,7 +34,8 @@ function Water() {
             if (editMode) {
                 await dispatch(updateWaterIntake({ id: editId, ...formData }));
 
-                dispatch(fetchWaterIntakeByUser)
+                dispatch(fetchWaterIntakeByUser(userId))
+
                 setEditMode(false);
                 setEditId(null);
             } else {
