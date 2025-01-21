@@ -23,7 +23,7 @@ function Dashboard() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const sessionUser = useSelector(state => state.session.user);
-  // const userId = useSelector((state) => state.session.user.id);
+  const userId = useSelector((state) => state.session.user.id);
   const user = useSelector((state) => state.profile.user);
   const workoutSummary = useSelector((state) => state.summary.workout ?? 0);
   const meditationSummary = useSelector((state) => state.summary.meditation ?? 0);
@@ -38,11 +38,11 @@ function Dashboard() {
   
   // First useEffect - Check auth and redirect
   useEffect(() => {
-    if (!sessionUser) {
+    if (userId === null) {
       navigate('/welcome', { replace: true });
       return;
     }
-  }, [sessionUser, navigate]);
+  }, [userId, navigate]);
 
   // Data fetching effect
   useEffect(() => {
