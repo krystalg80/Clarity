@@ -19,6 +19,7 @@ function Dashboard() {
   const navigate = useNavigate();
   const sessionUser = useSelector(state => state.session?.user);
   const user = useSelector((state) => state.profile.user);
+  const userId = sessionUser?.id;
   const workoutSummary = useSelector((state) => state.summary.workout ?? 0);
   const meditationSummary = useSelector((state) => state.summary.meditation ?? 0);
   const waterIntakeSummary = useSelector((state) => state.summary.waterIntake ?? 0);
@@ -29,6 +30,12 @@ function Dashboard() {
   const [affirmation, setAffirmation] = useState(getRandomAffirmation());
   const [isLoading, setIsLoading] = useState(true);
 
+  // Redirect if no user is logged in
+  useEffect(() => {
+    if (userId === null) {
+      navigate('/welcome');
+    }
+  }, [userId, navigate]);
   // Redirect if no user is logged in
   useEffect(() => {
     if (!sessionUser) {
