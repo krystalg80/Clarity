@@ -1,5 +1,6 @@
 import  { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { createBrowserRouter, RouterProvider, Navigate, useLocation, Outlet } from 'react-router-dom';
 import WelcomePage from './components/Welcome/WelcomePage';
 import Dashboard from './components/Dashboard/Dashboard';
@@ -16,16 +17,14 @@ function Layout() {
   const location = useLocation();
   const sessionUser = useSelector((state) => state.session.user);
   
-
-  // If sessionUser is null or undefined, redirect to WelcomePage or show a loading spinner
-  if (!sessionUser) {
-    return <Navigate to="/welcome" />;
-  }
-
   useEffect(() => {
     dispatch(sessionActions.restoreUser()).then(() => setIsLoaded(true));
   }, [dispatch]);
 
+  // Log initial state
+  useEffect(() => {
+    console.log('Initial session state:', sessionUser);
+  }, [sessionUser]);
   return (
     <>
       {isLoaded && (
