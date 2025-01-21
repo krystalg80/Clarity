@@ -5,7 +5,6 @@ import {
   RouterProvider, 
   Navigate, 
   useLocation, 
-  Outlet 
 } from 'react-router-dom';
 
 // Components
@@ -35,7 +34,6 @@ function Layout() {
       {isLoaded && (
         <div className="app-container">
           {location.pathname !== '/welcome' && <Navigation />}
-          {/* <Outlet /> */}
         </div>
       )}
     </>
