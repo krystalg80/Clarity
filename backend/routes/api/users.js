@@ -72,7 +72,6 @@ router.post(
 // GET /users/:id - Get user details
 router.get('/:id', requireAuth, async (req, res) => {
     const { id } = req.params;
-    const { username, email, firstName, lastName, exerciseGoalMinutes, waterGoalOz, meditationGoalMinutes } = req.body;
   
     try {
       const user = await User.findByPk(id);  // Find user by ID
@@ -82,18 +81,6 @@ router.get('/:id', requireAuth, async (req, res) => {
           message: 'User not found'
         });
       }
-  
-      // Update user details including email
-      if (username) user.username = username;
-      if (email) user.email = email;
-      if (firstName) user.firstName = firstName;
-      if (lastName) user.lastName = lastName;
-      if (exerciseGoalMinutes) user.exerciseGoalMinutes = exerciseGoalMinutes;
-      if (waterGoalOz) user.waterGoalOz = waterGoalOz;
-      if (meditationGoalMinutes) user.meditationGoalMinutes = meditationGoalMinutes;
-
-      await user.save();
-
       const userDetails = {
         id: user.id,
         username: user.username,
@@ -130,14 +117,14 @@ router.put('/:id', requireAuth, async (req, res) => {
       });
     }
 
-    // Update user details
-    user.username = username || user.username;
-    user.email = email || user.email;
-    user.firstName = firstName || user.firstName;
-    user.lastName = lastName || user.lastName;
-    user.exerciseGoalMinutes = exerciseGoalMinutes || user.exerciseGoalMinutes;
-    user.waterGoalOz = waterGoalOz || user.waterGoalOz;
-    user.meditationGoalMinutes = meditationGoalMinutes || user.meditationGoalMinutes;
+    // Update user details including email
+    if (username) user.username = username;
+    if (email) user.email = email;
+    if (firstName) user.firstName = firstName;
+    if (lastName) user.lastName = lastName;
+    if (exerciseGoalMinutes) user.exerciseGoalMinutes = exerciseGoalMinutes;
+    if (waterGoalOz) user.waterGoalOz = waterGoalOz;
+    if (meditationGoalMinutes) user.meditationGoalMinutes = meditationGoalMinutes;
 
     await user.save();
 
