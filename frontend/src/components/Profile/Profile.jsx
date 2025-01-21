@@ -9,7 +9,6 @@ function Profile() {
   const userId = useSelector((state) => state.session.user.id);
   const [formData, setFormData] = useState({
     username: '',
-    email: '',
     firstName: '',
     lastName: '',
     exerciseGoalMinutes: '',
@@ -27,7 +26,6 @@ function Profile() {
     if (user) {
       setFormData({
         username: user.username,
-        email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
         exerciseGoalMinutes: user.exerciseGoalMinutes,
@@ -65,19 +63,6 @@ function Profile() {
                   type="text"
                   name="username"
                   value={formData.username}
-                  onChange={handleChange}
-                  className="form-input"
-                />
-              </label>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">
-                Email
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
                   onChange={handleChange}
                   className="form-input"
                 />
