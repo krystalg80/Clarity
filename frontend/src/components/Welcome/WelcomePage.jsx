@@ -22,7 +22,7 @@ function WelcomePage() {
   const [errors, setErrors] = useState({});
   const [isSignup, setIsSignup] = useState(false);
 
-  if (sessionUser) return <Navigate to="/dashboard" replace={true} />;
+  if (sessionUser?.id) return <Navigate to="/dashboard" replace={true} />;
 
   const handleLoginSubmit = (e) => {
     e.preventDefault();
