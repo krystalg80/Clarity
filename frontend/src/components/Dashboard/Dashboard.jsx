@@ -12,7 +12,7 @@ import {
   setUserGoals 
 } from '../../store/summary';
 import affirmations from '../../data/affirmations';
-import { fetchMeditationsByUser } from '../../store/meditation';
+// import { fetchMeditationsByUser } from '../../store/meditation';
 
 function getRandomAffirmation() {
   const randomIndex = Math.floor(Math.random() * affirmations.length);
@@ -23,6 +23,7 @@ function Dashboard() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const sessionUser = useSelector(state => state.session.user);
+  // const userId = useSelector((state) => state.session.user.id);
   const user = useSelector((state) => state.profile.user);
   const workoutSummary = useSelector((state) => state.summary.workout ?? 0);
   const meditationSummary = useSelector((state) => state.summary.meditation ?? 0);
@@ -34,6 +35,7 @@ function Dashboard() {
   const [affirmation, setAffirmation] = useState(getRandomAffirmation());
   const [isLoading, setIsLoading] = useState(true);
 
+  
   // First useEffect - Check auth and redirect
   useEffect(() => {
     if (!sessionUser) {
@@ -54,7 +56,7 @@ function Dashboard() {
         const today = new Date().toISOString().split('T')[0];
         
         await Promise.all([
-          dispatch(fetchMeditationsByUser(sessionUser.id)),
+          // dispatch(fetchMeditationsByUser(sessionUser.id)),
           dispatch(fetchMeditationSummary({ userId: sessionUser.id, date: today })),
           dispatch(fetchWorkoutSummary({ userId: sessionUser.id, date: today })),
           dispatch(fetchWaterIntakeSummary({ userId: sessionUser.id, date: today }))
