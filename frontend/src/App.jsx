@@ -42,6 +42,8 @@ function ProtectedRoute() {
     return <Navigate to="/welcome" replace />;
 
   }
+
+  return children;
 }
 
 // Layout Component
