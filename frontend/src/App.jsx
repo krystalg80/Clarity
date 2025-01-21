@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { 
   createBrowserRouter, 
   RouterProvider, 
@@ -42,17 +42,6 @@ function Layout() {
   );
 }
 
-// Protected Route Component
-function ProtectedRoute({ element }) {
-  const sessionUser = useSelector(state => state.session.user);
-  
-  if (!sessionUser?.id) {
-    return <Navigate to="/welcome" replace />;
-  }
-  
-  return element;
-}
-
 // Router Configuration
 const router = createBrowserRouter([
   {
@@ -68,23 +57,23 @@ const router = createBrowserRouter([
       },
       {
         path: '/dashboard',
-        element: <ProtectedRoute element={<Dashboard />} />,
+        element: <Dashboard />,
       },
       {
         path: '/workouts',
-        element: <ProtectedRoute element={<Workout />} />,
+        element: <Workout />,
       },
       {
         path: '/meditations',
-        element: <ProtectedRoute element={<Meditation />} />,
+        element: <Meditation />,
       },
       {
         path: '/waterintake',
-        element: <ProtectedRoute element={<Water />} />,
+        element: <Water />,
       },
       {
         path: '/profile',
-        element: <ProtectedRoute element={<Profile />} />,
+        element: <Profile />,
       },
     ],
   },
