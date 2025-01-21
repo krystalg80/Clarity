@@ -30,14 +30,6 @@ function Dashboard() {
 
   const [affirmation, setAffirmation] = useState(getRandomAffirmation());
   // Console logs for debugging
-  useEffect(() => {
-    console.log('Session State:', {
-      sessionUser,
-      profileUser: user,
-      userId,
-      fullState: useSelector(state => state)
-    });
-  }, [sessionUser, user, userId]);
 
   console.log('waterIntakeSummary:', waterIntakeSummary, 'Type:', typeof waterIntakeSummary);
   console.log('waterGoalOz:', waterGoalOz, 'Type:', typeof waterGoalOz);
