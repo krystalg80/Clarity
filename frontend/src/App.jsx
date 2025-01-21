@@ -33,13 +33,18 @@ function Layout() {
     <>
       {isLoaded && (
         <div className="app-container">
-        {location.pathname !== '/welcome' && <Navigation />}
-      </div>
+          {location.pathname === '/welcome' ? (
+            <WelcomePage />
+          ) : (
+            <Navigation />
+          )}
+        </div>
       )}
     </>
   );
 }
 
+// Router Configuration
 const router = createBrowserRouter([
   {
     element: <Layout />,
@@ -53,30 +58,24 @@ const router = createBrowserRouter([
         element: <WelcomePage />,
       },
       {
-        path: '/*',
-        element: <Navigation />,
-        children: [
-          {
-            path: 'dashboard',
-            element: <Dashboard />,
-          },
-          {
-            path: 'workouts',
-            element: <Workout />,
-          },
-          {
-            path: 'meditations',
-            element: <Meditation />,
-          },
-          {
-            path: 'waterintake',
-            element: <Water />,
-          },
-          {
-            path: 'profile',
-            element: <Profile />,
-          },
-        ],
+        path: '/dashboard',
+        element: <Dashboard />,
+      },
+      {
+        path: '/workouts',
+        element: <Workout />,
+      },
+      {
+        path: '/meditations',
+        element: <Meditation />,
+      },
+      {
+        path: '/waterintake',
+        element: <Water />,
+      },
+      {
+        path: '/profile',
+        element: <Profile />,
       },
     ],
   },
