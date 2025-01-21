@@ -14,6 +14,7 @@ function Layout() {
   const dispatch = useDispatch();
   const [isLoaded, setIsLoaded] = useState(false);
   const location = useLocation();
+  const user = useSelector(state => state.session.user);
   
 
   useEffect(() => {
@@ -24,8 +25,8 @@ function Layout() {
     <>
       {isLoaded && (
         <div className="app-container">
-          {location.pathname !== '/welcome' && <Navigation />}
-          <WelcomePage />
+          {location.pathname !== '/welcome' && user && <Navigation />}
+          <Outlet />
         </div>
       )}
     </>
@@ -38,7 +39,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <WelcomePage />,
+        element: <Navigate to="/welcome" replace/>,
       },
       {
         path: '/welcome',
@@ -46,7 +47,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/dashboard',
-        element: <Dashboard />,
+        element: user ? <Dashboard /> : <Navigate to="/welcome" replace />,
       },
       {
         path: '/workouts',
