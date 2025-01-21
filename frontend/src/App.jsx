@@ -4,7 +4,7 @@ import {
   createBrowserRouter, 
   RouterProvider, 
   Navigate, 
-  useLocation, 
+  useLocation
 } from 'react-router-dom';
 
 // Components
@@ -33,51 +33,60 @@ function Layout() {
     <>
       {isLoaded && (
         <div className="app-container">
-          {location.pathname === '/welcome' ? <WelcomePage /> : <Navigation />}
+          {location.pathname === '/welcome' ? (
+            <WelcomePage />
+          ) : (
+            <Navigation />
+          )}
         </div>
       )}
     </>
   );
 }
 
-// Router Configuration
 const router = createBrowserRouter([
   {
+    path: '/',
     element: <Layout />,
     children: [
       {
-        path: '/',
+        index: true,
         element: <Navigate to="/welcome" replace />,
       },
       {
-        path: '/welcome',
+        path: 'welcome',
         element: <WelcomePage />,
-      },
+      }
+    ]
+  },
+  {
+    path: '/',
+    element: <Navigation />,
+    children: [
       {
-        path: '/dashboard',
+        path: 'dashboard',
         element: <Dashboard />,
       },
       {
-        path: '/workouts',
+        path: 'workouts',
         element: <Workout />,
       },
       {
-        path: '/meditations',
+        path: 'meditations',
         element: <Meditation />,
       },
       {
-        path: '/waterintake',
+        path: 'waterintake',
         element: <Water />,
       },
       {
-        path: '/profile',
+        path: 'profile',
         element: <Profile />,
       },
-    ],
-  },
+    ]
+  }
 ]);
 
-// Main App Component
 function App() {
   return <RouterProvider router={router} />;
 }
