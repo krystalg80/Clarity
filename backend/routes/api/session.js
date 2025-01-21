@@ -79,7 +79,12 @@ router.get(
           id: user.id,
           email: user.email,
           username: user.username,
-        };
+          firstName: user.firstName,
+          lastName: user.lastName,
+          exerciseGoalMinutes: user.exerciseGoalMinutes,
+          waterGoalOz: user.waterGoalOz,
+          meditationGoalMinutes: user.meditationGoalMinutes
+        }
         return res.json({
           user: safeUser
         });

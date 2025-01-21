@@ -29,14 +29,16 @@ function Layout() {
     dispatch(sessionActions.restoreUser()).then(() => setIsLoaded(true));
   }, [dispatch]);
 
+  if (!isLoaded) return null;
+
   return (
-    <>
-      {isLoaded && (
-        <div className="app-container">
-          {location.pathname !== '/welcome' && <Navigation />}
-        </div>
+    <div className="app-container">
+      {location.pathname === '/welcome' ? (
+        <WelcomePage />
+      ) : (
+        <Navigation />
       )}
-    </>
+    </div>
   );
 }
 

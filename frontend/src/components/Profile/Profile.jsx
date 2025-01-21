@@ -49,7 +49,6 @@ function Profile() {
     e.preventDefault();
     console.log('Submitting profile update:', formData);
     dispatch(updateUserProfile({ userId, profileData: formData }));
-    dispatch(fetchUserProfile(userId));
   };
 
   return (
