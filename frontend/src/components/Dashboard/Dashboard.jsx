@@ -31,11 +31,11 @@ function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
 
   // Redirect if no user is logged in
-  useEffect(() => {
-    if (userId === null) {
-      navigate('/welcome');
-    }
-  }, [userId, navigate]);
+  // useEffect(() => {
+  //   if (userId === null) {
+  //     navigate('/welcome');
+  //   }
+  // }, [userId, navigate]);
   // Redirect if no user is logged in
   useEffect(() => {
     if (!sessionUser) {

@@ -11,11 +11,13 @@ import Meditation from './components/Meditation/Meditation';
 import Workout from './components/Workout/Workout';
 import Water from './components/Water/Water';
 
+
 function Layout() {
   const dispatch = useDispatch();
   const [isLoaded, setIsLoaded] = useState(false);
   const location = useLocation();
-  const sessionUser = useSelector((state) => state.session.user);
+  const sessionUser = useSelector(state => state.session?.user);
+
   
   useEffect(() => {
     dispatch(sessionActions.restoreUser()).then(() => setIsLoaded(true));
@@ -52,6 +54,12 @@ const router = createBrowserRouter([
       {
         path: '/dashboard',
         element: <Dashboard />,
+        errorElement: <Navigate to="/welcome" />,
+        // loader: () => {
+        //   const sessionUser = store.getState().session.user;
+        //   if (!sessionUser?.id) throw new Navigate({ to: '/' });
+        //   return null;
+        // }
       },
       {
         path: '/workouts',
