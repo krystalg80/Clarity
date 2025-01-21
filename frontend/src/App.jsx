@@ -33,11 +33,8 @@ function Layout() {
 
   return (
     <div className="app-container">
-      {location.pathname === '/welcome' ? (
-        <WelcomePage />
-      ) : (
-        <Navigation />
-      )}
+      {location.pathname !== '/welcome' && <Navigation />}
+      {location.pathname === '/welcome' && <Outlet />}
     </div>
   );
 }
