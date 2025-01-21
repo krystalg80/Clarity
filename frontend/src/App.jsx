@@ -20,38 +20,11 @@ import Water from './components/Water/Water';
 // Store
 import * as sessionActions from './store/session';
 
-// Protected Route Component
-function ProtectedRoute() {
-  const sessionUser = useSelector(state => state.session.user);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  useEffect(() => {
-    // Short timeout to ensure store is hydrated
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 100);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-  
-  if (!sessionUser?.id) {
-    return <Navigate to="/welcome" replace />;
-
-  }
-
-  return children;
-}
-
 // Layout Component
 function Layout() {
   const dispatch = useDispatch();
   const [isLoaded, setIsLoaded] = useState(false);
   const location = useLocation();
-  // const sessionUser = useSelector(state => state.session?.user);
   
   useEffect(() => {
     dispatch(sessionActions.restoreUser()).then(() => setIsLoaded(true));
@@ -69,6 +42,17 @@ function Layout() {
   );
 }
 
+// Helper Function for Protected Routes
+function requireAuth(element) {
+  const sessionUser = useSelector(state => state.session.user);
+  
+  if (!sessionUser?.id) {
+    return <Navigate to="/welcome" replace />;
+  }
+  
+  return element;
+}
+
 // Router Configuration
 const router = createBrowserRouter([
   {
@@ -83,36 +67,25 @@ const router = createBrowserRouter([
         element: <WelcomePage />,
       },
       {
-        // Protected routes group
-        element: <ProtectedRoute />,
-        children: [
-          {
-            path: '/dashboard',
-            element: <Dashboard />,
-            errorElement: <Navigate to="/welcome" />
-          },
-          {
-            path: '/workouts',
-            element: <Workout />,
-            errorElement: <Navigate to="/welcome" />
-          },
-          {
-            path: '/meditations',
-            element: <Meditation />,
-            errorElement: <Navigate to="/welcome" />
-          },
-          {
-            path: '/waterintake',
-            element: <Water />,
-            errorElement: <Navigate to="/welcome" />
-          },
-          {
-            path: '/profile',
-            element: <Profile />,
-            errorElement: <Navigate to="/welcome" />
-          }
-        ]
-      }
+        path: '/dashboard',
+        element: requireAuth(<Dashboard />),
+      },
+      {
+        path: '/workouts',
+        element: requireAuth(<Workout />),
+      },
+      {
+        path: '/meditations',
+        element: requireAuth(<Meditation />),
+      },
+      {
+        path: '/waterintake',
+        element: requireAuth(<Water />),
+      },
+      {
+        path: '/profile',
+        element: requireAuth(<Profile />),
+      },
     ],
   },
 ]);
