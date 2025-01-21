@@ -21,11 +21,17 @@ function RequireAuth({ children }) {
       .then(() => setIsLoaded(true));
   }, [dispatch]);
 
+  useEffect(() => {
+    console.log('RequireAuth user:', user);
+  }, [user]);
+
+
   if (!isLoaded) {
     return <div>Loading...</div>;
   }
 
   if (!user) {
+    console.log('No user, redirecting to /welcome');
     return <Navigate to="/welcome" replace />;
   }
 
@@ -36,6 +42,10 @@ function RequireAuth({ children }) {
 function Layout() {
   const location = useLocation();
   const user = useSelector(state => state.session.user);
+
+  useEffect(() => {
+    console.log('Layout user:', user);
+  }, [user]);
 
   return (
     <div className="app-container">
@@ -51,7 +61,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <Navigate to="/welcome" replace />
+        element: <WelcomePage />
       },
       {
         path: '/welcome',
