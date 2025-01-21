@@ -23,9 +23,24 @@ import * as sessionActions from './store/session';
 // Protected Route Component
 function ProtectedRoute() {
   const sessionUser = useSelector(state => state.session.user);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    // Short timeout to ensure store is hydrated
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
   
   if (!sessionUser?.id) {
     return <Navigate to="/welcome" replace />;
+
   }
 
   return <Outlet />;
@@ -41,10 +56,6 @@ function Layout() {
   useEffect(() => {
     dispatch(sessionActions.restoreUser()).then(() => setIsLoaded(true));
   }, [dispatch]);
-
-  useEffect(() => {
-    console.log('Initial session state:', sessionUser);
-  }, [sessionUser]);
 
   return (
     <>

@@ -5,7 +5,12 @@ import { useNavigate } from 'react-router-dom';
 import 'react-circular-progressbar/dist/styles.css';
 import './Dashboard.css';
 import { fetchUserProfile } from '../../store/profile';
-import { fetchWorkoutSummary, fetchMeditationSummary, fetchWaterIntakeSummary, setUserGoals } from '../../store/summary';
+import { 
+  fetchWorkoutSummary, 
+  fetchMeditationSummary, 
+  fetchWaterIntakeSummary, 
+  setUserGoals 
+} from '../../store/summary';
 import affirmations from '../../data/affirmations';
 import { fetchMeditationsByUser } from '../../store/meditation';
 
@@ -17,9 +22,8 @@ function getRandomAffirmation() {
 function Dashboard() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const sessionUser = useSelector(state => state.session?.user);
+  const sessionUser = useSelector(state => state.session.user);
   const user = useSelector((state) => state.profile.user);
-  const userId = sessionUser?.id;
   const workoutSummary = useSelector((state) => state.summary.workout ?? 0);
   const meditationSummary = useSelector((state) => state.summary.meditation ?? 0);
   const waterIntakeSummary = useSelector((state) => state.summary.waterIntake ?? 0);
@@ -30,55 +34,53 @@ function Dashboard() {
   const [affirmation, setAffirmation] = useState(getRandomAffirmation());
   const [isLoading, setIsLoading] = useState(true);
 
-  // Redirect if no user is logged in
-  // useEffect(() => {
-  //   if (userId === null) {
-  //     navigate('/welcome');
-  //   }
-  // }, [userId, navigate]);
-  // Redirect if no user is logged in
+  // First useEffect - Check auth and redirect
   useEffect(() => {
     if (!sessionUser) {
-      navigate('/welcome');
+      navigate('/welcome', { replace: true });
+      return;
     }
   }, [sessionUser, navigate]);
 
-  // Only proceed with data fetching if we have a session user
+  // Data fetching effect
   useEffect(() => {
-    if (sessionUser?.id) {
-      setIsLoading(true);
-      dispatch(fetchUserProfile(sessionUser.id))
-        .finally(() => setIsLoading(false));
-    }
+    const fetchData = async () => {
+      if (!sessionUser?.id) return;
+
+      try {
+        setIsLoading(true);
+        await dispatch(fetchUserProfile(sessionUser.id));
+        
+        const today = new Date().toISOString().split('T')[0];
+        
+        await Promise.all([
+          dispatch(fetchMeditationsByUser(sessionUser.id)),
+          dispatch(fetchMeditationSummary({ userId: sessionUser.id, date: today })),
+          dispatch(fetchWorkoutSummary({ userId: sessionUser.id, date: today })),
+          dispatch(fetchWaterIntakeSummary({ userId: sessionUser.id, date: today }))
+        ]);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, [dispatch, sessionUser]);
 
+  // Goals effect
   useEffect(() => {
     if (user && sessionUser?.id) {
-      const today = new Date().toISOString().split('T')[0];
-
       dispatch(setUserGoals({
         exerciseGoalMinutes: user.exerciseGoalMinutes,
         meditationGoalMinutes: user.meditationGoalMinutes,
         waterGoalOz: user.waterGoalOz
       }));
-
-      const fetchData = async () => {
-        try {
-          await Promise.all([
-            dispatch(fetchMeditationsByUser(sessionUser.id)),
-            dispatch(fetchMeditationSummary({ userId: sessionUser.id, date: today })),
-            dispatch(fetchWorkoutSummary({ userId: sessionUser.id, date: today })),
-            dispatch(fetchWaterIntakeSummary({ userId: sessionUser.id, date: today }))
-          ]);
-        } catch (error) {
-          console.error('Error fetching data:', error);
-        }
-      };
-
-      fetchData();
     }
   }, [dispatch, user, sessionUser]);
 
+  // Affirmation effect
   useEffect(() => {
     const storedAffirmation = localStorage.getItem('affirmation');
     const storedDate = localStorage.getItem('affirmationDate');
@@ -96,6 +98,10 @@ function Dashboard() {
 
   if (isLoading || !sessionUser) {
     return <div className="dashboard-loading">Loading...</div>;
+  }
+
+  if (!user) {
+    return <div className="dashboard-loading">Loading user data...</div>;
   }
 
   const workoutProgress = (workoutSummary / exerciseGoalMinutes) * 100 || 0;
@@ -145,7 +151,7 @@ function Dashboard() {
       </div>
       {remainingWorkoutMinutes > 0 && (
         <div className="notification-bar">
-          <p> 🔥 You are {remainingWorkoutMinutes} minutes away from your workout goal!</p>
+          <p>🔥 You are {remainingWorkoutMinutes} minutes away from your workout goal!</p>
         </div>
       )}
       <div className="affirmation-bar">
