@@ -71,19 +71,6 @@ function Profile() {
 
             <div className="form-group">
               <label className="form-label">
-                Email
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="form-input"
-                />
-              </label>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">
                 First Name
                 <input
                   type="text"
