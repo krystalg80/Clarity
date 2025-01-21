@@ -21,7 +21,7 @@ export const fetchUserProfile = createAsyncThunk(
 //Thunk to update user profile details
 export const updateUserProfile = createAsyncThunk(
     'profile/updateUserProfile',
-    async ({ userId, profileData }, { rejectWithValue }) => {
+    async ( profileData, { rejectWithValue }) => {
       try {
         const response = await csrfFetch(`/api/users/${userId}`, {
           method: 'PUT',
