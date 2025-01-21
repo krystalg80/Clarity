@@ -10,40 +10,36 @@ import Meditation from './components/Meditation/Meditation';
 import Workout from './components/Workout/Workout';
 import Water from './components/Water/Water';
 
-// Protected Route wrapper component
-function ProtectedRoute({ children }) {
+// Auth check component
+function RequireAuth({ children }) {
+  const dispatch = useDispatch();
+  const [isLoaded, setIsLoaded] = useState(false);
   const user = useSelector(state => state.session.user);
-  const location = useLocation();
+
+  useEffect(() => {
+    dispatch(sessionActions.restoreUser())
+      .then(() => setIsLoaded(true));
+  }, [dispatch]);
+
+  if (!isLoaded) {
+    return <div>Loading...</div>;
+  }
 
   if (!user) {
-    return <Navigate to="/welcome" state={{ from: location }} replace />;
+    return <Navigate to="/welcome" replace />;
   }
 
   return children;
 }
 
-// Layout component with authentication check
+// Layout component
 function Layout() {
-  const dispatch = useDispatch();
-  const [isLoaded, setIsLoaded] = useState(false);
   const location = useLocation();
   const user = useSelector(state => state.session.user);
 
-  useEffect(() => {
-    dispatch(sessionActions.restoreUser()).then(() => setIsLoaded(true));
-  }, [dispatch]);
-
-  if (!isLoaded) return null;
-
-  // Show welcome page without navigation if user is not logged in or at welcome page
-  if (!user || location.pathname === '/welcome') {
-    return <Outlet />;
-  }
-
-  // Show navigation and content for authenticated routes
   return (
     <div className="app-container">
-      <Navigation />
+      {location.pathname !== '/welcome' && user && <Navigation />}
       <Outlet />
     </div>
   );
@@ -64,41 +60,41 @@ const router = createBrowserRouter([
       {
         path: '/dashboard',
         element: (
-          <ProtectedRoute>
+          <RequireAuth>
             <Dashboard />
-          </ProtectedRoute>
+          </RequireAuth>
         )
       },
       {
         path: '/workouts',
         element: (
-          <ProtectedRoute>
+          <RequireAuth>
             <Workout />
-          </ProtectedRoute>
+          </RequireAuth>
         )
       },
       {
         path: '/meditations',
         element: (
-          <ProtectedRoute>
+          <RequireAuth>
             <Meditation />
-          </ProtectedRoute>
+          </RequireAuth>
         )
       },
       {
         path: '/waterintake',
         element: (
-          <ProtectedRoute>
+          <RequireAuth>
             <Water />
-          </ProtectedRoute>
+          </RequireAuth>
         )
       },
       {
         path: '/profile',
         element: (
-          <ProtectedRoute>
+          <RequireAuth>
             <Profile />
-          </ProtectedRoute>
+          </RequireAuth>
         )
       }
     ]
