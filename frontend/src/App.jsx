@@ -1,6 +1,6 @@
 import  { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { createBrowserRouter, RouterProvider, Navigate, useLocation } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate, useLocation, Outlet } from 'react-router-dom';
 import WelcomePage from './components/Welcome/WelcomePage';
 import Dashboard from './components/Dashboard/Dashboard';
 import Navigation from './components/Navigation/Navigation';
@@ -14,7 +14,13 @@ function Layout() {
   const dispatch = useDispatch();
   const [isLoaded, setIsLoaded] = useState(false);
   const location = useLocation();
+  const sessionUser = useSelector((state) => state.session.user);
   
+
+  // If sessionUser is null or undefined, redirect to WelcomePage or show a loading spinner
+  if (!sessionUser) {
+    return <Navigate to="/welcome" />;
+  }
 
   useEffect(() => {
     dispatch(sessionActions.restoreUser()).then(() => setIsLoaded(true));
@@ -24,8 +30,8 @@ function Layout() {
     <>
       {isLoaded && (
         <div className="app-container">
-          {location.pathname !== '/' && <Navigation />}
-          <WelcomePage />
+          {location.pathname !== '/welcome' && <Navigation />}
+          <Outlet />
         </div>
       )}
     </>
@@ -38,6 +44,10 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
+        element: <Navigate to="/welcome" replace />,
+      },
+      {
+        path: '/welcome',
         element: <WelcomePage />,
       },
       {
