@@ -27,7 +27,6 @@ function Profile() {
     if (user) {
       setFormData({
         username: user.username,
-        email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
         exerciseGoalMinutes: user.exerciseGoalMinutes,
