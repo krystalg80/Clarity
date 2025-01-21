@@ -42,8 +42,8 @@ function Layout() {
   );
 }
 
-// Helper Function for Protected Routes
-function requireAuth(element) {
+// Protected Route Component
+function ProtectedRoute({ element }) {
   const sessionUser = useSelector(state => state.session.user);
   
   if (!sessionUser?.id) {
@@ -68,23 +68,23 @@ const router = createBrowserRouter([
       },
       {
         path: '/dashboard',
-        element: requireAuth(<Dashboard />),
+        element: <ProtectedRoute element={<Dashboard />} />,
       },
       {
         path: '/workouts',
-        element: requireAuth(<Workout />),
+        element: <ProtectedRoute element={<Workout />} />,
       },
       {
         path: '/meditations',
-        element: requireAuth(<Meditation />),
+        element: <ProtectedRoute element={<Meditation />} />,
       },
       {
         path: '/waterintake',
-        element: requireAuth(<Water />),
+        element: <ProtectedRoute element={<Water />} />,
       },
       {
         path: '/profile',
-        element: requireAuth(<Profile />),
+        element: <ProtectedRoute element={<Profile />} />,
       },
     ],
   },
