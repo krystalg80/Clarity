@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { createBrowserRouter, RouterProvider, Navigate, useLocation, Outlet } from 'react-router-dom';
+import  { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { createBrowserRouter, RouterProvider, Navigate, useLocation } from 'react-router-dom';
 import WelcomePage from './components/Welcome/WelcomePage';
 import Dashboard from './components/Dashboard/Dashboard';
 import Navigation from './components/Navigation/Navigation';
@@ -10,71 +10,25 @@ import Meditation from './components/Meditation/Meditation';
 import Workout from './components/Workout/Workout';
 import Water from './components/Water/Water';
 
-// Error Boundary Component
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.error('ErrorBoundary caught an error', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return <h1>Something went wrong.</h1>;
-    }
-
-    return this.props.children; 
-  }
-}
-
-// Auth check component
-function RequireAuth({ children }) {
+function Layout() {
   const dispatch = useDispatch();
   const [isLoaded, setIsLoaded] = useState(false);
-  const user = useSelector(state => state.session.user);
+  const location = useLocation();
+  
 
   useEffect(() => {
-    dispatch(sessionActions.restoreUser())
-      .then(() => setIsLoaded(true));
+    dispatch(sessionActions.restoreUser()).then(() => setIsLoaded(true));
   }, [dispatch]);
 
-  useEffect(() => {
-    console.log('RequireAuth user:', user);
-  }, [user]);
-
-  if (!isLoaded) {
-    return <div>Loading...</div>;
-  }
-
-  if (!user) {
-    console.log('No user, redirecting to /welcome');
-    return <Navigate to="/welcome" replace />;
-  }
-
-  return children;
-}
-
-// Layout component
-function Layout() {
-  const location = useLocation();
-  const user = useSelector(state => state.session.user);
-
-  useEffect(() => {
-    console.log('Layout user:', user);
-  }, [user]);
-
   return (
-    <div className="app-container">
-      {location.pathname !== '/welcome' && user && <Navigation />}
-      <Outlet />
-    </div>
+    <>
+      {isLoaded && (
+        <div className="app-container">
+          {location.pathname !== '/welcome' && <Navigation />}
+          <WelcomePage />
+        </div>
+      )}
+    </>
   );
 }
 
@@ -84,62 +38,38 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <Navigate to="/welcome" replace />
+        element: <Navigate to="/welcome" replace />,
       },
       {
         path: '/welcome',
-        element: <WelcomePage />
+        element: <WelcomePage />,
       },
       {
         path: '/dashboard',
-        element: (
-          <RequireAuth>
-            <Dashboard />
-          </RequireAuth>
-        )
+        element: <Dashboard />,
       },
       {
         path: '/workouts',
-        element: (
-          <RequireAuth>
-            <Workout />
-          </RequireAuth>
-        )
+        element: <Workout />, // Placeholder for Workouts component
       },
       {
         path: '/meditations',
-        element: (
-          <RequireAuth>
-            <Meditation />
-          </RequireAuth>
-        )
+        element: <Meditation />, // Placeholder for Meditations component
       },
       {
         path: '/waterintake',
-        element: (
-          <RequireAuth>
-            <Water />
-          </RequireAuth>
-        )
+        element: <Water />, // Placeholder for Water Intake component
       },
       {
         path: '/profile',
-        element: (
-          <RequireAuth>
-            <Profile />
-          </RequireAuth>
-        )
-      }
-    ]
-  }
+        element: <Profile />, // Placeholder for Profile component
+      },
+    ],
+  },
 ]);
 
 function App() {
-  return (
-    <ErrorBoundary>
-      <RouterProvider router={router} />
-    </ErrorBoundary>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
