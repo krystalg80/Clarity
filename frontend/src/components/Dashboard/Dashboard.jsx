@@ -1,6 +1,7 @@
-import  { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
+import { useNavigate } from 'react-router-dom';
 import 'react-circular-progressbar/dist/styles.css';
 import './Dashboard.css';
 import { fetchUserProfile } from '../../store/profile';
@@ -8,40 +9,44 @@ import { fetchWorkoutSummary, fetchMeditationSummary, fetchWaterIntakeSummary, s
 import affirmations from '../../data/affirmations';
 import { fetchMeditationsByUser } from '../../store/meditation';
 
-
-//lets make a generate random affirmation function
 function getRandomAffirmation() {
   const randomIndex = Math.floor(Math.random() * affirmations.length);
   return affirmations[randomIndex];
 }
 
-
 function Dashboard() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const sessionUser = useSelector(state => state.session?.user);
   const user = useSelector((state) => state.profile.user);
-  const userId = useSelector((state) => state.session.user.id);
-  const workoutSummary = useSelector((state) => state.summary.workout);
-  const meditationSummary = useSelector((state) => state.summary.meditation);
-  const waterIntakeSummary = useSelector((state) => state.summary.waterIntake);
-  const exerciseGoalMinutes = useSelector((state) => state.summary.exerciseGoalMinutes);
-  const meditationGoalMinutes = useSelector((state) => state.summary.meditationGoalMinutes);
-  const waterGoalOz = useSelector((state) => state.summary.waterGoalOz);
-
+  const workoutSummary = useSelector((state) => state.summary.workout ?? 0);
+  const meditationSummary = useSelector((state) => state.summary.meditation ?? 0);
+  const waterIntakeSummary = useSelector((state) => state.summary.waterIntake ?? 0);
+  const exerciseGoalMinutes = useSelector((state) => state.summary.exerciseGoalMinutes ?? 0);
+  const meditationGoalMinutes = useSelector((state) => state.summary.meditationGoalMinutes ?? 0);
+  const waterGoalOz = useSelector((state) => state.summary.waterGoalOz ?? 0);
+  
   const [affirmation, setAffirmation] = useState(getRandomAffirmation());
-  // Console logs for debugging
+  const [isLoading, setIsLoading] = useState(true);
 
-  console.log('waterIntakeSummary:', waterIntakeSummary, 'Type:', typeof waterIntakeSummary);
-  console.log('waterGoalOz:', waterGoalOz, 'Type:', typeof waterGoalOz);
-
+  // Redirect if no user is logged in
   useEffect(() => {
-    if (userId) {
-      dispatch(fetchUserProfile(userId));
+    if (!sessionUser) {
+      navigate('/welcome');
     }
-  }, [dispatch, userId]);
+  }, [sessionUser, navigate]);
+
+  // Only proceed with data fetching if we have a session user
+  useEffect(() => {
+    if (sessionUser?.id) {
+      setIsLoading(true);
+      dispatch(fetchUserProfile(sessionUser.id))
+        .finally(() => setIsLoading(false));
+    }
+  }, [dispatch, sessionUser]);
 
   useEffect(() => {
-    if (user) {
+    if (user && sessionUser?.id) {
       const today = new Date().toISOString().split('T')[0];
 
       dispatch(setUserGoals({
@@ -52,33 +57,21 @@ function Dashboard() {
 
       const fetchData = async () => {
         try {
-          console.log('Fetching meditation data...');
-          await dispatch(fetchMeditationsByUser(userId));
-          
-          console.log('Meditations fetched, now fetching summary...');
-          const summaryResult = await dispatch(fetchMeditationSummary({ userId, date: today }));
-          console.log('Meditation summary response:', summaryResult.payload);
-          
-          if (summaryResult.payload === null) {
-            console.error('Meditation summary is null. Current Redux state:', {
-              userId,
-              date: today,
-              meditationSummary: summaryResult.payload
-            });
-          }
+          await Promise.all([
+            dispatch(fetchMeditationsByUser(sessionUser.id)),
+            dispatch(fetchMeditationSummary({ userId: sessionUser.id, date: today })),
+            dispatch(fetchWorkoutSummary({ userId: sessionUser.id, date: today })),
+            dispatch(fetchWaterIntakeSummary({ userId: sessionUser.id, date: today }))
+          ]);
         } catch (error) {
-          console.error('Error fetching meditation data:', error);
+          console.error('Error fetching data:', error);
         }
       };
 
       fetchData();
-      dispatch(fetchWorkoutSummary({ userId, date: today }));
-      dispatch(fetchWaterIntakeSummary({ userId, date: today }));
     }
-  }, [dispatch, user, userId]);
+  }, [dispatch, user, sessionUser]);
 
-
-  //add affirmation generator
   useEffect(() => {
     const storedAffirmation = localStorage.getItem('affirmation');
     const storedDate = localStorage.getItem('affirmationDate');
@@ -94,17 +87,14 @@ function Dashboard() {
     }
   }, []);
 
-  const workoutProgress = (workoutSummary / exerciseGoalMinutes) * 100;
-  const meditationProgress = (meditationSummary / meditationGoalMinutes) * 100;
-  const waterIntakeProgress = (waterIntakeSummary / waterGoalOz) * 100;
+  if (isLoading || !sessionUser) {
+    return <div className="dashboard-loading">Loading...</div>;
+  }
 
+  const workoutProgress = (workoutSummary / exerciseGoalMinutes) * 100 || 0;
+  const meditationProgress = (meditationSummary / meditationGoalMinutes) * 100 || 0;
+  const waterIntakeProgress = (waterIntakeSummary / waterGoalOz) * 100 || 0;
   const remainingWorkoutMinutes = exerciseGoalMinutes - workoutSummary;
-
-
-  //lets add a effect for when achieved!
-  // const showCelebration = (progress) => {
-  //   return progress >= 100 ? <span className="celebration-text">🎉 Goal Achieved!</span> : null;
-  // };
 
   return (
     <div className="dashboard-page">
@@ -112,7 +102,6 @@ function Dashboard() {
         <div className="progress-bar">
           <h2>Workout</h2>
           <p className="goal-text">Goal: {exerciseGoalMinutes} minutes</p>
-          {/* {showCelebration(workoutProgress)} */}
           <CircularProgressbar
             value={workoutProgress}
             text={`${Math.round(workoutProgress)}%`}
@@ -125,7 +114,6 @@ function Dashboard() {
         <div className="progress-bar">
           <h2>Meditation</h2>
           <p className="goal-text">Goal: {meditationGoalMinutes} minutes</p>
-          {/* {showCelebration(meditationProgress)} */}
           <CircularProgressbar
             value={meditationProgress}
             text={`${Math.round(meditationProgress)}%`}
@@ -138,7 +126,6 @@ function Dashboard() {
         <div className="progress-bar">
           <h2>Water Intake</h2>
           <p className="goal-text">Goal: {waterGoalOz} Ozs</p>
-          {/* {showCelebration(waterIntakeProgress)} */}
           <CircularProgressbar
             value={waterIntakeProgress}
             text={`${Math.round(waterIntakeProgress)}%`}
