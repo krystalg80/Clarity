@@ -40,7 +40,6 @@ function Layout() {
   );
 }
 
-// Router Configuration
 const router = createBrowserRouter([
   {
     element: <Layout />,
@@ -54,24 +53,30 @@ const router = createBrowserRouter([
         element: <WelcomePage />,
       },
       {
-        path: '/dashboard',
-        element: <Dashboard />,
-      },
-      {
-        path: '/workouts',
-        element: <Workout />,
-      },
-      {
-        path: '/meditations',
-        element: <Meditation />,
-      },
-      {
-        path: '/waterintake',
-        element: <Water />,
-      },
-      {
-        path: '/profile',
-        element: <Profile />,
+        path: '/*',
+        element: <Navigation />,
+        children: [
+          {
+            path: 'dashboard',
+            element: <Dashboard />,
+          },
+          {
+            path: 'workouts',
+            element: <Workout />,
+          },
+          {
+            path: 'meditations',
+            element: <Meditation />,
+          },
+          {
+            path: 'waterintake',
+            element: <Water />,
+          },
+          {
+            path: 'profile',
+            element: <Profile />,
+          },
+        ],
       },
     ],
   },
