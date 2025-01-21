@@ -24,7 +24,7 @@ function Layout() {
     <>
       {isLoaded && (
         <div className="app-container">
-          {location.pathname !== '/welcome' && <Navigation />}
+          {location.pathname !== '/' && <Navigation />}
           <WelcomePage />
         </div>
       )}
@@ -38,10 +38,6 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <Navigate to="/welcome" replace />,
-      },
-      {
-        path: '/welcome',
         element: <WelcomePage />,
       },
       {

@@ -32,7 +32,7 @@ function Dashboard() {
   // Redirect if no user is logged in
   useEffect(() => {
     if (!sessionUser) {
-      navigate('/welcome');
+      navigate('/');
     }
   }, [sessionUser, navigate]);
 
