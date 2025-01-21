@@ -32,9 +32,9 @@ function Layout() {
   if (!isLoaded) return null;
 
   return (
-    <>
+    <div className="app-container">
       {location.pathname !== '/welcome' && <Navigation />}
-      </>
+    </div>
   );
 }
 
