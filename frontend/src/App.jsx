@@ -34,6 +34,7 @@ function Layout() {
       {isLoaded && (
         <div className="app-container">
           {location.pathname !== '/welcome' && <Navigation />}
+          <WelcomePage />
         </div>
       )}
     </>
