@@ -29,14 +29,16 @@ function Meditation() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (editMode) {
-      dispatch(updateMeditation({ id: editId, ...formData }));
+      await dispatch(updateMeditation({ id: editId, ...formData }));
+
+      dispatch(fetchMeditationsByUser)
       setEditMode(false);
       setEditId(null);
     } else {
-      dispatch(logMeditation({ userId, ...formData }));
+      await dispatch(logMeditation({ userId, ...formData }));
     }
     setFormData({ date: '', durationMinutes: '' });
   };

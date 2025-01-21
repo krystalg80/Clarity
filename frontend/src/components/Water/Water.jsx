@@ -33,6 +33,8 @@ function Water() {
             e.preventDefault();
             if (editMode) {
                 await dispatch(updateWaterIntake({ id: editId, ...formData }));
+
+                dispatch(fetchWaterIntakeByUser)
                 setEditMode(false);
                 setEditId(null);
             } else {
