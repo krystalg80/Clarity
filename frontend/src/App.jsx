@@ -42,8 +42,6 @@ function ProtectedRoute() {
     return <Navigate to="/welcome" replace />;
 
   }
-
-  return <Outlet />;
 }
 
 // Layout Component
