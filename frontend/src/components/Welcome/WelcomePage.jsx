@@ -24,6 +24,17 @@ function WelcomePage() {
 
   if (sessionUser) return <Navigate to="/dashboard" replace={true} />;
 
+  const handleDemoLogin = (e) => {
+    e.preventDefault();
+    return dispatch(sessionActions.login({ 
+      credential: 'Demo-lition',  // Using existing demo user
+      password: 'password' 
+    })).catch(async (res) => {
+      const data = await res.json();
+      if (data?.errors) setErrors(data.errors);
+    });
+  };
+
   const handleLoginSubmit = (e) => {
     e.preventDefault();
     setErrors({});
@@ -211,6 +222,13 @@ function WelcomePage() {
         >
           {isSignup ? 'Already have an account? Log In' : "Don't have an account? Sign Up"}
         </button>
+        <button 
+              onClick={handleDemoLogin}
+              className="primary-button"
+              style={{ marginTop: '10px' }}
+            >
+              Demo User
+            </button>
       </div>
     </div>
   );
