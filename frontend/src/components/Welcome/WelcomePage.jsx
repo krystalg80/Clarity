@@ -78,12 +78,7 @@ function WelcomePage() {
           <img src={logo} alt="Clarity logo" />
           <p>Begin your wellness today</p>
         </div>
-          <button 
-            onClick={handleDemoLogin}
-            className="demo-button"
-          >
-            Demo Login
-          </button>
+        
         {isSignup ? (
           <form className="welcome-form" onSubmit={handleSignupSubmit}>
             <div className="form-group">
@@ -191,7 +186,7 @@ function WelcomePage() {
             <button type="submit" className="primary-button">Sign Up</button>
           </form>
         ) : (
-
+          <>
           <form className="welcome-form" onSubmit={handleLoginSubmit}>
             <div className="form-group">
               <label>Username or Email</label>
@@ -220,6 +215,13 @@ function WelcomePage() {
             )}
             <button type="submit" className="primary-button">Log In</button>
           </form>
+          <button 
+          onClick={handleDemoLogin}
+          className="demo-button"
+        >
+          Demo Login
+        </button>
+      </>
     )}  
         <button 
           className="secondary-button"
