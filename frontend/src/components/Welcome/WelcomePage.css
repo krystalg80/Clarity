@@ -95,7 +95,7 @@
   }
 
 .demo-button {
-    background-color: #000;
+    border: 1px solid #000;
     color: white;
     padding: 14px;
     border: none;
