@@ -32,10 +32,14 @@ function Layout() {
   if (!isLoaded) return < h1 > Loading... </h1>;
 
   return (
-    <div className="app-container">
-      {location.pathname !== '/welcome' && <Navigation />}
-      {location.pathname === '/welcome' && <WelcomePage />}
-    </div>
+    <>
+      {isLoaded && (
+        <div className="app-container">
+          {location.pathname !== '/welcome' && <Navigation />}
+          <WelcomePage />
+        </div>
+      )}
+    </>
   );
 }
 
