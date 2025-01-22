@@ -186,6 +186,7 @@ function WelcomePage() {
             <button type="submit" className="primary-button">Sign Up</button>
           </form>
         ) : (
+          <>
           <form className="welcome-form" onSubmit={handleLoginSubmit}>
             <div className="form-group">
               <label>Username or Email</label>
@@ -214,14 +215,15 @@ function WelcomePage() {
             )}
             <button type="submit" className="primary-button">Log In</button>
           </form>
-        )}  
-         {/* Demo login button */}
-        <button 
-          className="secondary-button"
+          <button 
           onClick={handleDemoLogin}
+          className="primary-button"
+          style={{ marginTop: '10px' }}
         >
           Demo Login
         </button>
+      </>
+    )}  
         <button 
           className="secondary-button"
           onClick={() => setIsSignup(!isSignup)}
