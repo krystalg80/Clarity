@@ -213,22 +213,21 @@ function WelcomePage() {
               <p className="error-message">{errors.credential}</p>
             )}
             <button type="submit" className="primary-button">Log In</button>
-          </form>
-        )}
-        
-        <button 
-          className="secondary-button"
-          onClick={() => setIsSignup(!isSignup)}
-        >
-          {isSignup ? 'Already have an account? Log In' : "Don't have an account? Sign Up"}
-        </button>
-        <button 
+            <button 
               onClick={handleDemoLogin}
               className="primary-button"
               style={{ marginTop: '10px' }}
             >
               Demo User
             </button>
+          </form>
+        )}  
+        <button 
+          className="secondary-button"
+          onClick={() => setIsSignup(!isSignup)}
+        >
+          {isSignup ? 'Already have an account? Log In' : "Don't have an account? Sign Up"}
+        </button>
       </div>
     </div>
   );
