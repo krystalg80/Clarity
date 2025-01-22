@@ -95,14 +95,20 @@
   }
 
 .demo-button {
-  width: 100%;
-  margin-top: 1rem;
-  background-color: #4a90e2;
-}
-
+    background-color: #000;
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
 .demo-button:hover {
-  background-color: #357abd;
-}
+    background-color: #333;
+  }
+
 .secondary-button {
     background: none;
     border: none;
