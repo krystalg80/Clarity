@@ -24,16 +24,6 @@ function WelcomePage() {
 
   if (sessionUser) return <Navigate to="/dashboard" replace={true} />;
 
-  const handleDemoLogin = (e) => {
-    e.preventDefault();
-    return dispatch(sessionActions.login({ 
-      credential: 'Demo-lition',  // Using existing demo user
-      password: 'password' 
-    })).catch(async (res) => {
-      const data = await res.json();
-      if (data?.errors) setErrors(data.errors);
-    });
-  };
 
   const handleLoginSubmit = (e) => {
     e.preventDefault();
@@ -68,6 +58,25 @@ function WelcomePage() {
         if (data?.errors) setErrors(data.errors);
       }
     );
+  };
+
+  const handleDemoLogin = async (e) => {
+    e.preventDefault();
+    console.log('Demo login attempted');
+    
+    try {
+      const response = await dispatch(sessionActions.login({ 
+        credential: 'Demo-lition',
+        password: 'password' 
+      }));
+      console.log('Demo login success:', response);
+      // Force navigation if needed
+      if (response?.user) {
+        window.location.href = '/dashboard';
+      }
+    } catch (error) {
+      console.error('Demo login error:', error);
+    }
   };
 
   return (

@@ -29,11 +29,12 @@ function Layout() {
     dispatch(sessionActions.restoreUser()).then(() => setIsLoaded(true));
   }, [dispatch]);
 
-  if (!isLoaded) return null;
+  if (!isLoaded) return < h1 > Loading... </h1>;
 
   return (
     <div className="app-container">
       {location.pathname !== '/welcome' && <Navigation />}
+      {location.pathname === '/welcome' && <WelcomePage />}
     </div>
   );
 }
