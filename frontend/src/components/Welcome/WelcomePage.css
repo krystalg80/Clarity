@@ -93,6 +93,21 @@
 .primary-button:hover {
     background-color: #333;
   }
+
+.demo-button {
+    background-color: #000;
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+.demo-button:hover {
+    background-color: #333;
+  }
   
 .secondary-button {
     background: none;

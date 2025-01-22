@@ -217,8 +217,7 @@ function WelcomePage() {
           </form>
           <button 
           onClick={handleDemoLogin}
-          className="primary-button"
-          style={{ marginTop: '10px' }}
+          className="demo-button"
         >
           Demo Login
         </button>
