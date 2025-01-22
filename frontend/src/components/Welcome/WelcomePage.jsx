@@ -78,15 +78,12 @@ function WelcomePage() {
           <img src={logo} alt="Clarity logo" />
           <p>Begin your wellness today</p>
         </div>
-          {/* Add the demo button here, before the conditional rendering */}
-          {!isSignup && (
           <button 
             onClick={handleDemoLogin}
             className="demo-button"
           >
             Demo Login
           </button>
-        )}
         {isSignup ? (
           <form className="welcome-form" onSubmit={handleSignupSubmit}>
             <div className="form-group">
