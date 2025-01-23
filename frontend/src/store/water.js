@@ -33,7 +33,8 @@ export const logWaterIntake = createAsyncThunk(
             if (!response.ok) {
                 throw new Error('Failed to log water intake');
             }
-            return await response.json();
+            const data = await response.json();
+            return data;
         } catch (error) {
             return rejectWithValue(error.message);
         }
