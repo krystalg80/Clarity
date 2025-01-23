@@ -15,6 +15,7 @@ import Profile from './components/Profile/Profile';
 import Meditation from './components/Meditation/Meditation';
 import Workout from './components/Workout/Workout';
 import Water from './components/Water/Water';
+import Notes from './components/Notes/Notes';
 
 // Store
 import * as sessionActions from './store/session';
@@ -76,6 +77,10 @@ const router = createBrowserRouter([
         path: '/profile',
         element: <Profile />,
       },
+      {
+        path: '/notes',
+        element: <Notes />,
+      }
     ],
   },
 ]);
