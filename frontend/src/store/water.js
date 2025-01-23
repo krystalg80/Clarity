@@ -56,7 +56,7 @@ export const updateWaterIntake = createAsyncThunk(
                 throw new Error('Failed to update water intake');
             }
             const data = await response.json();
-            return data.water;
+            return data;
         } catch (error) {
             return rejectWithValue(error.message);
         }
