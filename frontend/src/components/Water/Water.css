@@ -1,0 +1,484 @@
+.water-page {
+  padding: 16px;
+  padding-bottom: 80px; /* Space for bottom nav */
+  min-height: 100vh;
+  background: var(--sage-50);
+  max-width: 428px;
+  margin: 0 auto;
+}
+
+/* Hydration Progress - Hero Section */
+.water-progress {
+  background: linear-gradient(135deg, var(--mint) 0%, var(--sage-500) 100%);
+  color: var(--white);
+  padding: 24px 20px;
+  border-radius: 20px;
+  margin-bottom: 24px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(168, 213, 186, 0.3);
+}
+
+.water-progress h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-info {
+  margin-bottom: 16px;
+}
+
+.progress-text {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: block;
+}
+
+/* Hydration Progress Bar */
+.water-progress-bar {
+  width: 100%;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--white) 0%, rgba(255, 255, 255, 0.9) 100%);
+  border-radius: 20px;
+  transition: width 0.5s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.goal-achieved {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 12px 16px;
+  border-radius: 15px;
+  font-size: 16px;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+  animation: celebrate 0.5s ease;
+}
+
+@keyframes celebrate {
+  0% { transform: scale(0.95); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Quick Add Section */
+.quick-add-section {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(107, 128, 105, 0.08);
+  border: 1px solid var(--sage-100);
+}
+
+.quick-add-section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--sage-700);
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.quick-add-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.quick-add-btn {
+  background: linear-gradient(135deg, var(--sage-100) 0%, var(--sage-200) 100%);
+  color: var(--sage-700);
+  border: 1px solid var(--sage-200);
+  border-radius: 16px;
+  padding: 16px 12px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.quick-add-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--sage-500) 0%, var(--sage-600) 100%);
+  color: var(--white);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(107, 128, 105, 0.2);
+}
+
+.quick-add-btn:active {
+  transform: translateY(0);
+}
+
+.quick-add-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.quick-add-btn small {
+  display: block;
+  font-size: 11px;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+/* Main Water Form Card */
+.water-card {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 24px 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(107, 128, 105, 0.08);
+  border: 1px solid var(--sage-100);
+}
+
+.water-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--sage-700);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.error-message {
+  background: rgba(198, 123, 123, 0.1);
+  color: var(--error);
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  text-align: center;
+  border: 1px solid rgba(198, 123, 123, 0.2);
+}
+
+/* Form Styling */
+.water-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sage-700);
+  margin-bottom: 8px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--sage-200);
+  border-radius: 12px;
+  font-size: 16px;
+  background: var(--white);
+  transition: all 0.2s ease;
+  color: var(--gray-800);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--sage-500);
+  box-shadow: 0 0 0 3px rgba(107, 128, 105, 0.1);
+  transform: translateY(-1px);
+}
+
+.form-input::placeholder {
+  color: var(--gray-400);
+}
+
+/* Select dropdown styling */
+select.form-input {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b8069' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  appearance: none;
+  cursor: pointer;
+}
+
+/* Form Buttons */
+.form-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.log-button {
+  flex: 1;
+  background: linear-gradient(135deg, var(--mint) 0%, var(--sage-500) 100%);
+  color: var(--white);
+  border: none;
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.log-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(168, 213, 186, 0.3);
+}
+
+.log-button:active {
+  transform: translateY(0);
+}
+
+.log-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.cancel-button {
+  background: var(--sage-100);
+  color: var(--sage-700);
+  border: 1px solid var(--sage-200);
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancel-button:hover:not(:disabled) {
+  background: var(--sage-200);
+  transform: translateY(-1px);
+}
+
+/* Water Log Section */
+.water-log {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 24px 20px;
+  box-shadow: 0 2px 8px rgba(107, 128, 105, 0.08);
+  border: 1px solid var(--sage-100);
+}
+
+.log-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--sage-700);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.no-intake {
+  text-align: center;
+  color: var(--gray-500);
+  font-style: italic;
+  padding: 40px 20px;
+  background: var(--sage-50);
+  border-radius: 12px;
+  border: 2px dashed var(--sage-200);
+}
+
+/* Water Log List */
+.log-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.log-item {
+  background: var(--sage-50);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 12px;
+  border: 1px solid var(--sage-100);
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.log-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(107, 128, 105, 0.1);
+  border-color: var(--sage-200);
+}
+
+.log-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Water Info Display */
+.water-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.water-amount {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--sage-700);
+}
+
+.water-type {
+  font-size: 14px;
+  color: var(--sage-600);
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.water-notes {
+  font-size: 13px;
+  color: var(--gray-600);
+  font-style: italic;
+}
+
+/* Water Actions */
+.water-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.edit-button, .delete-button {
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.edit-button {
+  background: var(--sage-100);
+  color: var(--sage-700);
+}
+
+.edit-button:hover:not(:disabled) {
+  background: var(--sage-200);
+  transform: translateY(-1px);
+}
+
+.delete-button {
+  background: rgba(198, 123, 123, 0.1);
+  color: var(--error);
+}
+
+.delete-button:hover:not(:disabled) {
+  background: rgba(198, 123, 123, 0.2);
+  transform: translateY(-1px);
+}
+
+.edit-button:disabled, .delete-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Loading state */
+.water-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+  color: var(--sage-500);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Responsive design */
+@media (min-width: 768px) {
+  .water-page {
+    max-width: 768px;
+    padding: 24px 32px;
+  }
+  
+  .water-card, .water-log, .quick-add-section {
+    padding: 32px 28px;
+  }
+  
+  .quick-add-buttons {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  
+  .form-row {
+    gap: 16px;
+  }
+  
+  .water-title {
+    font-size: 24px;
+  }
+  
+  .log-title {
+    font-size: 22px;
+  }
+  
+  .water-progress h2 {
+    font-size: 24px;
+  }
+}
+
+/* Hydration level indicators */
+.water-amount::after {
+  content: '💧';
+  margin-left: 8px;
+  opacity: 0.7;
+}
+
+.water-type[data-type="tea"]::before {
+  content: '🍵 ';
+}
+
+.water-type[data-type="coffee"]::before {
+  content: '☕ ';
+}
+
+.water-type[data-type="juice"]::before {
+  content: '🧃 ';
+}
+
+.water-type[data-type="sports_drink"]::before {
+  content: '🥤 ';
+}
+
+/* Animation for new water entries */
+@keyframes waterDrop {
+  0% { 
+    opacity: 0;
+    transform: translateY(-20px) scale(0.8);
+  }
+  50% {
+    transform: translateY(5px) scale(1.05);
+  }
+  100% { 
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.log-item:first-child {
+  animation: waterDrop 0.4s ease;
+}

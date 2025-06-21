@@ -1,0 +1,341 @@
+.dashboard-page {
+  padding: 16px;
+  padding-bottom: 80px; /* Space for bottom nav */
+  min-height: 100vh;
+  background: var(--sage-50);
+  max-width: 428px;
+  margin: 0 auto;
+}
+
+/* Welcome section - Oura style header */
+.welcome-section {
+  background: linear-gradient(135deg, var(--sage-500) 0%, var(--sage-600) 100%);
+  color: var(--white);
+  padding: 24px 20px;
+  border-radius: 20px;
+  margin-bottom: 24px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(107, 128, 105, 0.2);
+}
+
+.welcome-section h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-section p {
+  font-size: 16px;
+  opacity: 0.9;
+  font-weight: 400;
+}
+
+/* Progress bars grid - Oura ring style */
+.progress-bars {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.progress-bar {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 24px 20px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(107, 128, 105, 0.08);
+  border: 1px solid var(--sage-100);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.progress-bar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(107, 128, 105, 0.12);
+}
+
+.progress-bar h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--sage-700);
+  margin-bottom: 8px;
+}
+
+.goal-text {
+  font-size: 14px;
+  color: var(--gray-500);
+  margin-bottom: 4px;
+}
+
+.current-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--sage-600);
+  margin-bottom: 16px;
+}
+
+/* Circular progress customization */
+.progress-bar .CircularProgressbar {
+  width: 100px;
+  height: 100px;
+  margin: 16px auto;
+}
+
+.CircularProgressbar .CircularProgressbar-path {
+  stroke: var(--sage-500) !important;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.5s ease 0s;
+}
+
+.CircularProgressbar .CircularProgressbar-trail {
+  stroke: var(--sage-100) !important;
+  stroke-linecap: round;
+}
+
+.CircularProgressbar .CircularProgressbar-text {
+  fill: var(--sage-700) !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+}
+
+/* Workout specific color */
+.progress-bar:nth-child(1) .CircularProgressbar .CircularProgressbar-path {
+  stroke: var(--sage-500) !important;
+}
+
+/* Meditation specific color */
+.progress-bar:nth-child(2) .CircularProgressbar .CircularProgressbar-path {
+  stroke: var(--sage-600) !important;
+}
+
+/* Water specific color */
+.progress-bar:nth-child(3) .CircularProgressbar .CircularProgressbar-path {
+  stroke: var(--mint) !important;
+}
+
+/* Track buttons */
+.track-button {
+  background: var(--sage-500);
+  color: var(--white);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.track-button:hover {
+  background: var(--sage-600);
+  transform: translateY(-1px);
+}
+
+.track-button:active {
+  transform: translateY(0);
+}
+
+/* Notification and celebration bars */
+.notification-bar {
+  background: linear-gradient(135deg, var(--warning) 0%, #e6b866 100%);
+  color: var(--white);
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(212, 165, 116, 0.2);
+}
+
+.notification-bar p {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.celebration-bar {
+  background: linear-gradient(135deg, var(--sage-500) 0%, var(--mint) 100%);
+  color: var(--white);
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 16px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(107, 128, 105, 0.2);
+  animation: celebrate 0.5s ease;
+}
+
+@keyframes celebrate {
+  0% { transform: scale(0.95); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.celebration-bar p {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Affirmation bar - Oura style */
+.affirmation-bar {
+  background: linear-gradient(135deg, var(--mint) 0%, var(--sage-400) 100%);
+  color: var(--white);
+  padding: 24px 20px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(168, 213, 186, 0.3);
+}
+
+.affirmation-bar p {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.9;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.affirmation-bar h2 {
+  font-size: 16px;
+  font-style: italic;
+  line-height: 1.4;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Quick stats - Stacked vertically for better readability */
+.quick-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stat-item {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: 0 2px 4px rgba(107, 128, 105, 0.05);
+  border: 1px solid var(--sage-100);
+  transition: transform 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 60px;
+  gap: 12px;
+}
+
+.stat-item:hover {
+  transform: translateY(-1px);
+}
+
+.stat-number {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--sage-600);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: var(--gray-500);
+  font-weight: 500;
+  text-align: right;
+  line-height: 1.3;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .quick-stats {
+    gap: 8px;
+  }
+  
+  .stat-item {
+    padding: 16px 20px;
+    min-height: 50px;
+  }
+  
+  .stat-number {
+    font-size: 24px;
+  }
+  
+  .stat-label {
+    font-size: 13px;
+  }
+}
+
+@media (min-width: 768px) {
+  .quick-stats {
+    gap: 16px;
+  }
+  
+  .stat-item {
+    padding: 24px 28px;
+    min-height: 70px;
+  }
+  
+  .stat-number {
+    font-size: 32px;
+  }
+  
+  .stat-label {
+    font-size: 16px;
+  }
+}
+
+/* Tablet responsive */
+@media (min-width: 768px) {
+  .dashboard-page {
+    max-width: 768px;
+    padding: 24px 32px;
+  }
+  
+  .progress-bars {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  
+  .welcome-section {
+    padding: 32px 24px;
+  }
+  
+  .welcome-section h1 {
+    font-size: 28px;
+  }
+  
+  .welcome-section p {
+    font-size: 18px;
+  }
+}
+
+/* Large screen responsive */
+@media (min-width: 1024px) {
+  .dashboard-page {
+    max-width: 1024px;
+  }
+  
+  .progress-bars {
+    gap: 24px;
+  }
+  
+  .progress-bar {
+    padding: 32px 24px;
+  }
+}
+
+/* Dark mode support (future) */
+@media (prefers-color-scheme: dark) {
+  .dashboard-page {
+    background: var(--sage-900);
+  }
+  
+  .progress-bar {
+    background: var(--sage-800);
+    border-color: var(--sage-700);
+  }
+  
+  .stat-item {
+    background: var(--sage-800);
+    border-color: var(--sage-700);
+  }
+}
