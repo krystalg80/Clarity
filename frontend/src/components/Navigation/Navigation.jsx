@@ -42,9 +42,9 @@ function Navigation() {
           <span className="nav-label">Water</span>
         </NavLink>
         
-        <NavLink to="/notes" className={({isActive}) => `nav-tab ${isActive ? 'active' : ''}`}>
-          <span className="nav-icon">📝</span>
-          <span className="nav-label">Notes</span>
+        <NavLink to="/goals" className={({isActive}) => `nav-tab ${isActive ? 'active' : ''}`}>
+          <span className="nav-icon">⚡️</span>
+          <span className="nav-label">Goals</span>
         </NavLink>
       </nav>
     </div>

@@ -9,6 +9,7 @@ import { workoutService } from '../../services/workoutService';
 import { waterService } from '../../services/waterService';
 import { meditationService } from '../../services/meditationService';
 import affirmations from '../../data/affirmations';
+import PremiumGate from '../Premium/PremiumGate';
 
 function getRandomAffirmation() {
   const randomIndex = Math.floor(Math.random() * affirmations.length);
@@ -213,6 +214,43 @@ function Dashboard() {
           <span className="stat-number">{meditationSummary}</span>
           <span className="stat-label">Minutes Meditated</span>
         </div>
+      </div>
+
+      {/* Add premium analytics section */}
+      <div className="premium-analytics">
+        <h2>Advanced Analytics</h2>
+        
+        <PremiumGate 
+          feature="detailed insights and trends"
+          className="feature-tease"
+        >
+          <div className="analytics-preview">
+            <div className="chart-preview">
+              <h3>📊 Weekly Trends</h3>
+              <div className="mock-chart">
+                <div className="chart-bars">
+                  <div className="bar" style={{height: '60%'}}></div>
+                  <div className="bar" style={{height: '80%'}}></div>
+                  <div className="bar" style={{height: '95%'}}></div>
+                  <div className="bar" style={{height: '70%'}}></div>
+                  <div className="bar" style={{height: '90%'}}></div>
+                  <div className="bar" style={{height: '100%'}}></div>
+                  <div className="bar" style={{height: '85%'}}></div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="insights-preview">
+              <h3>🧠 AI Insights</h3>
+              <div className="insight-card">
+                <p>"Your best workout days are Mondays and Wednesdays. Consider scheduling important sessions then."</p>
+              </div>
+              <div className="insight-card">
+                <p>"You're 23% more likely to complete meditation after morning workouts."</p>
+              </div>
+            </div>
+          </div>
+        </PremiumGate>
       </div>
     </div>
   );

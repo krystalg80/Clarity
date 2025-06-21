@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { meditationService } from '../../services/meditationService';
 import { soundscapes, meditationTypes } from '../../data/soundscapes';
 import './Meditation.css';
+import PremiumGate from '../Premium/PremiumGate';
 
 function Meditation() {
   const { user: firebaseUser } = useAuth();
@@ -681,6 +682,20 @@ function Meditation() {
           </div>
         </div>
       )}
+
+      {/* Grid with overlays */}
+      <div className="soundscape-grid">
+        {/* Your overlay approach */}
+      </div>
+
+      {/* Dedicated premium section */}
+      <PremiumGate feature="exclusive meditation experiences">
+        <div className="premium-meditation-features">
+          <h3>🧘‍♀️ Premium Meditation Experience</h3>
+          <p>Unlock advanced features designed by neuroscientists:</p>
+          {/* Detailed benefits */}
+        </div>
+      </PremiumGate>
     </div>
   );
 }

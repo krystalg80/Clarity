@@ -198,6 +198,81 @@ export const meditationService = {
     } catch (error) {
       throw new Error('Error deleting meditation: ' + error.message);
     }
+  },
+
+  // Get meditation summary for dashboard
+  async getMeditationSummary(userId, days = 7) {
+    try {
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+      
+      const q = query(
+        collection(db, `users/${userId}/meditations`),
+        where('date', '>=', startDate),
+        orderBy('date', 'desc')
+      );
+      
+      const snapshot = await getDocs(q);
+      const meditations = snapshot.docs.map(doc => doc.data());
+      
+      // Fix: Add initial value of 0 to prevent "empty array" error
+      const totalMinutes = meditations.reduce((sum, m) => sum + (m.durationMinutes || 0), 0);
+      const averageDuration = meditations.length > 0 ? totalMinutes / meditations.length : 0;
+      
+      // Fix: Handle empty array for deep state calculation
+      const deepStateRate = meditations.length > 0 
+        ? (meditations.filter(m => m.deepStateAchieved).length / meditations.length * 100)
+        : 0;
+      
+      return {
+        totalSessions: meditations.length,
+        totalMinutes,
+        averageDuration,
+        deepStateSuccessRate: deepStateRate,
+        favoriteSoundscape: meditations.length > 0 ? this.getMostFrequent(meditations, 'soundscape') : 'silence',
+        favoriteTime: meditations.length > 0 ? this.getMostFrequent(meditations, 'timeOfDay') : 'morning',
+        moodImprovement: this.calculateMoodImprovement(meditations)
+      };
+    } catch (error) {
+      console.error('Error fetching meditation summary:', error);
+      throw new Error('Error fetching meditation summary: ' + error.message);
+    }
+  },
+  
+  // Helper function: Get most frequent item in an array
+  getMostFrequent(array, key) {
+    const frequency = {};
+    array.forEach(item => {
+      const value = key === 'timeOfDay' ? this.getTimeOfDay(item.date) : item[key];
+      frequency[value] = (frequency[value] || 0) + 1;
+    });
+    return Object.keys(frequency).reduce((a, b) => frequency[a] > frequency[b] ? a : b);
+  },
+  
+  // Helper function: Get time of day from date
+  getTimeOfDay(date) {
+    const hour = date.getHours();
+    if (hour < 12) return 'morning';
+    if (hour < 18) return 'afternoon';
+    return 'evening';
+  },
+  
+  // Helper function: Calculate mood improvement
+  calculateMoodImprovement(sessions) {
+    const moodValues = {
+      '😔': 1, '😰': 2, '😐': 3, '😌': 4, '😊': 5, '🎉': 6
+    };
+    let totalImprovement = 0;
+    let count = 0;
+    
+    sessions.forEach(session => {
+      const before = moodValues[session.moodBefore] || 3;
+      const after = moodValues[session.moodAfter] || 3;
+      totalImprovement += after - before;
+      count++;
+    });
+    
+    return count > 0 ? totalImprovement / count : 0;
   }
 };
 

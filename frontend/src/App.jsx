@@ -6,7 +6,7 @@ import Dashboard from './components/Dashboard/Dashboard';
 import Workout from './components/Workout/Workout';
 import Meditation from './components/Meditation/Meditation';
 import Water from './components/Water/Water';
-import Notes from './components/Notes/Notes';
+import Goals from './components/Goals/Goals';
 import Profile from './components/Profile/Profile';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import './App.css'; // Import global styles
@@ -26,7 +26,7 @@ function App() {
             <Route path="workout" element={<Workout />} />
             <Route path="meditation" element={<Meditation />} />
             <Route path="water" element={<Water />} />
-            <Route path="notes" element={<Notes />} />
+            <Route path="goals" element={<Goals />} />
             <Route path="profile" element={<Profile />} />
           </Route>
           

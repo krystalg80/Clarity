@@ -5,6 +5,7 @@ import './Profile.css';
 
 function Profile() {
   const { user: firebaseUser, loading: authLoading } = useAuth();
+  const { isPremium, userSubscription, upgradeToPremium, cancelSubscription } = useAuth();
   const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
     username: '',
@@ -313,6 +314,97 @@ function Profile() {
               </span>
             </div>
           </div>
+        </div>
+
+        {/* Subscription Management Section */}
+        <div className="subscription-section">
+          <h2>Your Plan</h2>
+          
+          {isPremium ? (
+            <div className="premium-status">
+              <div className="status-card premium">
+                <h3>💎 Premium Member</h3>
+                <p>You have access to all premium features!</p>
+                <div className="premium-benefits">
+                  <h4>Your Premium Benefits:</h4>
+                  <div className="benefits-list">
+                    <div className="benefit-item">
+                      <span className="benefit-icon">✓</span>
+                      <span>Custom goal setting</span>
+                    </div>
+                    <div className="benefit-item">
+                      <span className="benefit-icon">✓</span>
+                      <span>Exclusive Diamond badges</span>
+                    </div>
+                    <div className="benefit-item">
+                      <span className="benefit-icon">✓</span>
+                      <span>Premium soundscapes</span>
+                    </div>
+                    <div className="benefit-item">
+                      <span className="benefit-icon">✓</span>
+                      <span>Advanced analytics</span>
+                    </div>
+                    <div className="benefit-item">
+                      <span className="benefit-icon">✓</span>
+                      <span>Challenge competitions</span>
+                    </div>
+                    <div className="benefit-item">
+                      <span className="benefit-icon">✓</span>
+                      <span>Priority support</span>
+                    </div>
+                  </div>
+                </div>
+                <button 
+                  onClick={cancelSubscription}
+                  className="cancel-btn"
+                >
+                  Cancel Subscription
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="free-status">
+              <div className="status-card free">
+                <h3>🆓 Free Plan</h3>
+                <p>Upgrade to unlock premium features and enhance your wellness journey</p>
+                <div className="premium-benefits">
+                  <h4>Unlock with Premium:</h4>
+                  <div className="benefits-list">
+                    <div className="benefit-item">
+                      <span className="benefit-icon">🎯</span>
+                      <span>Custom goal setting</span>
+                    </div>
+                    <div className="benefit-item">
+                      <span className="benefit-icon">💎</span>
+                      <span>Exclusive Diamond badges</span>
+                    </div>
+                    <div className="benefit-item">
+                      <span className="benefit-icon">🎵</span>
+                      <span>Premium soundscapes</span>
+                    </div>
+                    <div className="benefit-item">
+                      <span className="benefit-icon">📊</span>
+                      <span>Advanced analytics</span>
+                    </div>
+                    <div className="benefit-item">
+                      <span className="benefit-icon">🏆</span>
+                      <span>Challenge competitions</span>
+                    </div>
+                    <div className="benefit-item">
+                      <span className="benefit-icon">⚡</span>
+                      <span>Priority support</span>
+                    </div>
+                  </div>
+                </div>
+                <button 
+                  onClick={upgradeToPremium}
+                  className="upgrade-btn"
+                >
+                  Upgrade to Premium - $4.99/month
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
