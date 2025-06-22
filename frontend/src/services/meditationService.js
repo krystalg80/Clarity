@@ -273,7 +273,97 @@ export const meditationService = {
     });
     
     return count > 0 ? totalImprovement / count : 0;
-  }
+  },
+
+  // Get meditation summary for a specific day (for dashboard)
+  async getDailyMeditationSummary(userId, date = new Date()) {
+    try {
+      // Convert date to start and end of day
+      const startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
+      
+      const endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999);
+      
+      const q = query(
+        collection(db, `users/${userId}/meditations`),
+        where('date', '>=', startOfDay),
+        where('date', '<=', endOfDay),
+        orderBy('date', 'desc')
+      );
+      
+      const snapshot = await getDocs(q);
+      const meditations = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        date: doc.data().date?.toDate()
+      }));
+      
+      // Calculate daily stats using your existing helper functions
+      const totalMinutes = meditations.reduce((sum, m) => sum + (m.durationMinutes || 0), 0);
+      const completedSessions = meditations.filter(m => m.completed).length;
+      const averageDuration = meditations.length > 0 ? totalMinutes / meditations.length : 0;
+      
+      // Deep state achievements today
+      const deepStateAchieved = meditations.filter(m => m.deepStateAchieved).length;
+      const deepStateRate = meditations.length > 0 ? (deepStateAchieved / meditations.length * 100) : 0;
+      
+      // Most recent session details
+      const lastSession = meditations.length > 0 ? meditations[0] : null;
+      
+      // Use your existing helper functions
+      const favoriteSoundscape = meditations.length > 0 ? this.getMostFrequent(meditations, 'soundscape') : 'silence';
+      const favoriteTime = meditations.length > 0 ? this.getMostFrequent(meditations, 'timeOfDay') : 'morning';
+      const moodImprovement = this.calculateMoodImprovement(meditations);
+      
+      return {
+        date: date.toISOString().split('T')[0], // YYYY-MM-DD format
+        totalSessions: meditations.length,
+        completedSessions,
+        totalMinutes,
+        averageDuration: Math.round(averageDuration * 10) / 10, // Round to 1 decimal
+        deepStateAchieved,
+        deepStateSuccessRate: Math.round(deepStateRate),
+        lastSession,
+        favoriteSoundscape,
+        favoriteTime,
+        moodImprovement: Math.round(moodImprovement * 100) / 100, // Round to 2 decimals
+        sessions: meditations, // Full session data if needed
+        
+        // Quick stats for dashboard cards
+        hasSessionsToday: meditations.length > 0,
+        mostRecentType: lastSession?.type || 'mindfulness',
+        mostRecentSoundscape: lastSession?.soundscape || 'silence',
+        timeOfLastSession: lastSession?.date || null,
+        totalInterruptions: meditations.reduce((sum, m) => sum + (m.interruptions || 0), 0),
+        averageFocusLevel: meditations.length > 0 
+          ? meditations.reduce((sum, m) => sum + (m.focusLevel || 5), 0) / meditations.length 
+          : 0
+      };
+    } catch (error) {
+      console.error('Error fetching daily meditation summary:', error);
+      return {
+        date: date.toISOString().split('T')[0],
+        totalSessions: 0,
+        completedSessions: 0,
+        totalMinutes: 0,
+        averageDuration: 0,
+        deepStateAchieved: 0,
+        deepStateSuccessRate: 0,
+        lastSession: null,
+        favoriteSoundscape: 'silence',
+        favoriteTime: 'morning',
+        moodImprovement: 0,
+        sessions: [],
+        hasSessionsToday: false,
+        mostRecentType: 'mindfulness',
+        mostRecentSoundscape: 'silence',
+        timeOfLastSession: null,
+        totalInterruptions: 0,
+        averageFocusLevel: 0
+      };
+    }
+  },
 };
 
 export default meditationService;

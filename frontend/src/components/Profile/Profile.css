@@ -501,6 +501,40 @@
   font-weight: bold;
 }
 
+/* Replace the button style with this minimal version: */
+
+.keep-premium-btn {
+  background: var(--sage-600);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.keep-premium-btn:hover {
+  background: var(--sage-700);
+  transform: translateY(-1px);
+}
+
+.keep-premium-btn:active {
+  transform: translateY(0);
+  background: var(--sage-800);
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .keep-premium-btn {
+    padding: 14px 20px;
+    font-size: 15px;
+  }
+}
+
 /* Responsive Design */
 @media (min-width: 480px) {
   .form-row {

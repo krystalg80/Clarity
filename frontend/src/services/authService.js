@@ -16,7 +16,7 @@ export const authService = {
         userData.password
       );
 
-      // Create user document in Firestore
+      // Create user document in Firestore with TRIAL FIELDS
       await setDoc(doc(db, 'users', userCredential.user.uid), {
         username: userData.username,
         email: userData.email,
@@ -25,6 +25,13 @@ export const authService = {
         exerciseGoalMinutes: userData.exerciseGoalMinutes || 30,
         waterGoalOz: userData.waterGoalOz || 64,
         meditationGoalMinutes: userData.meditationGoalMinutes || 10,
+        
+        // ADD THESE TRIAL FIELDS:
+        subscription: 'trial',
+        subscriptionStatus: 'trial_active',
+        trialStartDate: new Date(),
+        trialEndDate: new Date(Date.now() + (14 * 24 * 60 * 60 * 1000)), // 14 days from now
+        
         createdAt: new Date(),
         updatedAt: new Date()
       });

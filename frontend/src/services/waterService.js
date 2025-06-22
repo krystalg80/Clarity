@@ -160,6 +160,82 @@ export const waterService = {
     } catch (error) {
       throw new Error('Error fetching water summary: ' + error.message);
     }
+  },
+
+  // Get water intake for a specific day (for dashboard)
+  async getDailyWaterIntake(userId, date = new Date()) {
+    try {
+      // Convert date to start and end of day
+      const startOfDay = new Date(date);
+      startOfDay.setHours(0, 0, 0, 0);
+      
+      const endOfDay = new Date(date);
+      endOfDay.setHours(23, 59, 59, 999);
+      
+      const q = query(
+        collection(db, `users/${userId}/waterIntake`),
+        where('date', '>=', startOfDay),
+        where('date', '<=', endOfDay),
+        orderBy('date', 'desc')
+      );
+      
+      const snapshot = await getDocs(q);
+      const waterEntries = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        date: doc.data().date?.toDate()
+      }));
+      
+      // Calculate daily stats
+      const totalOz = waterEntries.reduce((sum, entry) => sum + (entry.amount || 0), 0);
+      const totalEntries = waterEntries.length;
+      
+      // Most recent entry
+      const lastEntry = waterEntries.length > 0 ? waterEntries[0] : null;
+      
+      // Calculate hydration patterns
+      const hourlyBreakdown = this.calculateHourlyWaterIntake(waterEntries);
+      const averagePerEntry = totalEntries > 0 ? totalOz / totalEntries : 0;
+      
+      return {
+        date: date.toISOString().split('T')[0],
+        totalOz,
+        totalEntries,
+        lastEntry,
+        hourlyBreakdown,
+        averagePerEntry: Math.round(averagePerEntry * 10) / 10, // Round to 1 decimal
+        entries: waterEntries,
+        
+        // Quick stats for dashboard cards
+        hasWaterToday: waterEntries.length > 0,
+        timeOfLastEntry: lastEntry?.date || null,
+        isHydrationOnTrack: totalOz >= (64 * 0.75) // 75% of recommended daily intake
+      };
+    } catch (error) {
+      console.error('Error fetching daily water intake:', error);
+      return {
+        date: date.toISOString().split('T')[0],
+        totalOz: 0,
+        totalEntries: 0,
+        lastEntry: null,
+        hourlyBreakdown: {},
+        averagePerEntry: 0,
+        entries: [],
+        hasWaterToday: false,
+        timeOfLastEntry: null,
+        isHydrationOnTrack: false
+      };
+    }
+  },
+
+  // Helper function
+  calculateHourlyWaterIntake(entries) {
+    const hourlyData = {};
+    entries.forEach(entry => {
+      const hour = entry.date.getHours();
+      hourlyData[hour] = (hourlyData[hour] || 0) + entry.amount;
+    });
+    return hourlyData;
   }
 };
 

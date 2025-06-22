@@ -42,8 +42,10 @@ function WelcomePage() {
     }
   };
 
+  // Simplify your signup - no subscription selection needed!
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
+    
     if (password !== confirmPassword) {
       setErrors({ confirmPassword: 'Confirm Password field must be the same as the Password field' });
       return;
@@ -51,7 +53,7 @@ function WelcomePage() {
     
     setErrors({});
     setIsSubmitting(true);
-
+    
     try {
       await authService.register({ 
         email, 
@@ -61,9 +63,10 @@ function WelcomePage() {
         lastName, 
         exerciseGoalMinutes: parseInt(exerciseGoalMinutes), 
         waterGoalOz: parseInt(waterGoalOz), 
-        meditationGoalMinutes: parseInt(meditationGoalMinutes) 
+        meditationGoalMinutes: parseInt(meditationGoalMinutes)
+        // No subscription choice - everyone gets trial!
       });
-      // AuthContext will handle the redirect
+      // Will redirect to dashboard with full premium access
     } catch (error) {
       setErrors({ general: error.message });
     } finally {

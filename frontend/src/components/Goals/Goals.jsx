@@ -7,7 +7,7 @@ import PremiumGate from '../Premium/PremiumGate';
 import './Goals.css';
 
 function Goals() {
-  const { user: firebaseUser } = useAuth();
+  const { user: firebaseUser, isPremium } = useAuth(); // ← Use this instead
   const [weeklyData, setWeeklyData] = useState({
     workout: { current: 0, goal: 210 }, // 30 min/day * 7
     water: { current: 0, goal: 448 }, // 64 oz/day * 7
@@ -16,7 +16,6 @@ function Goals() {
   const [achievements, setAchievements] = useState([]);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [isPremium, setIsPremium] = useState(false); // TODO: Get from user data
   const [customWorkoutGoal, setCustomWorkoutGoal] = useState(30);
   const [customWaterGoal, setCustomWaterGoal] = useState(64);
   const [customMeditationGoal, setCustomMeditationGoal] = useState(15);

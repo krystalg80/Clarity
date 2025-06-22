@@ -4,8 +4,17 @@ import { authService } from '../../services/authService';
 import './Profile.css';
 
 function Profile() {
-  const { user: firebaseUser, loading: authLoading } = useAuth();
-  const { isPremium, userSubscription, upgradeToPremium, cancelSubscription } = useAuth();
+  // Fixed: Get ALL needed values from useAuth in one destructure
+  const { 
+    user: firebaseUser, 
+    loading: authLoading, 
+    isPremium, 
+    userSubscription, 
+    trialDaysRemaining,    // ← Add this missing import
+    upgradeToPremium, 
+    cancelSubscription 
+  } = useAuth();
+
   const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
     username: '',
@@ -320,7 +329,35 @@ function Profile() {
         <div className="subscription-section">
           <h2>Your Plan</h2>
           
-          {isPremium ? (
+          {userSubscription === 'trial' && (
+            <div className="trial-status">
+              <div className="status-card trial">
+                <h3>Premium Trial</h3>
+                <p>You're experiencing the full premium experience!</p>
+                <div className="trial-countdown">
+                  <span className="days-remaining">{trialDaysRemaining}</span>
+                  <span className="days-label">days remaining</span>
+                </div>
+                <div className="trial-benefits">
+                  <p>Currently enjoying:</p>
+                  <ul>
+                    <li>✓ Custom goal setting</li>
+                    <li>✓ Diamond achievements</li>
+                    <li>✓ Premium soundscapes</li>
+                    <li>✓ Advanced analytics</li>
+                  </ul>
+                </div>
+                <button 
+                  onClick={upgradeToPremium}
+                  className="keep-premium-btn"
+                >
+                  Keep Premium Access - $4.99/month
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {userSubscription === 'premium' && (
             <div className="premium-status">
               <div className="status-card premium">
                 <h3>💎 Premium Member</h3>
@@ -362,7 +399,9 @@ function Profile() {
                 </button>
               </div>
             </div>
-          ) : (
+          )}
+          
+          {userSubscription === 'free' && (
             <div className="free-status">
               <div className="status-card free">
                 <h3>🆓 Free Plan</h3>

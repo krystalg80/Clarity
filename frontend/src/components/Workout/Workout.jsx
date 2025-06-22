@@ -52,54 +52,77 @@ function Workout() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!firebaseUser?.uid) return;
         
-        setIsSubmitting(true);
-        setError('');
+        console.log('🚀 Workout submit started');
+        console.log('📊 Form data:', formData); // Use formData instead
+        console.log('👤 Firebase user:', firebaseUser?.uid);
+        
+        if (!firebaseUser?.uid) {
+            console.error('❌ No user ID found');
+            setError('Please log in to save workouts');
+            return;
+        }
+
+        // Validate required fields
+        if (!formData.title || !formData.durationMinutes || !formData.date) {
+            setError('Please fill in all required fields');
+            return;
+        }
 
         try {
-            if (editMode) {
+            setIsSubmitting(true);
+            setError('');
+            
+            const workoutData = {
+                title: formData.title, // ✅ Use formData
+                type: formData.type, // ✅ Use formData
+                durationMinutes: parseInt(formData.durationMinutes), // ✅ Use formData
+                date: formData.date ? new Date(formData.date).toISOString() : new Date().toISOString(),
+                notes: formData.notes, // ✅ Use formData
+                caloriesBurned: formData.caloriesBurned ? parseInt(formData.caloriesBurned) : 0 // ✅ Use formData
+            };
+            
+            console.log('📝 Sending workout data:', workoutData);
+            
+            let result;
+            if (editMode && editId) {
                 // Update existing workout
-                await workoutService.updateWorkout(firebaseUser.uid, editId, {
-                    ...formData,
-                    durationMinutes: parseInt(formData.durationMinutes),
-                    caloriesBurned: parseInt(formData.caloriesBurned) || 0
-                });
-                
-                // Update local state
-                setWorkouts(prev => prev.map(workout => 
-                    workout.id === editId 
-                        ? { ...workout, ...formData, durationMinutes: parseInt(formData.durationMinutes) }
-                        : workout
-                ));
-                
-                setEditMode(false);
-                setEditId(null);
+                result = await workoutService.updateWorkout(firebaseUser.uid, editId, workoutData);
             } else {
                 // Create new workout
-                const response = await workoutService.logWorkout(firebaseUser.uid, {
-                    ...formData,
-                    durationMinutes: parseInt(formData.durationMinutes),
-                    caloriesBurned: parseInt(formData.caloriesBurned) || 0
-                });
-                
-                // Add to local state
-                setWorkouts(prev => [response.workout, ...prev]);
+                result = await workoutService.logWorkout(firebaseUser.uid, workoutData);
             }
             
-            // Reset form
-            setFormData({
-                date: '',
-                durationMinutes: '',
-                title: '',
-                type: 'General',
-                notes: '',
-                caloriesBurned: ''
-            });
+            console.log('✅ Workout service result:', result);
+            
+            if (result.success) {
+                console.log('🎉 Workout logged successfully!');
+                
+                // Refresh the workouts list
+                const response = await workoutService.fetchWorkoutsByUser(firebaseUser.uid);
+                setWorkouts(response.workouts || []);
+                
+                // Reset form
+                setFormData({
+                    date: '',
+                    durationMinutes: '',
+                    title: '',
+                    type: 'General',
+                    notes: '',
+                    caloriesBurned: ''
+                });
+                
+                // Exit edit mode
+                setEditMode(false);
+                setEditId(null);
+                
+                // Show success message
+                setError(''); // Clear any previous errors
+            }
             
         } catch (error) {
-            console.error('Error saving workout:', error);
-            setError(editMode ? 'Failed to update workout' : 'Failed to log workout');
+            console.error('💥 Workout logging error:', error);
+            setError('Failed to save workout. Please try again.');
         } finally {
             setIsSubmitting(false);
         }
