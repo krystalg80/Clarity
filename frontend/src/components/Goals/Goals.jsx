@@ -4,10 +4,19 @@ import { workoutService } from '../../services/workoutService';
 import { waterService } from '../../services/waterService';
 import { meditationService } from '../../services/meditationService';
 import PremiumGate from '../Premium/PremiumGate';
+import timezoneUtils from '../../utils/timezone';
+import AnxietyMonsterTamer from '../Monster/AnxietyMonsterTamer';
 import './Goals.css';
 
 function Goals() {
-  const { user: firebaseUser, isPremium } = useAuth(); // ← Use this instead
+  const { user: firebaseUser, isPremium } = useAuth(); // Remove setUser
+  
+  // Add local game stats state
+  const [gameStats, setGameStats] = useState({
+    anxietyGameScore: 0,
+    mindfulnessPoints: 0
+  });
+  
   const [weeklyData, setWeeklyData] = useState({
     workout: { current: 0, goal: 210 }, // 30 min/day * 7
     water: { current: 0, goal: 448 }, // 64 oz/day * 7
@@ -21,46 +30,48 @@ function Goals() {
   const [customMeditationGoal, setCustomMeditationGoal] = useState(15);
 
   useEffect(() => {
+    const fetchWeeklyData = async () => {
+      if (firebaseUser?.uid) {
+        try {
+          setIsLoading(true);
+          
+          console.log('🌍 Goals timezone:', timezoneUtils.getUserTimezone());
+          
+          // Get current week's data (7 days)
+          const [workoutData, waterData, meditationData] = await Promise.all([
+            workoutService.getWorkoutSummary(firebaseUser.uid, 7),
+            waterService.getWeeklyWaterIntake?.(firebaseUser.uid) || { totalOz: 0 },
+            meditationService.getMeditationSummary(firebaseUser.uid, 7)
+          ]);
+
+          setWeeklyData({
+            workout: { 
+              current: workoutData.totalMinutes || 0, 
+              goal: 210 // TODO: Get from user preferences
+            },
+            water: { 
+              current: waterData.totalOz || 0, 
+              goal: 448 
+            },
+            meditation: { 
+              current: meditationData.totalMinutes || 0, 
+              goal: 105 
+            }
+          });
+
+          // Calculate achievements
+          calculateAchievements();
+          
+        } catch (error) {
+          console.error('Error fetching weekly data:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
     fetchWeeklyData();
   }, [firebaseUser]);
-
-  const fetchWeeklyData = async () => {
-    if (!firebaseUser?.uid) return;
-    
-    try {
-      setIsLoading(true);
-      
-      // Get current week's data (7 days)
-      const [workoutData, waterData, meditationData] = await Promise.all([
-        workoutService.getWorkoutSummary(firebaseUser.uid, 7),
-        waterService.getWeeklyWaterIntake?.(firebaseUser.uid) || { totalOz: 0 },
-        meditationService.getMeditationSummary(firebaseUser.uid, 7)
-      ]);
-
-      setWeeklyData({
-        workout: { 
-          current: workoutData.totalMinutes || 0, 
-          goal: 210 // TODO: Get from user preferences
-        },
-        water: { 
-          current: waterData.totalOz || 0, 
-          goal: 448 
-        },
-        meditation: { 
-          current: meditationData.totalMinutes || 0, 
-          goal: 105 
-        }
-      });
-
-      // Calculate achievements
-      calculateAchievements();
-      
-    } catch (error) {
-      console.error('Error fetching weekly data:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const calculateAchievements = () => {
     const newAchievements = [];
@@ -349,7 +360,7 @@ function Goals() {
         </PremiumGate>
       </div>
 
-      {/* Diamond Achievements - Premium Only */}
+      {/* Diamond Achievements - Premium Only
       <div className="diamond-achievements">
         <h2 className="section-title">Diamond Achievements</h2>
         
@@ -377,7 +388,7 @@ function Goals() {
             </div>
           </div>
         </PremiumGate>
-      </div>
+      </div> */}
 
       {/* Premium Challenges */}
       <div className="premium-challenges">
@@ -411,6 +422,45 @@ function Goals() {
             </div>
           </div>
         </PremiumGate>
+      </div>
+
+      {/* Game Stats Display */}
+      <div className="game-stats-section">
+        <h2 className="section-title">Mental Health Gaming Stats</h2>
+        <div className="game-stats-grid">
+          <div className="game-stat-card">
+            <div className="stat-icon">👾</div>
+            <div className="stat-info">
+              <span className="stat-number">{gameStats.anxietyGameScore}</span>
+              <span className="stat-label">Monsters Tamed</span>
+            </div>
+          </div>
+          <div className="game-stat-card">
+            <div className="stat-icon">🧘‍♀️</div>
+            <div className="stat-info">
+              <span className="stat-number">{gameStats.mindfulnessPoints}</span>
+              <span className="stat-label">Mindfulness Points</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Anxiety Monster Tamer Game - New Section */}
+      <div className="anxiety-monster-tamer">
+        <h2 className="section-title">Anxiety Monster Tamer</h2>
+        
+        <AnxietyMonsterTamer 
+          user={firebaseUser} 
+          onUpdateStats={(stats) => {
+            // Update local game stats
+            setGameStats(prev => ({
+              anxietyGameScore: stats.anxietyGameScore,
+              mindfulnessPoints: prev.mindfulnessPoints + stats.mindfulnessPoints
+            }));
+            
+            console.log('🎮 Game stats updated:', stats);
+          }}
+        />
       </div>
     </div>
   );

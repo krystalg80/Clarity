@@ -10,6 +10,7 @@ import { waterService } from '../../services/waterService';
 import { meditationService } from '../../services/meditationService';
 import affirmations from '../../data/affirmations';
 import PremiumGate from '../Premium/PremiumGate';
+import timezoneUtils from '../../utils/timezone';
 
 function getRandomAffirmation() {
   const randomIndex = Math.floor(Math.random() * affirmations.length);
@@ -49,8 +50,10 @@ function Dashboard() {
       try {
         setIsLoading(true);
         
-        console.log('🔍 Fetching daily data for user:', firebaseUser.uid);
-        console.log('📅 Today date:', new Date());
+        // Get today in user's local timezone
+        const today = timezoneUtils.getCurrentLocalTime();
+        console.log('🌍 Dashboard timezone:', timezoneUtils.getUserTimezone());
+        console.log('📅 Local today:', timezoneUtils.formatLocalDateTime(today));
         
         // Fetch user profile first
         const profileResponse = await authService.getUserProfile(firebaseUser.uid);
@@ -62,15 +65,12 @@ function Dashboard() {
         setWaterGoalOz(profileResponse.user.waterGoalOz || 64);
         
         // Fetch TODAY'S data using daily functions
-        const today = new Date();
         console.log('📊 Fetching workout data for date:', today);
         
         const [workoutData, meditationData, waterData] = await Promise.all([
           workoutService.getDailyWorkoutSummary(firebaseUser.uid, today),
           meditationService.getDailyMeditationSummary(firebaseUser.uid, today),
-          waterService.getWaterSummary ? 
-            waterService.getWaterSummary(firebaseUser.uid, 1) : 
-            waterService.getWeeklyWaterIntake?.(firebaseUser.uid)
+          waterService.getDailyWaterIntake(firebaseUser.uid, today)
         ]);
         
         console.log('📊 Raw workout data from Dashboard:', workoutData);
@@ -154,14 +154,11 @@ function Dashboard() {
       <div className="welcome-section">
         <h1>Welcome back, {userProfile.firstName}!</h1>
         <p>Here's your wellness progress for today</p>
-        <div className="today-date">
-          {new Date().toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          })}
-        </div>
+        {/* <div className="today-date">
+          {timezoneUtils.formatLocalDateTime(new Date())}
+          <br />
+          <small>({timezoneUtils.getUserTimezone()})</small>
+        </div> */}
       </div>
 
       {/* Updated progress bars with enhanced daily info */}

@@ -10,12 +10,13 @@ import {
   orderBy 
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import timezoneUtils from '../utils/timezone';
 
 export const meditationService = {
   // Log meditation session with detailed tracking
   async logMeditation(userId, meditationData) {
     try {
-      const docRef = await addDoc(collection(db, `users/${userId}/meditations`), {
+      const docData = {
         title: meditationData.title || 'Meditation Session',
         type: meditationData.type || 'mindfulness', // mindfulness, breathing, guided, deep_focus
         soundscape: meditationData.soundscape || 'silence', // rain, ocean, white_noise, forest, etc.
@@ -23,7 +24,7 @@ export const meditationService = {
         targetDuration: meditationData.targetDuration || meditationData.durationMinutes,
         completed: meditationData.completed || false,
         deepStateAchieved: meditationData.deepStateAchieved || false, // NEW: Track if user hit deep state
-        date: new Date(meditationData.date),
+        date: timezoneUtils.toLocalTimezone(meditationData.date || new Date()),
         notes: meditationData.notes || '',
         moodBefore: meditationData.moodBefore || '', // Track mood before
         moodAfter: meditationData.moodAfter || '', // Track mood after
@@ -33,14 +34,17 @@ export const meditationService = {
         // Neurological optimization tracking
         brainwaveFrequency: meditationData.brainwaveFrequency || null, // alpha, theta, delta
         focusLevel: meditationData.focusLevel || null, // 1-10 scale
-        createdAt: new Date(),
-        updatedAt: new Date()
-      });
+        createdAt: timezoneUtils.getCurrentLocalTime(),
+        updatedAt: timezoneUtils.getCurrentLocalTime(),
+        userTimezone: timezoneUtils.getUserTimezone()
+      };
+      
+      const docRef = await addDoc(collection(db, `users/${userId}/meditations`), docData);
       
       return { 
         id: docRef.id, 
         success: true,
-        meditation: { ...meditationData, id: docRef.id }
+        meditation: { ...docData, id: docRef.id }
       };
     } catch (error) {
       throw new Error('Error logging meditation: ' + error.message);
@@ -278,12 +282,10 @@ export const meditationService = {
   // Get meditation summary for a specific day (for dashboard)
   async getDailyMeditationSummary(userId, date = new Date()) {
     try {
-      // Convert date to start and end of day
-      const startOfDay = new Date(date);
-      startOfDay.setHours(0, 0, 0, 0);
+      const startOfDay = timezoneUtils.getStartOfDay(date);
+      const endOfDay = timezoneUtils.getEndOfDay(date);
       
-      const endOfDay = new Date(date);
-      endOfDay.setHours(23, 59, 59, 999);
+      console.log('🌍 Daily meditation query for timezone:', timezoneUtils.getUserTimezone());
       
       const q = query(
         collection(db, `users/${userId}/meditations`),
@@ -317,7 +319,7 @@ export const meditationService = {
       const moodImprovement = this.calculateMoodImprovement(meditations);
       
       return {
-        date: date.toISOString().split('T')[0], // YYYY-MM-DD format
+        date: timezoneUtils.formatLocalDate(date),
         totalSessions: meditations.length,
         completedSessions,
         totalMinutes,
@@ -338,7 +340,8 @@ export const meditationService = {
         totalInterruptions: meditations.reduce((sum, m) => sum + (m.interruptions || 0), 0),
         averageFocusLevel: meditations.length > 0 
           ? meditations.reduce((sum, m) => sum + (m.focusLevel || 5), 0) / meditations.length 
-          : 0
+          : 0,
+        userTimezone: timezoneUtils.getUserTimezone()
       };
     } catch (error) {
       console.error('Error fetching daily meditation summary:', error);
@@ -360,7 +363,8 @@ export const meditationService = {
         mostRecentSoundscape: 'silence',
         timeOfLastSession: null,
         totalInterruptions: 0,
-        averageFocusLevel: 0
+        averageFocusLevel: 0,
+        userTimezone: timezoneUtils.getUserTimezone()
       };
     }
   },

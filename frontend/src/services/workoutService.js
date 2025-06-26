@@ -11,49 +11,41 @@ import {
   orderBy 
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import timezoneUtils from '../utils/timezone';
 
 export const workoutService = {
-  // Log workout (replaces Redux logWorkout)
+  // Log workout with timezone awareness
   async logWorkout(userId, workoutData) {
     try {
-      console.log('🔧 Service received data:', { userId, workoutData });
+      console.log('🌍 Logging workout in timezone:', timezoneUtils.getUserTimezone());
       
-      // Fix date handling - use current time instead of midnight
-      const workoutDate = workoutData.date ? new Date(workoutData.date) : new Date();
-      
-      // If the date is just a date string (no time), set to current time of day
-      if (workoutData.date && workoutData.date.includes('T00:00:00')) {
-        workoutDate.setHours(new Date().getHours(), new Date().getMinutes());
+      // Handle date in user's local timezone
+      let workoutDate = timezoneUtils.getCurrentLocalTime();
+      if (workoutData.date) {
+        workoutDate = timezoneUtils.toLocalTimezone(workoutData.date);
       }
       
       const docData = {
         title: workoutData.title,
         type: workoutData.type || 'General',
         durationMinutes: workoutData.durationMinutes,
-        date: workoutDate, // Use the fixed date
+        date: workoutDate,
         notes: workoutData.notes || '',
         caloriesBurned: workoutData.caloriesBurned || 0,
         completed: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        createdAt: timezoneUtils.getCurrentLocalTime(),
+        updatedAt: timezoneUtils.getCurrentLocalTime(),
+        userTimezone: timezoneUtils.getUserTimezone()
       };
-      
-      console.log('💾 Saving to Firestore with date:', docData.date);
       
       const docRef = await addDoc(collection(db, `users/${userId}/workouts`), docData);
-      
-      return { 
-        id: docRef.id, 
-        success: true,
-        workout: { ...workoutData, id: docRef.id, completed: true }
-      };
+      return { id: docRef.id, success: true, workout: { ...workoutData, id: docRef.id } };
     } catch (error) {
-      console.error('💥 Service error:', error);
       throw new Error('Error logging workout: ' + error.message);
     }
   },
 
-  // Fetch user workouts (replaces Redux fetchWorkoutsByUser)
+  // Fetch workouts with timezone awareness
   async fetchWorkoutsByUser(userId) {
     try {
       const q = query(
@@ -64,7 +56,11 @@ export const workoutService = {
       const workouts = snapshot.docs.map(doc => ({ 
         id: doc.id, 
         ...doc.data(),
-        date: doc.data().date?.toDate() // Convert Firestore timestamp
+        date: doc.data().date?.toDate(),
+        // Add formatted dates for display
+        localDate: timezoneUtils.formatLocalDate(doc.data().date?.toDate()),
+        localDateTime: timezoneUtils.formatLocalDateTime(doc.data().date?.toDate()),
+        relativeTime: timezoneUtils.getRelativeTime(doc.data().date?.toDate())
       }));
       
       return { workouts };
@@ -73,19 +69,23 @@ export const workoutService = {
     }
   },
 
-  // Update workout (replaces Redux updateWorkout)
+  // Update workout with timezone awareness
   async updateWorkout(userId, workoutId, updates) {
     try {
       const docRef = doc(db, `users/${userId}/workouts`, workoutId);
-      await updateDoc(docRef, {
+      const updateData = {
         ...updates,
-        updatedAt: new Date()
-      });
-      
-      return { 
-        success: true,
-        workout: { id: workoutId, ...updates }
+        updatedAt: timezoneUtils.getCurrentLocalTime(),
+        userTimezone: timezoneUtils.getUserTimezone()
       };
+      
+      // If date is being updated, ensure it's in local timezone
+      if (updates.date) {
+        updateData.date = timezoneUtils.toLocalTimezone(updates.date);
+      }
+      
+      await updateDoc(docRef, updateData);
+      return { success: true, workout: { id: workoutId, ...updates } };
     } catch (error) {
       throw new Error('Error updating workout: ' + error.message);
     }
@@ -107,51 +107,15 @@ export const workoutService = {
   // Get workout summary for dashboard
   async getWorkoutSummary(userId, days = 7) {
     try {
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - days);
+      const { startDate, endDate } = timezoneUtils.getLocalDateRange(days);
+      
+      console.log('🌍 Weekly workout query for timezone:', timezoneUtils.getUserTimezone());
+      console.log('📅 Query range:', timezoneUtils.formatLocalDateTime(startDate), 'to', timezoneUtils.formatLocalDateTime(endDate));
       
       const q = query(
         collection(db, `users/${userId}/workouts`),
         where('date', '>=', startDate),
-        orderBy('date', 'desc')
-      );
-      
-      const snapshot = await getDocs(q);
-      const workouts = snapshot.docs.map(doc => doc.data());
-      
-      const totalMinutes = workouts.reduce((sum, workout) => 
-        sum + (workout.durationMinutes || 0), 0
-      );
-      
-      const totalCalories = workouts.reduce((sum, workout) => 
-        sum + (workout.caloriesBurned || 0), 0
-      );
-      
-      return {
-        totalWorkouts: workouts.length,
-        totalMinutes,
-        totalCalories,
-        workouts: workouts.slice(0, 5) // Recent 5 for dashboard
-      };
-    } catch (error) {
-      throw new Error('Error fetching workout summary: ' + error.message);
-    }
-  },
-
-  // Get workout summary for a specific day (for dashboard)
-  async getDailyWorkoutSummary(userId, date = new Date()) {
-    try {
-      // Convert date to start and end of day
-      const startOfDay = new Date(date);
-      startOfDay.setHours(0, 0, 0, 0);
-      
-      const endOfDay = new Date(date);
-      endOfDay.setHours(23, 59, 59, 999);
-      
-      const q = query(
-        collection(db, `users/${userId}/workouts`),
-        where('date', '>=', startOfDay),
-        where('date', '<=', endOfDay),
+        where('date', '<=', endDate),
         orderBy('date', 'desc')
       );
       
@@ -162,50 +126,68 @@ export const workoutService = {
         date: doc.data().date?.toDate()
       }));
       
-      // Calculate daily stats - remove the completed filter
-      const totalMinutes = workouts.reduce((sum, w) => sum + (w.durationMinutes || 0), 0);
-      const completedWorkouts = workouts.length; // All logged workouts are considered completed
-      const caloriesBurned = workouts.reduce((sum, w) => sum + (w.caloriesBurned || 0), 0);
-      
-      // Most recent workout details
-      const lastWorkout = workouts.length > 0 ? workouts[0] : null;
-      
-      // Workout types today
-      const workoutTypes = [...new Set(workouts.map(w => w.type))];
-      const mostCommonType = this.getMostCommonWorkoutType(workouts);
+      const totalMinutes = workouts.reduce((sum, workout) => sum + (workout.durationMinutes || 0), 0);
+      const totalCalories = workouts.reduce((sum, workout) => sum + (workout.caloriesBurned || 0), 0);
       
       return {
-        date: date.toISOString().split('T')[0],
         totalWorkouts: workouts.length,
-        completedWorkouts,
+        totalMinutes,
+        totalCalories,
+        workouts: workouts.slice(0, 5),
+        period: `${days} days`,
+        userTimezone: timezoneUtils.getUserTimezone()
+      };
+    } catch (error) {
+      throw new Error('Error fetching workout summary: ' + error.message);
+    }
+  },
+
+  // Get workout summary for a specific day (for dashboard)
+  async getDailyWorkoutSummary(userId, date = new Date()) {
+    try {
+      const { startDate, endDate } = {
+        startDate: timezoneUtils.getStartOfDay(date),
+        endDate: timezoneUtils.getEndOfDay(date)
+      };
+      
+      console.log('🌍 Daily workout query for timezone:', timezoneUtils.getUserTimezone());
+      console.log('📅 Query range:', timezoneUtils.formatLocalDateTime(startDate), 'to', timezoneUtils.formatLocalDateTime(endDate));
+      
+      const q = query(
+        collection(db, `users/${userId}/workouts`),
+        where('date', '>=', startDate),
+        where('date', '<=', endDate),
+        orderBy('date', 'desc')
+      );
+      
+      const snapshot = await getDocs(q);
+      const workouts = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        date: doc.data().date?.toDate()
+      }));
+      
+      console.log('💪 Found workouts for today:', workouts.length);
+      
+      const totalMinutes = workouts.reduce((sum, w) => sum + (w.durationMinutes || 0), 0);
+      const totalWorkouts = workouts.length;
+      const caloriesBurned = workouts.reduce((sum, w) => sum + (w.caloriesBurned || 0), 0);
+      
+      return {
+        date: timezoneUtils.formatLocalDate(date),
+        totalWorkouts,
+        completedWorkouts: totalWorkouts,
         totalMinutes,
         caloriesBurned,
-        lastWorkout,
-        workoutTypes,
-        mostCommonType,
-        workouts: workouts, // Full workout data if needed
-        
-        // Quick stats for dashboard cards
+        lastWorkout: workouts.length > 0 ? workouts[0] : null,
+        workouts,
         hasWorkoutsToday: workouts.length > 0,
-        averageIntensity: this.calculateAverageIntensity(workouts),
-        timeOfLastWorkout: lastWorkout?.date || null
+        mostCommonType: workouts.length > 0 ? this.getMostCommonWorkoutType(workouts) : null,
+        userTimezone: timezoneUtils.getUserTimezone()
       };
     } catch (error) {
       console.error('Error fetching daily workout summary:', error);
-      return {
-        date: date.toISOString().split('T')[0],
-        totalWorkouts: 0,
-        completedWorkouts: 0,
-        totalMinutes: 0,
-        caloriesBurned: 0,
-        lastWorkout: null,
-        workoutTypes: [],
-        mostCommonType: null,
-        workouts: [],
-        hasWorkoutsToday: false,
-        averageIntensity: 0,
-        timeOfLastWorkout: null
-      };
+      return this.getEmptyDailySummary(date);
     }
   },
 
@@ -219,10 +201,19 @@ export const workoutService = {
     return Object.keys(typeCounts).reduce((a, b) => typeCounts[a] > typeCounts[b] ? a : b);
   },
 
-  calculateAverageIntensity(workouts) {
-    if (workouts.length === 0) return 0;
-    const totalIntensity = workouts.reduce((sum, w) => sum + (w.intensity || 5), 0);
-    return Math.round(totalIntensity / workouts.length);
+  getEmptyDailySummary(date) {
+    return {
+      date: timezoneUtils.formatLocalDate(date),
+      totalWorkouts: 0,
+      completedWorkouts: 0,
+      totalMinutes: 0,
+      caloriesBurned: 0,
+      lastWorkout: null,
+      workouts: [],
+      hasWorkoutsToday: false,
+      mostCommonType: null,
+      userTimezone: timezoneUtils.getUserTimezone()
+    };
   }
 };
 

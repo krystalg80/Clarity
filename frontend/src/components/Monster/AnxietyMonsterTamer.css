@@ -1,0 +1,875 @@
+.monster-tamer-game {
+  background: linear-gradient(135deg, var(--sage-500) 0%, var(--sage-600) 100%);
+  border-radius: 20px;
+  padding: 24px;
+  color: white;
+  min-height: 400px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(107, 128, 105, 0.3);
+}
+
+.monster-tamer-game::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  animation: shimmer 6s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(180deg); }
+}
+
+/* Game Menu */
+.game-menu {
+  text-align: center;
+  position: relative;
+  z-index: 10;
+}
+
+.game-header h2 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.game-header p {
+  opacity: 0.9;
+  margin-bottom: 24px;
+  font-size: 16px;
+}
+
+/* Player Stats */
+.player-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat {
+  background: rgba(255,255,255,0.15);
+  padding: 12px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.stat-icon {
+  font-size: 18px;
+}
+
+/* Encounter Button */
+.encounter-btn {
+  background: linear-gradient(135deg, var(--mint) 0%, var(--sage-400) 100%);
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 25px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 15px rgba(107, 128, 105, 0.4);
+}
+
+.encounter-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(107, 128, 105, 0.6);
+  background: linear-gradient(135deg, var(--sage-400) 0%, var(--sage-500) 100%);
+}
+
+.encounter-btn:disabled {
+  background: rgba(255,255,255,0.2);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Tamed Collection */
+.tamed-collection h3 {
+  margin-bottom: 16px;
+  font-size: 18px;
+}
+
+.tamed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.tamed-monster {
+  background: rgba(255,255,255,0.1);
+  padding: 12px;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.2);
+  transition: all 0.3s ease;
+}
+
+.tamed-monster:hover {
+  background: rgba(255,255,255,0.2);
+  transform: translateY(-2px);
+}
+
+.tamed-monster .monster-icon {
+  font-size: 24px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.tamed-monster .monster-name {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.no-tamed {
+  grid-column: 1 / -1;
+  opacity: 0.7;
+  font-style: italic;
+  padding: 20px;
+}
+
+/* Monster Encounter */
+.monster-encounter {
+  text-align: center;
+  position: relative;
+  z-index: 10;
+}
+
+.encounter-scene {
+  margin-bottom: 32px;
+}
+
+.monster {
+  position: relative;
+  margin-bottom: 24px;
+  display: inline-block;
+}
+
+.monster.small .monster-icon { font-size: 48px; }
+.monster.medium .monster-icon { font-size: 64px; }
+.monster.large .monster-icon { font-size: 80px; }
+.monster.boss .monster-icon { font-size: 96px; }
+
+.monster-icon {
+  display: block;
+  animation: monsterFloat 3s ease-in-out infinite;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+}
+
+@keyframes monsterFloat {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-10px) scale(1.05); }
+}
+
+.monster-shake {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle, rgba(255,0,0,0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: anxiety-pulse 2s ease-in-out infinite;
+}
+
+@keyframes anxiety-pulse {
+  0%, 100% { transform: scale(0.8); opacity: 0.3; }
+  50% { transform: scale(1.2); opacity: 0.6; }
+}
+
+.encounter-text h3 {
+  font-size: 24px;
+  margin-bottom: 12px;
+  color: var(--mint);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.encounter-text p {
+  margin-bottom: 8px;
+  opacity: 0.9;
+}
+
+.calmness-drop {
+  color: #ff6b6b !important;
+  font-weight: 600;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Taming Options */
+.taming-options {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.tame-btn {
+  background: linear-gradient(135deg, var(--sage-500) 0%, var(--sage-600) 100%);
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(107, 128, 105, 0.4);
+}
+
+.tame-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(107, 128, 105, 0.6);
+  background: linear-gradient(135deg, var(--sage-400) 0%, var(--sage-500) 100%);
+}
+
+.run-btn {
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 14px 24px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.run-btn:hover {
+  background: rgba(255,255,255,0.3);
+  transform: translateY(-1px);
+}
+
+/* Taming Technique */
+.taming-technique {
+  text-align: center;
+  position: relative;
+  z-index: 10;
+  max-width: 600px; /* Constrain the width */
+  margin: 0 auto; /* Center it */
+}
+
+.technique-header h3 {
+  font-size: 22px;
+  margin-bottom: 16px;
+  color: var(--mint);
+}
+
+.progress-bar {
+  background: rgba(255,255,255,0.2);
+  height: 8px;
+  border-radius: 4px;
+  margin: 0 auto 32px auto; /* Center and add margin */
+  overflow: hidden;
+  max-width: 400px; /* Limit the width */
+  position: relative; /* Make sure it's contained */
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, var(--sage-400) 0%, var(--mint) 100%);
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 10px rgba(107, 128, 105, 0.5);
+  max-width: 100%; /* Don't exceed parent */
+}
+
+.technique-visual {
+  margin-bottom: 32px;
+  position: relative;
+  display: flex;
+  justify-content: center; /* Center the content */
+}
+
+.monster-calming {
+  position: relative;
+  display: inline-block;
+  max-width: 200px; /* Limit monster size */
+}
+
+.monster-calming .monster-icon {
+  font-size: 64px;
+  display: block;
+  transition: all 0.5s ease;
+  animation: calmingFloat 4s ease-in-out infinite;
+}
+
+@keyframes calmingFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+.technique-visual.breathing .monster-icon {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.calming-aura {
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  right: -20px;
+  bottom: -20px;
+  background: radial-gradient(circle, rgba(107, 128, 105, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: aura-pulse 3s ease-in-out infinite;
+  pointer-events: none; /* Don't interfere with clicks */
+}
+
+@keyframes aura-pulse {
+  0%, 100% { transform: scale(0.8); opacity: 0.4; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+/* Technique Instructions */
+.technique-instructions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 500px; /* Limit width */
+  margin: 0 auto; /* Center */
+}
+
+.instruction {
+  background: rgba(255,255,255,0.1);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.2);
+  transition: all 0.3s ease;
+  opacity: 0.5;
+  position: relative; /* Ensure proper positioning */
+}
+
+.instruction.active {
+  background: rgba(107, 128, 105, 0.3);
+  border-color: var(--sage-400);
+  opacity: 1;
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(107, 128, 105, 0.3);
+}
+
+.instruction.completed {
+  background: rgba(107, 128, 105, 0.2);
+  opacity: 0.8;
+  border-color: rgba(107, 128, 105, 0.5);
+}
+
+/* Victory Screen */
+.victory-screen {
+  text-align: center;
+  position: relative;
+  z-index: 10;
+}
+
+.victory-animation {
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.tamed-monster {
+  position: relative;
+  display: inline-block;
+}
+
+.tamed-monster .monster-icon {
+  font-size: 80px;
+  display: block;
+  animation: victoryBounce 1s ease-in-out infinite;
+}
+
+.monster-icon.happy {
+  filter: hue-rotate(120deg) brightness(1.2);
+}
+
+@keyframes victoryBounce {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-15px) scale(1.1); }
+}
+
+.sparkles {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: translateX(-50%) translateY(0px); }
+  50% { opacity: 1; transform: translateX(-50%) translateY(-10px); }
+}
+
+.victory-text h3 {
+  font-size: 28px;
+  margin-bottom: 12px;
+  color: var(--mint);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.victory-text p {
+  margin-bottom: 24px;
+  font-size: 18px;
+  opacity: 0.9;
+}
+
+.rewards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.reward {
+  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+  padding: 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.3);
+  animation: rewardGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes rewardGlow {
+  0% { box-shadow: 0 0 5px rgba(255,255,255,0.5); }
+  100% { box-shadow: 0 0 20px rgba(107, 128, 105, 0.8); }
+}
+
+.victory-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.continue-btn, .sanctuary-btn {
+  padding: 14px 24px;
+  border: none;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.continue-btn {
+  background: linear-gradient(135deg, var(--sage-500) 0%, var(--sage-600) 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(107, 128, 105, 0.4);
+}
+
+.sanctuary-btn {
+  background: linear-gradient(135deg, var(--mint) 0%, var(--sage-400) 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(107, 128, 105, 0.4);
+}
+
+.continue-btn:hover, .sanctuary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(107, 128, 105, 0.6);
+}
+
+/* Sanctuary View */
+.sanctuary-view {
+  text-align: center;
+  position: relative;
+  z-index: 10;
+  max-width: 100%;
+}
+
+.sanctuary-header {
+  margin-bottom: 32px;
+}
+
+.sanctuary-header h2 {
+  font-size: 28px;
+  margin-bottom: 8px;
+  color: var(--mint);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.sanctuary-header p {
+  opacity: 0.9;
+  margin-bottom: 16px;
+}
+
+.back-to-menu-btn {
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.back-to-menu-btn:hover {
+  background: rgba(255,255,255,0.3);
+  transform: translateY(-1px);
+}
+
+/* Sanctuary Stats */
+.sanctuary-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.sanctuary-stat {
+  background: rgba(255,255,255,0.15);
+  padding: 16px;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sanctuary-stat .stat-icon {
+  font-size: 24px;
+  background: rgba(255,255,255,0.2);
+  padding: 8px;
+  border-radius: 12px;
+}
+
+.sanctuary-stat .stat-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.sanctuary-stat .stat-number {
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+}
+
+.sanctuary-stat .stat-label {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* Sanctuary Garden */
+.sanctuary-garden {
+  margin-bottom: 32px;
+}
+
+.sanctuary-garden h3 {
+  font-size: 20px;
+  margin-bottom: 16px;
+  color: var(--mint);
+}
+
+.garden-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.garden-companion {
+  position: relative;
+}
+
+.companion-spot {
+  background: rgba(255,255,255,0.1);
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+  transition: all 0.3s ease;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+}
+
+.companion-spot:hover {
+  background: rgba(255,255,255,0.2);
+  transform: translateY(-2px);
+}
+
+.companion-icon {
+  font-size: 32px;
+  display: block;
+  margin-bottom: 8px;
+  animation: companionFloat 3s ease-in-out infinite;
+}
+
+@keyframes companionFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-3px); }
+}
+
+.companion-aura {
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  background: radial-gradient(circle, rgba(107, 128, 105, 0.2) 0%, transparent 70%);
+  border-radius: 20px;
+  animation: companionAura 4s ease-in-out infinite;
+}
+
+@keyframes companionAura {
+  0%, 100% { opacity: 0.3; transform: scale(0.95); }
+  50% { opacity: 0.6; transform: scale(1.05); }
+}
+
+.companion-name {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.companion-effect {
+  font-size: 10px;
+  opacity: 0.8;
+  font-style: italic;
+}
+
+.garden-companion.empty .companion-spot {
+  background: rgba(255,255,255,0.05);
+  border: 2px dashed rgba(255,255,255,0.3);
+}
+
+.empty-spot {
+  font-size: 32px;
+  opacity: 0.5;
+  margin-bottom: 8px;
+}
+
+.spot-label {
+  font-size: 10px;
+  opacity: 0.6;
+}
+
+.empty-garden {
+  grid-column: 1 / -1;
+  padding: 40px;
+  background: rgba(255,255,255,0.05);
+  border: 2px dashed rgba(255,255,255,0.3);
+  border-radius: 16px;
+  text-align: center;
+}
+
+.empty-garden-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.empty-garden p {
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+.empty-garden small {
+  opacity: 0.7;
+  font-size: 12px;
+}
+
+/* Sanctuary Upgrades */
+.sanctuary-upgrades {
+  margin-bottom: 32px;
+}
+
+.sanctuary-upgrades h3 {
+  font-size: 20px;
+  margin-bottom: 16px;
+  color: var(--mint);
+}
+
+.upgrades-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.upgrade-card {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+}
+
+.upgrade-card.available {
+  border-color: var(--sage-400);
+  background: rgba(107, 128, 105, 0.2);
+}
+
+.upgrade-card.available:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(107, 128, 105, 0.3);
+}
+
+.upgrade-card.locked {
+  opacity: 0.6;
+}
+
+.upgrade-icon {
+  font-size: 32px;
+  background: rgba(255,255,255,0.1);
+  padding: 12px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.upgrade-info {
+  flex: 1;
+  text-align: left;
+}
+
+.upgrade-info h4 {
+  font-size: 16px;
+  margin-bottom: 4px;
+  color: white;
+}
+
+.upgrade-info p {
+  font-size: 12px;
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+
+.upgrade-cost {
+  font-size: 12px;
+  color: var(--mint);
+  font-weight: 600;
+}
+
+.upgrade-btn {
+  background: linear-gradient(135deg, var(--sage-500) 0%, var(--sage-600) 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.upgrade-btn:hover {
+  background: linear-gradient(135deg, var(--sage-400) 0%, var(--sage-500) 100%);
+  transform: translateY(-1px);
+}
+
+.upgrade-locked {
+  font-size: 18px;
+  opacity: 0.5;
+}
+
+/* Daily Affirmations */
+.daily-affirmations {
+  margin-bottom: 32px;
+}
+
+.daily-affirmations h3 {
+  font-size: 20px;
+  margin-bottom: 16px;
+  color: var(--mint);
+}
+
+.affirmation-card {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 16px;
+  padding: 20px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.affirmation-text {
+  font-size: 16px;
+  font-style: italic;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.affirmation-author {
+  font-size: 12px;
+  opacity: 0.8;
+  text-align: right;
+}
+
+/* Sanctuary Actions */
+.sanctuary-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.meditation-btn {
+  background: linear-gradient(135deg, var(--mint) 0%, var(--sage-400) 100%);
+  color: white;
+  border: none;
+  padding: 14px 20px;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(107, 128, 105, 0.4);
+}
+
+.meditation-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(107, 128, 105, 0.6);
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+  .monster-tamer-game {
+    padding: 16px;
+  }
+  
+  .player-stats, .sanctuary-stats {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .taming-options, .victory-actions, .sanctuary-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .garden-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .upgrades-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .monster.boss .monster-icon { font-size: 72px; }
+  .monster.large .monster-icon { font-size: 60px; }
+}

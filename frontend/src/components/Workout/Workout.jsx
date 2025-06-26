@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { workoutService } from "../../services/workoutService";
+import timezoneUtils from '../../utils/timezone';
 import './Workout.css';
 
 function Workout() {
@@ -54,7 +55,7 @@ function Workout() {
         e.preventDefault();
         
         console.log('🚀 Workout submit started');
-        console.log('📊 Form data:', formData); // Use formData instead
+        console.log('📊 Form data:', formData);
         console.log('👤 Firebase user:', firebaseUser?.uid);
         
         if (!firebaseUser?.uid) {
@@ -63,7 +64,6 @@ function Workout() {
             return;
         }
 
-        // Validate required fields
         if (!formData.title || !formData.durationMinutes || !formData.date) {
             setError('Please fill in all required fields');
             return;
@@ -73,16 +73,57 @@ function Workout() {
             setIsSubmitting(true);
             setError('');
             
+            // Use timezone utilities for proper date handling
+            let workoutDate;
+            if (formData.date) {
+                // Parse the date string manually to avoid UTC conversion
+                const dateParts = formData.date.split('-'); // ['2025', '06', '25']
+                const year = parseInt(dateParts[0]);   // 2025
+                const month = parseInt(dateParts[1]);  // 6 (June in human terms)
+                const day = parseInt(dateParts[2]);    // 25
+                
+                const now = new Date();
+                
+                console.log('🔍 Date parsing debug:');
+                console.log('  Form input:', formData.date);
+                console.log('  Split parts:', dateParts);
+                console.log('  Parsed year:', year);
+                console.log('  Parsed month (human readable):', month);
+                console.log('  Parsed day:', day);
+                console.log('  Month for Date constructor (0-indexed):', month - 1);
+                
+                // Create date in LOCAL timezone with CORRECT month indexing
+                workoutDate = new Date(
+                    year,           // 2025
+                    month - 1,      // 6 - 1 = 5 (June in 0-indexed terms)
+                    day,            // 25
+                    now.getHours(),
+                    now.getMinutes(),
+                    now.getSeconds()
+                );
+                
+                console.log('📅 Created date:', workoutDate);
+                console.log('📅 Verify - Year:', workoutDate.getFullYear());
+                console.log('📅 Verify - Month (0-indexed):', workoutDate.getMonth());
+                console.log('📅 Verify - Month (human):', workoutDate.getMonth() + 1);
+                console.log('📅 Verify - Day:', workoutDate.getDate());
+                console.log('📅 Final formatted:', workoutDate.toLocaleDateString());
+                
+            } else {
+                workoutDate = timezoneUtils.getCurrentLocalTime();
+            }
+            
             const workoutData = {
-                title: formData.title, // ✅ Use formData
-                type: formData.type, // ✅ Use formData
-                durationMinutes: parseInt(formData.durationMinutes), // ✅ Use formData
-                date: formData.date ? new Date(formData.date).toISOString() : new Date().toISOString(),
-                notes: formData.notes, // ✅ Use formData
-                caloriesBurned: formData.caloriesBurned ? parseInt(formData.caloriesBurned) : 0 // ✅ Use formData
+                title: formData.title,
+                type: formData.type,
+                durationMinutes: parseInt(formData.durationMinutes),
+                date: workoutDate,
+                notes: formData.notes,
+                caloriesBurned: formData.caloriesBurned ? parseInt(formData.caloriesBurned) : 0
             };
             
-            console.log('📝 Sending workout data:', workoutData);
+            console.log('📝 Final workout data:', workoutData);
+            console.log('📅 Will be saved as:', timezoneUtils.formatLocalDateTime(workoutData.date));
             
             let result;
             if (editMode && editId) {

@@ -10,20 +10,21 @@ import {
   orderBy 
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import timezoneUtils from '../utils/timezone';
 
 export const waterService = {
   // Log water intake (replaces Redux logWaterIntake)
   async logWaterIntake(userId, waterData) {
     try {
-      const docRef = await addDoc(collection(db, `users/${userId}/waterIntake`), {
-        amount: waterData.amount, // in oz
-        date: new Date(waterData.date),
-        notes: waterData.notes || '',
-        // Future: Could track type (water, tea, coffee, etc.)
-        type: waterData.type || 'water',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      });
+      const docData = {
+        amount: waterData.amount,
+        date: timezoneUtils.toLocalTimezone(waterData.date || new Date()),
+        userId,
+        createdAt: timezoneUtils.getCurrentLocalTime(),
+        userTimezone: timezoneUtils.getUserTimezone()
+      };
+      
+      const docRef = await addDoc(collection(db, `users/${userId}/waterIntake`), docData);
       
       return { 
         id: docRef.id, 
@@ -165,12 +166,8 @@ export const waterService = {
   // Get water intake for a specific day (for dashboard)
   async getDailyWaterIntake(userId, date = new Date()) {
     try {
-      // Convert date to start and end of day
-      const startOfDay = new Date(date);
-      startOfDay.setHours(0, 0, 0, 0);
-      
-      const endOfDay = new Date(date);
-      endOfDay.setHours(23, 59, 59, 999);
+      const startOfDay = timezoneUtils.getStartOfDay(date);
+      const endOfDay = timezoneUtils.getEndOfDay(date);
       
       const q = query(
         collection(db, `users/${userId}/waterIntake`),
@@ -186,44 +183,25 @@ export const waterService = {
         date: doc.data().date?.toDate()
       }));
       
-      // Calculate daily stats
       const totalOz = waterEntries.reduce((sum, entry) => sum + (entry.amount || 0), 0);
-      const totalEntries = waterEntries.length;
-      
-      // Most recent entry
-      const lastEntry = waterEntries.length > 0 ? waterEntries[0] : null;
-      
-      // Calculate hydration patterns
-      const hourlyBreakdown = this.calculateHourlyWaterIntake(waterEntries);
-      const averagePerEntry = totalEntries > 0 ? totalOz / totalEntries : 0;
       
       return {
-        date: date.toISOString().split('T')[0],
+        date: timezoneUtils.formatLocalDate(date),
         totalOz,
-        totalEntries,
-        lastEntry,
-        hourlyBreakdown,
-        averagePerEntry: Math.round(averagePerEntry * 10) / 10, // Round to 1 decimal
+        totalEntries: waterEntries.length,
         entries: waterEntries,
-        
-        // Quick stats for dashboard cards
         hasWaterToday: waterEntries.length > 0,
-        timeOfLastEntry: lastEntry?.date || null,
-        isHydrationOnTrack: totalOz >= (64 * 0.75) // 75% of recommended daily intake
+        userTimezone: timezoneUtils.getUserTimezone()
       };
     } catch (error) {
       console.error('Error fetching daily water intake:', error);
       return {
-        date: date.toISOString().split('T')[0],
+        date: timezoneUtils.formatLocalDate(date),
         totalOz: 0,
         totalEntries: 0,
-        lastEntry: null,
-        hourlyBreakdown: {},
-        averagePerEntry: 0,
         entries: [],
         hasWaterToday: false,
-        timeOfLastEntry: null,
-        isHydrationOnTrack: false
+        userTimezone: timezoneUtils.getUserTimezone()
       };
     }
   },

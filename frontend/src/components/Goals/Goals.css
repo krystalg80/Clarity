@@ -811,6 +811,52 @@
   font-weight: 600;
 }
 
+/* Game Stats Section */
+.game-stats-section {
+  margin-bottom: 32px;
+}
+
+.game-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.game-stat-card {
+  background: linear-gradient(135deg, var(--sage-50) 0%, var(--white) 100%);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid var(--sage-200);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(107, 128, 105, 0.1);
+}
+
+.game-stat-card .stat-icon {
+  font-size: 32px;
+  background: var(--sage-100);
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--sage-700);
+}
+
+.stat-label {
+  font-size: 14px;
+  color: var(--sage-500);
+  font-weight: 500;
+}
+
 /* Responsive Design */
 @media (max-width: 480px) {
   .achievements-grid {

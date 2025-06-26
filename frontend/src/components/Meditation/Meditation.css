@@ -36,27 +36,39 @@
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+.session-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
 .session-soundscape {
+  font-size: 1.1rem;
   background: rgba(255, 255, 255, 0.2);
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 500;
-  backdrop-filter: blur(10px);
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
 }
 
 /* Session Timer - Oura style ring */
 .session-timer {
-  position: relative;
-  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 2rem 0;
 }
 
 .time-display {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
   text-align: center;
-  margin-bottom: 24px;
 }
 
 .current-time {
+  color: #4CAF50;
   font-size: 48px;
   font-weight: 700;
   line-height: 1;
@@ -64,7 +76,8 @@
 }
 
 .target-time {
-  font-size: 18px;
+  color: #666;
+  font-size: 1.5rem;
   opacity: 0.8;
   margin-left: 8px;
 }
@@ -72,18 +85,37 @@
 .progress-ring {
   width: 200px;
   height: 200px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%; /* Make it circular */
   position: relative;
-  margin: 0 auto;
-  border: 4px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  overflow: hidden;
 }
 
 .progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
+  border-radius: 50%; /* Ensure the fill is also circular */
+  background: conic-gradient(#4CAF50 0deg, #eee 0deg);
+  transition: background 0.5s ease;
+}
+
+/* Add a center circle to make it look like a proper ring */
+.progress-ring::after {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  bottom: 20px;
+  background: white;
   border-radius: 50%;
-  transition: all 0.3s ease;
+  z-index: 1;
 }
 
 /* Session Status */
@@ -92,18 +124,26 @@
 }
 
 .deep-state-indicator {
-  background: linear-gradient(135deg, var(--mint) 0%, #a8d5ba 100%);
-  padding: 12px 24px;
-  border-radius: 25px;
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 16px;
+  background: linear-gradient(45deg, #FFD700, #FFA500);
+  color: #333;
+  padding: 1rem;
+  border-radius: 1rem;
+  margin: 1rem 0;
+  font-weight: bold;
   animation: glow 2s ease-in-out infinite alternate;
 }
 
 @keyframes glow {
-  from { box-shadow: 0 0 10px rgba(168, 213, 186, 0.5); }
-  to { box-shadow: 0 0 20px rgba(168, 213, 186, 0.8); }
+  from { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+  to { box-shadow: 0 0 30px rgba(255, 215, 0, 0.6); }
+}
+
+.neurological-info {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-top: 1rem;
+  font-style: italic;
 }
 
 .neurological-info p {
@@ -116,30 +156,39 @@
 /* Session Controls */
 .session-controls {
   display: flex;
-  gap: 16px;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
 }
 
 .pause-btn, .stop-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  color: var(--white);
-  padding: 12px 24px;
-  border-radius: 25px;
-  font-size: 16px;
-  font-weight: 600;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 2rem;
+  font-size: 1rem;
+  font-weight: bold;
   cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
 }
 
-.pause-btn:hover, .stop-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
+.pause-btn {
+  background: #FFA726;
+  color: white;
+}
+
+.pause-btn:hover {
+  background: #FF9800;
   transform: translateY(-2px);
 }
 
 .stop-btn {
-  background: rgba(198, 123, 123, 0.3);
-  border-color: rgba(198, 123, 123, 0.5);
+  background: #EF5350;
+  color: white;
+}
+
+.stop-btn:hover {
+  background: #F44336;
+  transform: translateY(-2px);
 }
 
 /* Quick Start Section */
@@ -469,7 +518,7 @@
   transform: translateY(-1px);
 }
 
-/* Today's Sessions */
+/* Today's Sessions - Fixed Layout */
 .meditation-log {
   background: var(--white);
   border-radius: 20px;
@@ -487,6 +536,15 @@
   text-align: center;
 }
 
+.log-title small {
+  display: block;
+  font-size: 12px;
+  color: var(--sage-500);
+  font-weight: 400;
+  margin-top: 4px;
+  opacity: 0.8;
+}
+
 .no-sessions {
   text-align: center;
   color: var(--gray-500);
@@ -497,20 +555,43 @@
   border: 2px dashed var(--sage-200);
 }
 
+.no-sessions small {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--sage-400);
+}
+
 /* Session List */
 .log-list {
   list-style: none;
   padding: 0;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .log-item {
-  background: var(--sage-50);
+  background: linear-gradient(135deg, var(--sage-50) 0%, #f8faf8 100%);
   border-radius: 16px;
   padding: 20px;
-  margin-bottom: 12px;
   border: 1px solid var(--sage-100);
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+.log-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(135deg, var(--sage-500) 0%, var(--sage-600) 100%);
+  border-radius: 4px 0 0 4px;
 }
 
 .log-item:hover {
@@ -519,18 +600,56 @@
   border-color: var(--sage-200);
 }
 
+/* Fixed meditation info layout - REMOVE DUPLICATES */
 .meditation-info {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px;
-  margin-bottom: 16px;
+  width: 100%; /* Full width */
+  overflow: visible; /* Prevent cut-off */
+}
+
+.meditation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 12px;
+  width: 100%; /* Full width */
+  flex-wrap: wrap; /* Allow wrapping on small screens */
 }
 
 .meditation-type {
   font-size: 16px;
   font-weight: 600;
   color: var(--sage-700);
-  grid-column: 1;
+  flex: 1;
+  min-width: 0; /* Allow text to shrink */
+  word-wrap: break-word; /* Break long words */
+}
+
+.meditation-time {
+  font-size: 12px;
+  color: var(--gray-500);
+  text-align: right;
+  flex-shrink: 0;
+  line-height: 1.3;
+  white-space: nowrap; /* Keep time on one line */
+}
+
+.meditation-time small {
+  display: block;
+  font-size: 10px;
+  color: var(--sage-400);
+  margin-top: 2px;
+}
+
+/* Meditation details in a clean row */
+.meditation-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%; /* Full width */
 }
 
 .meditation-duration {
@@ -540,49 +659,61 @@
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
-  grid-column: 2;
-  grid-row: 1;
-  justify-self: end;
-  align-self: start;
+  white-space: nowrap; /* Keep badge text on one line */
 }
 
 .meditation-soundscape {
-  font-size: 14px;
-  color: var(--sage-600);
-  grid-column: 1;
+  background: var(--sage-100);
+  color: var(--sage-700);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap; /* Keep badge text on one line */
 }
 
 .deep-state-badge {
-  background: linear-gradient(135deg, var(--mint) 0%, #a8d5ba 100%);
-  color: var(--white);
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 10px;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #333;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
   font-weight: 600;
-  grid-column: 2;
-  grid-row: 2;
-  justify-self: end;
+  animation: pulse 2s infinite;
+  white-space: nowrap; /* Keep badge text on one line */
 }
 
 .mood-change {
-  font-size: 14px;
-  color: var(--sage-600);
-  grid-column: 1;
+  background: var(--sage-100);
+  color: var(--sage-700);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap; /* Keep badge text on one line */
 }
 
 .meditation-notes {
-  grid-column: 1 / -1;
   font-size: 13px;
   color: var(--gray-600);
   font-style: italic;
   line-height: 1.4;
   margin-top: 8px;
+  padding: 12px;
+  background: rgba(107, 128, 105, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid var(--sage-300);
+  width: 100%; /* Full width */
+  box-sizing: border-box; /* Include padding in width */
+  word-wrap: break-word; /* Break long words */
 }
 
 /* Session Actions */
 .meditation-actions {
   display: flex;
   gap: 8px;
+  margin-top: 16px;
+  width: 100%; /* Full width */
 }
 
 .edit-button, .delete-button {
@@ -594,11 +725,14 @@
   cursor: pointer;
   transition: all 0.2s ease;
   border: none;
+  text-align: center;
+  white-space: nowrap; /* Keep button text on one line */
 }
 
 .edit-button {
   background: var(--sage-100);
   color: var(--sage-700);
+  border: 1px solid var(--sage-200);
 }
 
 .edit-button:hover:not(:disabled) {
@@ -609,11 +743,18 @@
 .delete-button {
   background: rgba(198, 123, 123, 0.1);
   color: var(--error);
+  border: 1px solid rgba(198, 123, 123, 0.2);
 }
 
 .delete-button:hover:not(:disabled) {
   background: rgba(198, 123, 123, 0.2);
   transform: translateY(-1px);
+}
+
+.edit-button:disabled, .delete-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* Recommended Videos */
@@ -679,80 +820,108 @@
   font-weight: 500;
 }
 
-/* Responsive design */
+/* Premium Meditation Features Section */
+.premium-meditation-features {
+  background: linear-gradient(135deg, var(--sage-600) 0%, var(--sage-700) 100%);
+  color: var(--white);
+  border-radius: 20px;
+  padding: 24px 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(107, 128, 105, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.premium-meditation-features::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.premium-meditation-features h3 {
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 12px 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.premium-meditation-features p {
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 20px;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+.premium-meditation-features ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.premium-meditation-features li {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 16px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.3s ease;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.premium-meditation-features li:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive for Premium Features */
 @media (min-width: 768px) {
-  .meditation-page {
-    max-width: 768px;
-    padding: 24px 32px;
+  .premium-meditation-features {
+    padding: 32px 24px;
   }
   
-  .quick-start-grid {
+  .premium-meditation-features h3 {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+  
+  .premium-meditation-features p {
+    font-size: 16px;
+    margin-bottom: 24px;
+  }
+  
+  .premium-meditation-features ul {
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-  }
-  
-  .soundscape-grid {
-    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
   }
   
-  .meditation-title {
-    font-size: 32px;
-  }
-  
-  .current-time {
-    font-size: 56px;
-  }
-  
-  .progress-ring {
-    width: 250px;
-    height: 250px;
-  }
-  
-  .soundscape-option {
-    padding: 20px 16px;
-    min-height: 160px;
-    gap: 10px;
-  }
-  
-  .soundscape-option.premium {
-    padding-top: 32px;
-  }
-  
-  .soundscape-icon {
-    font-size: 36px;
-    margin-bottom: 8px;
-  }
-  
-  .soundscape-option h4 {
+  .premium-meditation-features li {
+    padding: 20px;
     font-size: 15px;
-    margin-bottom: 6px;
-  }
-  
-  .soundscape-description {
-    font-size: 13px;
-    margin-bottom: 6px;
-  }
-  
-  .neurological-note {
-    font-size: 11px;
-  }
-  
-  .soundscape-option .premium-badge {
-    top: 12px;
-    right: 12px;
-    padding: 4px 10px;
-    font-size: 10px;
   }
 }
 
 @media (min-width: 1024px) {
-  .soundscape-option {
-    padding: 24px 20px;
-    min-height: 180px;
+  .premium-meditation-features ul {
+    grid-template-columns: repeat(3, 1fr);
   }
-  
-  .soundscape-option.premium {
-    padding-top: 36px;
-  }
+}
+
+/* Add this CSS rule: */
+.timezone-note {
+  text-align: center;
+  color: var(--sage-500);
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-style: italic;
 }
