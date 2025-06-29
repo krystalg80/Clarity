@@ -3,24 +3,19 @@ import { useAuth } from '../../contexts/AuthContext';
 import { workoutService } from '../../services/workoutService';
 import { waterService } from '../../services/waterService';
 import { meditationService } from '../../services/meditationService';
+import { authService } from '../../services/authService';
 import PremiumGate from '../Premium/PremiumGate';
 import timezoneUtils from '../../utils/timezone';
-import AnxietyMonsterTamer from '../Monster/AnxietyMonsterTamer';
 import './Goals.css';
 
 function Goals() {
-  const { user: firebaseUser, isPremium } = useAuth(); // Remove setUser
+  const { user: firebaseUser, isPremium } = useAuth();
   
-  // Add local game stats state
-  const [gameStats, setGameStats] = useState({
-    anxietyGameScore: 0,
-    mindfulnessPoints: 0
-  });
   
   const [weeklyData, setWeeklyData] = useState({
-    workout: { current: 0, goal: 210 }, // 30 min/day * 7
-    water: { current: 0, goal: 448 }, // 64 oz/day * 7
-    meditation: { current: 0, goal: 105 } // 15 min/day * 7
+    workout: { current: 0, goal: 210 },
+    water: { current: 0, goal: 448 },
+    meditation: { current: 0, goal: 105 }
   });
   const [achievements, setAchievements] = useState([]);
   const [currentStreak, setCurrentStreak] = useState(0);
@@ -28,6 +23,14 @@ function Goals() {
   const [customWorkoutGoal, setCustomWorkoutGoal] = useState(30);
   const [customWaterGoal, setCustomWaterGoal] = useState(64);
   const [customMeditationGoal, setCustomMeditationGoal] = useState(15);
+
+  // Helper function to get days remaining in the current week
+  const getDaysRemainingInWeek = () => {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const daysUntilSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
+    return daysUntilSunday;
+  };
 
   useEffect(() => {
     const fetchWeeklyData = async () => {
@@ -40,14 +43,16 @@ function Goals() {
           // Get current week's data (7 days)
           const [workoutData, waterData, meditationData] = await Promise.all([
             workoutService.getWorkoutSummary(firebaseUser.uid, 7),
-            waterService.getWeeklyWaterIntake?.(firebaseUser.uid) || { totalOz: 0 },
+            waterService.getWaterSummary(firebaseUser.uid, 7), // Use existing method
             meditationService.getMeditationSummary(firebaseUser.uid, 7)
           ]);
+
+          console.log('📊 Weekly data fetched:', { workoutData, waterData, meditationData });
 
           setWeeklyData({
             workout: { 
               current: workoutData.totalMinutes || 0, 
-              goal: 210 // TODO: Get from user preferences
+              goal: 210
             },
             water: { 
               current: waterData.totalOz || 0, 
@@ -59,8 +64,8 @@ function Goals() {
             }
           });
 
-          // Calculate achievements
-          calculateAchievements();
+          // Calculate achievements after setting the data
+          setTimeout(() => calculateAchievements(), 100);
           
         } catch (error) {
           console.error('Error fetching weekly data:', error);
@@ -114,9 +119,49 @@ function Goals() {
     return percentage >= 100;
   };
 
+  const handleSaveGoals = async () => {
+    if (!firebaseUser?.uid) return;
+    
+    try {
+      setIsLoading(true);
+      
+      // Calculate weekly goals
+      const weeklyWorkoutGoal = customWorkoutGoal * 7;
+      const weeklyWaterGoal = customWaterGoal * 7;
+      const weeklyMeditationGoal = customMeditationGoal * 7;
+      
+      // Update goals in the backend
+      const updatedProfile = await authService.updateUserProfile(firebaseUser.uid, {
+        exerciseGoalMinutes: customWorkoutGoal,
+        meditationGoalMinutes: customMeditationGoal,
+        waterGoalOz: customWaterGoal
+      });
+      
+      // Update the weekly goals display
+      setWeeklyData(prev => ({
+        ...prev,
+        workout: { ...prev.workout, goal: weeklyWorkoutGoal },
+        water: { ...prev.water, goal: weeklyWaterGoal },
+        meditation: { ...prev.meditation, goal: weeklyMeditationGoal }
+      }));
+      
+      // Recalculate achievements with new goals
+      setTimeout(() => calculateAchievements(), 100);
+      
+      console.log('✅ Goals updated successfully');
+      
+    } catch (error) {
+      console.error('❌ Error updating goals:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (isLoading) {
     return <div className="goals-loading">Loading weekly goals...</div>;
   }
+
+  const daysRemaining = getDaysRemainingInWeek();
 
   return (
     <div className="goals-page">
@@ -126,7 +171,9 @@ function Goals() {
         <p className="goals-subtitle">Track your progress and earn rewards</p>
         <div className="week-info">
           <span className="week-label">Current Week</span>
-          <span className="days-remaining">3 days remaining</span>
+          <span className="days-remaining">
+            {daysRemaining === 0 ? 'Last day!' : `${daysRemaining} days remaining`}
+          </span>
         </div>
       </div>
 
@@ -307,57 +354,58 @@ function Goals() {
         </div>
       </div>
 
-      {/* Custom Goal Setting - Premium Only */}
+      {/* Custom Goal Setting - Now available to all users */}
       <div className="custom-goals-section">
         <h2 className="section-title">Goal Customization</h2>
         
-        <PremiumGate 
-          feature="custom goal setting"
-          className="feature-tease"
-        >
-          <div className="custom-goals-form">
-            <div className="goal-slider">
-              <label>Daily Workout Goal: {customWorkoutGoal} minutes</label>
-              <input 
-                type="range"
-                min="15"
-                max="120"
-                value={customWorkoutGoal}
-                onChange={(e) => setCustomWorkoutGoal(e.target.value)}
-                className="goal-range"
-              />
-              <span>Weekly Goal: {customWorkoutGoal * 7} minutes</span>
-            </div>
-            
-            <div className="goal-slider">
-              <label>Daily Water Goal: {customWaterGoal} oz</label>
-              <input 
-                type="range"
-                min="32"
-                max="128"
-                value={customWaterGoal}
-                onChange={(e) => setCustomWaterGoal(e.target.value)}
-                className="goal-range"
-              />
-              <span>Weekly Goal: {customWaterGoal * 7} oz</span>
-            </div>
-            
-            <div className="goal-slider">
-              <label>Daily Meditation Goal: {customMeditationGoal} minutes</label>
-              <input 
-                type="range"
-                min="5"
-                max="60"
-                value={customMeditationGoal}
-                onChange={(e) => setCustomMeditationGoal(e.target.value)}
-                className="goal-range"
-              />
-              <span>Weekly Goal: {customMeditationGoal * 7} minutes</span>
-            </div>
-            
-            <button className="save-goals-btn">Save Custom Goals</button>
+        <div className="custom-goals-form">
+          <div className="goal-slider">
+            <label>Daily Workout Goal: {customWorkoutGoal} minutes</label>
+            <input 
+              type="range"
+              min="15"
+              max="120"
+              value={customWorkoutGoal}
+              onChange={(e) => setCustomWorkoutGoal(parseInt(e.target.value))}
+              className="goal-range"
+            />
+            <span>Weekly Goal: {customWorkoutGoal * 7} minutes</span>
           </div>
-        </PremiumGate>
+          
+          <div className="goal-slider">
+            <label>Daily Water Goal: {customWaterGoal} oz</label>
+            <input 
+              type="range"
+              min="32"
+              max="128"
+              value={customWaterGoal}
+              onChange={(e) => setCustomWaterGoal(parseInt(e.target.value))}
+              className="goal-range"
+            />
+            <span>Weekly Goal: {customWaterGoal * 7} oz</span>
+          </div>
+          
+          <div className="goal-slider">
+            <label>Daily Meditation Goal: {customMeditationGoal} minutes</label>
+            <input 
+              type="range"
+              min="5"
+              max="60"
+              value={customMeditationGoal}
+              onChange={(e) => setCustomMeditationGoal(parseInt(e.target.value))}
+              className="goal-range"
+            />
+            <span>Weekly Goal: {customMeditationGoal * 7} minutes</span>
+          </div>
+          
+          <button 
+            className="save-goals-btn"
+            onClick={handleSaveGoals}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Saving...' : 'Save Custom Goals'}
+          </button>
+        </div>
       </div>
 
       {/* Diamond Achievements - Premium Only
@@ -422,45 +470,6 @@ function Goals() {
             </div>
           </div>
         </PremiumGate>
-      </div>
-
-      {/* Game Stats Display */}
-      <div className="game-stats-section">
-        <h2 className="section-title">Mental Health Gaming Stats</h2>
-        <div className="game-stats-grid">
-          <div className="game-stat-card">
-            <div className="stat-icon">👾</div>
-            <div className="stat-info">
-              <span className="stat-number">{gameStats.anxietyGameScore}</span>
-              <span className="stat-label">Monsters Tamed</span>
-            </div>
-          </div>
-          <div className="game-stat-card">
-            <div className="stat-icon">🧘‍♀️</div>
-            <div className="stat-info">
-              <span className="stat-number">{gameStats.mindfulnessPoints}</span>
-              <span className="stat-label">Mindfulness Points</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Anxiety Monster Tamer Game - New Section */}
-      <div className="anxiety-monster-tamer">
-        <h2 className="section-title">Anxiety Monster Tamer</h2>
-        
-        <AnxietyMonsterTamer 
-          user={firebaseUser} 
-          onUpdateStats={(stats) => {
-            // Update local game stats
-            setGameStats(prev => ({
-              anxietyGameScore: stats.anxietyGameScore,
-              mindfulnessPoints: prev.mindfulnessPoints + stats.mindfulnessPoints
-            }));
-            
-            console.log('🎮 Game stats updated:', stats);
-          }}
-        />
       </div>
     </div>
   );

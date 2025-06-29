@@ -286,81 +286,91 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Enhanced premium analytics section */}
-      {isPremium ? (
-        <div className="premium-analytics">
-          <h2>
-            Advanced Analytics
-            <span className="analytics-premium-badge">Premium</span>
-          </h2>
-          
-          <div className="analytics-preview">
-            <div className="chart-preview">
-              <h3>📊 Daily Trends</h3>
-              <div className="mock-chart">
-                <div className="chart-bars">
-                  <div className="bar" style={{height: '60%'}} data-value="18 min"></div>
-                  <div className="bar" style={{height: '80%'}} data-value="24 min"></div>
-                  <div className="bar" style={{height: '95%'}} data-value="29 min"></div>
-                  <div className="bar" style={{height: '70%'}} data-value="21 min"></div>
-                  <div className="bar" style={{height: '90%'}} data-value="27 min"></div>
-                  <div className="bar" style={{height: '100%'}} data-value="30 min"></div>
-                  <div className="bar" style={{height: '85%'}} data-value="26 min"></div>
-                </div>
+      {/* AI Analytics Coming Soon Section */}
+      <div className="ai-analytics-coming-soon">
+        <h2>
+          🤖 AI Analytics
+          <span className="coming-soon-badge">Coming Soon</span>
+        </h2>
+        
+        <div className="coming-soon-preview">
+          <div className="preview-content">
+            <div className="ai-features-grid">
+              <div className="ai-feature-card">
+                <div className="feature-icon">🧠</div>
+                <h3>Smart Insights</h3>
+                <p>AI-powered analysis of your wellness patterns and personalized recommendations</p>
+              </div>
+              
+              <div className="ai-feature-card">
+                <div className="feature-icon">📈</div>
+                <h3>Predictive Analytics</h3>
+                <p>Forecast your progress and identify optimal times for workouts and meditation</p>
+              </div>
+              
+              <div className="ai-feature-card">
+                <div className="feature-icon">🎯</div>
+                <h3>Goal Optimization</h3>
+                <p>AI-suggested goal adjustments based on your lifestyle and progress patterns</p>
+              </div>
+              
+              <div className="ai-feature-card">
+                <div className="feature-icon">💡</div>
+                <h3>Habit Coaching</h3>
+                <p>Intelligent recommendations to build sustainable wellness habits</p>
               </div>
             </div>
             
-            <div className="insights-preview">
-              <h3>🧠 AI Insights</h3>
-              <div className="insight-card">
-                <p>"Your best workout days are Mondays and Wednesdays. Consider scheduling important sessions then."</p>
-              </div>
-              <div className="insight-card">
-                <p>"You're 23% more likely to complete meditation after morning workouts."</p>
-              </div>
-              <div className="insight-card">
-                <p>"Your hydration peaks correlate with 15% better focus during meditation sessions."</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="premium-analytics">
-          <h2>Advanced Analytics</h2>
-          
-          <PremiumGate 
-            feature="detailed insights and trends"
-            className="feature-tease"
-          >
-            <div className="analytics-preview">
-              <div className="chart-preview">
-                <h3>📊 Daily Trends</h3>
-                <div className="mock-chart">
-                  <div className="chart-bars">
-                    <div className="bar" style={{height: '60%'}}></div>
-                    <div className="bar" style={{height: '80%'}}></div>
-                    <div className="bar" style={{height: '95%'}}></div>
-                    <div className="bar" style={{height: '70%'}}></div>
-                    <div className="bar" style={{height: '90%'}}></div>
-                    <div className="bar" style={{height: '100%'}}></div>
-                    <div className="bar" style={{height: '85%'}}></div>
-                  </div>
+            <div className="coming-soon-mockup">
+              <div className="mockup-header">
+                <span className="mockup-title">AI Wellness Coach</span>
+                <div className="mockup-status">
+                  <span className="status-dot"></span>
+                  Analyzing your data...
                 </div>
               </div>
               
-              <div className="insights-preview">
-                <h3>🧠 AI Insights</h3>
-                <div className="insight-card">
-                  <p>"Your best workout days are Mondays and Wednesdays. Consider scheduling important sessions then."</p>
+              <div className="mockup-content">
+                <div className="ai-message">
+                  <div className="ai-avatar">🤖</div>
+                  <div className="message-bubble">
+                    "Based on your patterns, I recommend meditating at 7 AM on weekdays for optimal results. You're 40% more consistent during morning sessions."
+                  </div>
                 </div>
-                <div className="insight-card">
-                  <p>"You're 23% more likely to complete meditation after morning workouts."</p>
+                
+                <div className="insight-preview">
+                  <div className="insight-item">
+                    <span className="insight-icon">⚡</span>
+                    <span>Peak energy time: 9:30 AM</span>
+                  </div>
+                  <div className="insight-item">
+                    <span className="insight-icon">🧘</span>
+                    <span>Best meditation window: 7-8 AM</span>
+                  </div>
+                  <div className="insight-item">
+                    <span className="insight-icon">💧</span>
+                    <span>Hydration reminder: Every 2 hours</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </PremiumGate>
+          </div>
+          
+          <div className="coming-soon-cta">
+            <h3>Be the first to know!</h3>
+            <p>AI Analytics will be powered by advanced machine learning to provide personalized wellness insights.</p>
+            <div className="tech-stack">
+              <span className="tech-badge">AWS SageMaker</span>
+              <span className="tech-badge">Machine Learning</span>
+              <span className="tech-badge">Predictive Analytics</span>
+            </div>
+            <button className="notify-button" disabled>
+              <span className="button-icon">🔔</span>
+              Notify Me When Available
+            </button>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

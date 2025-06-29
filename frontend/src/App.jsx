@@ -10,6 +10,7 @@ import Goals from './components/Goals/Goals';
 import Profile from './components/Profile/Profile';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import './App.css'; // Import global styles
+import Games from './components/Games/Games';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
             <Route path="water" element={<Water />} />
             <Route path="goals" element={<Goals />} />
             <Route path="profile" element={<Profile />} />
+            <Route path="games" element={<Games />} />
           </Route>
           
           {/* Catch all route */}

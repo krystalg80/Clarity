@@ -1,0 +1,158 @@
+/* Game Container */
+.games-page {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fffe 0%, #f0f4f3 50%, #e8f0ef 100%);
+}
+
+/* Games Header */
+.games-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  padding: 3rem 2rem;
+  background: linear-gradient(135deg, var(--sage-50) 0%, rgba(255, 255, 255, 0.9) 50%, var(--sage-100) 100%);
+  border-radius: 24px;
+  border: 1px solid var(--sage-200);
+  box-shadow: 0 8px 32px rgba(107, 128, 105, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+.games-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(107, 128, 105, 0.05) 0%, transparent 70%);
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(2deg); }
+}
+
+.games-title {
+  color: var(--sage-700);
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+  text-shadow: 0 2px 4px rgba(107, 128, 105, 0.1);
+  position: relative;
+  z-index: 1;
+}
+
+.games-subtitle {
+  color: var(--sage-600);
+  font-size: 1.2rem;
+  margin: 0;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+}
+.game-container {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: var(--sage-50);
+  border-radius: 12px;
+  border: 1px solid var(--sage-200);
+}
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.game-title {
+  color: var(--sage-700);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(107, 128, 105, 0.1);
+}
+.game-status {
+  background: linear-gradient(135deg, var(--sage-500), var(--sage-600));
+  color: var(--white);
+  padding: 0.5rem 1.25rem;
+  border-radius: 25px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(107, 128, 105, 0.3);
+}
+.game-description {
+  color: var(--sage-600);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  font-size: 1.05rem;
+}
+/* Achievement Styles */
+.game-achievements {
+  margin-top: 2rem;
+}
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.achievement-card {
+  background: var(--white);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--sage-200);
+  box-shadow: 0 2px 8px rgba(107, 128, 105, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.achievement-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(107, 128, 105, 0.12);
+}
+
+.achievement-card.bronze {
+  border-left: 4px solid #CD7F32;
+}
+
+.achievement-card.silver {
+  border-left: 4px solid #C0C0C0;
+}
+
+.achievement-card.gold {
+  border-left: 4px solid #FFD700;
+}
+
+.achievement-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.achievement-info h4 {
+  color: var(--sage-700);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.achievement-info p {
+  color: var(--sage-600);
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+/* Enhanced Challenge Cards */
+.challenge-card:nth-child(2) {
+  margin-top: 1rem;
+}

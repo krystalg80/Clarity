@@ -24,7 +24,7 @@ function Navigation() {
         <Outlet />
       </main>
 
-      {/* Bottom navigation - Oura style */}
+      {/* Bottom navigation - Oura style with 6 tabs now */}
       <nav className="bottom-navigation">
         <NavLink to="/dashboard" className={({isActive}) => `nav-tab ${isActive ? 'active' : ''}`}>
           <span className="nav-icon">📊</span>
@@ -46,9 +46,14 @@ function Navigation() {
           <span className="nav-label">Water</span>
         </NavLink>
         
+        <NavLink to="/games" className={({isActive}) => `nav-tab ${isActive ? 'active' : ''}`}>
+          <span className="nav-icon">🎮</span>
+          <span className="nav-label">Games</span>
+        </NavLink>
+        
         <NavLink to="/goals" className={({isActive}) => `nav-tab ${isActive ? 'active' : ''}`}>
-          <span className="nav-icon">⚡️</span>
-          <span className="nav-label">Goals/Games</span>
+          <span className="nav-icon">🎯</span>
+          <span className="nav-label">Goals</span>
         </NavLink>
       </nav>
     </div>
