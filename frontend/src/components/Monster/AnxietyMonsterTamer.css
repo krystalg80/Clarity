@@ -272,7 +272,7 @@
   color: var(--mint);
 }
 
-.progress-bar {
+.anxiety-progress {
   background: rgba(255,255,255,0.2);
   height: 8px;
   border-radius: 4px;

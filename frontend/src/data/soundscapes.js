@@ -4,72 +4,98 @@ export const soundscapes = {
     description: 'Pure silence for traditional meditation',
     icon: '🤫',
     neurological: 'Promotes introspection and self-awareness',
-    frequency: null
+    frequency: null,
+    baseFreq: null
   },
-  rain: {
-    name: 'Gentle Rain',
-    description: 'Soft rainfall sounds for relaxation',
+  pink_noise_rain: {
+    name: 'Pink Noise Rain',
+    description: 'Synthetic pink noise for deep relaxation',
     icon: '🌧️',
-    neurological: 'Pink noise - enhances deep sleep and memory consolidation',
-    frequency: 'pink_noise'
+    neurological: 'Pink noise (1/f) - enhances deep sleep and memory consolidation',
+    frequency: 'pink_noise',
+    baseFreq: 200, // Pink noise base frequency
+    waveType: 'sawtooth'
   },
-  ocean: {
+  alpha_waves: {
     name: 'Ocean Waves',
-    description: 'Rhythmic ocean waves for deep breathing',
+    description: 'Realistic ocean waves with alpha wave entrainment',
     icon: '🌊',
-    neurological: 'Natural rhythm promotes alpha brainwaves (8-13 Hz)',
-    frequency: 'alpha'
+    neurological: 'Ocean rhythms (0.1 Hz) naturally entrain alpha waves (8-12 Hz) for relaxation',
+    frequency: 'ocean_waves', // Change to special ocean type
+    waveFrequency: 0.1, // Slow wave rhythm (6 waves per minute)
+    baseFreq: 60, // Low rumble frequency
+    highFreq: 200, // Higher frequency for foam/bubbles
+    alphaCarrier: 200, // Carrier for alpha entrainment
+    alphaBeat: 10, // 10 Hz alpha waves
+    waveType: 'sine'
   },
-  forest: {
-    name: 'Forest Sounds',
-    description: 'Birds and rustling leaves for nature connection',
+  earth_frequency: {
+    name: 'Earth Resonance',
+    description: 'Schumann resonance for grounding',
     icon: '🌲',
-    neurological: 'Reduces cortisol and activates parasympathetic nervous system',
-    frequency: 'natural'
+    neurological: 'Earth frequency (7.83 Hz) - natural grounding and balance',
+    frequency: 'earth_binaural', // Change to special earth type
+    carrierFreq: 136.1, // Audible OM frequency (C# note)
+    waveType: 'sine'
   },
   white_noise: {
     name: 'White Noise',
-    description: 'Consistent background for focus',
+    description: 'Full spectrum noise for focus',
     icon: '📻',
-    neurological: 'Masks distractions, improves concentration',
-    frequency: 'white_noise'
+    neurological: 'White noise - masks distractions, improves concentration',
+    frequency: 'white_noise',
+    baseFreq: 440, // A4 note as base
+    waveType: 'square'
   },
-  binaural_focus: {
-    name: 'Deep Focus',
-    description: 'Binaural beats for enhanced concentration',
+  gamma_focus: {
+    name: 'Gamma Focus',
+    description: 'High-frequency binaural beats for peak concentration',
     icon: '🎧',
-    neurological: '40 Hz gamma waves - heightened awareness and focus',
+    neurological: 'Gamma waves (40 Hz) - heightened awareness and cognitive performance',
     frequency: 'gamma',
-    premium: true // Pro tier feature
+    baseFreq: 40, // 40 Hz gamma waves
+    binauralBeat: 40, // Gamma binaural beat
+    leftEar: 200, // Base carrier frequency left ear
+    rightEar: 240, // 200 + 40 = 240 Hz right ear (40 Hz beat)
+    waveType: 'sine',
+    premium: true
   },
-  binaural_calm: {
-    name: 'Theta Relaxation',
-    description: 'Theta waves for deep relaxation',
+  theta_deep: {
+    name: 'Theta Deep State',
+    description: 'Deep theta waves for profound meditation',
     icon: '🌙',
-    neurological: '6-8 Hz theta waves - deep meditation and creativity',
+    neurological: 'Theta waves (6 Hz) - deep meditation, creativity, and memory consolidation',
     frequency: 'theta',
-    premium: true // Pro tier feature
+    baseFreq: 6, // 6 Hz theta waves
+    binauralBeat: 6, // Theta binaural beat
+    leftEar: 200, // Base carrier frequency left ear
+    rightEar: 206, // 200 + 6 = 206 Hz right ear (6 Hz beat)
+    waveType: 'sine',
+    premium: true
   },
-  tibetan_bowls: {
-    name: 'Tibetan Bowls',
-    description: 'Traditional singing bowls',
+  healing_bowls: {
+    name: 'Healing Harmonics',
+    description: '432 Hz healing frequency with natural harmonics',
     icon: '🎵',
-    neurological: 'Harmonic frequencies promote mindfulness',
+    neurological: '432 Hz "healing frequency" with harmonic overtones for cellular resonance',
     frequency: 'harmonic',
-    premium: true // Plus tier feature
+    baseFreq: 432, // 432 Hz healing frequency
+    harmonics: [432, 648, 864, 1296], // Proper harmonic series: 432×1.5, 432×2, 432×3
+    waveType: 'triangle',
+    premium: true
   }
 };
 
 export const meditationTypes = {
   mindfulness: {
     name: 'Mindfulness',
-    description: 'Present-moment awareness',
+    description: 'Present-moment awareness practice',
     duration: [5, 10, 15, 20],
     icon: '🧘‍♀️'
   },
   breathing: {
     name: 'Breathing',
-    description: 'Focused breathing exercises',
+    description: 'Focused breathwork exercises',
     duration: [3, 5, 10],
     icon: '💨'
   },
@@ -81,16 +107,16 @@ export const meditationTypes = {
   },
   loving_kindness: {
     name: 'Loving Kindness',
-    description: 'Compassion meditation',
+    description: 'Compassion and heart-opening meditation',
     duration: [5, 10, 15],
     icon: '💖'
   },
-  deep_focus: {
-    name: 'Deep Focus',
-    description: 'Neurologically optimized for flow state',
+  flow_state: {
+    name: 'Flow State',
+    description: 'Neurologically optimized for peak performance',
     duration: [5, 7, 10],
     icon: '🎯',
-    premium: true // Pro tier feature
+    premium: true
   }
 };
 

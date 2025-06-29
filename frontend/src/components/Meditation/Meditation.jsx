@@ -2,15 +2,17 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { meditationService } from '../../services/meditationService';
 import { soundscapes, meditationTypes } from '../../data/soundscapes';
-import timezoneUtils from '../../utils/timezone'; // Add timezone utils
+import timezoneUtils from '../../utils/timezone';
 import './Meditation.css';
 import PremiumGate from '../Premium/PremiumGate';
 
 function Meditation() {
   const { user: firebaseUser, isPremium } = useAuth();
+  
+  // ALL STATE DECLARATIONS FIRST
   const [meditations, setMeditations] = useState([]);
   const [formData, setFormData] = useState({
-    date: timezoneUtils.formatLocalDate(new Date()), // Use local date by default
+    date: timezoneUtils.formatLocalDate(new Date()),
     durationMinutes: '',
     type: 'mindfulness',
     soundscape: 'silence',
@@ -44,7 +46,8 @@ function Meditation() {
   // Get today in user's local timezone
   const today = timezoneUtils.formatLocalDate(new Date());
 
-  // Fetch meditations on mount
+  // ALL USEEFFECT HOOKS TOGETHER AT THE TOP
+  // 1. Fetch meditations on mount
   useEffect(() => {
     const fetchMeditations = async () => {
       if (!firebaseUser?.uid) return;
@@ -55,7 +58,6 @@ function Meditation() {
         
         const response = await meditationService.fetchMeditationsByUser(firebaseUser.uid);
         
-        // Add timezone-aware formatting to each meditation
         const meditationsWithTimezone = (response.meditations || []).map(meditation => ({
           ...meditation,
           localDate: timezoneUtils.formatLocalDate(meditation.date),
@@ -80,7 +82,7 @@ function Meditation() {
     }
   }, [firebaseUser]);
 
-  // Audio setup for soundscapes
+  // 2. Audio setup for soundscapes
   useEffect(() => {
     if (isSessionActive && currentSoundscape !== 'silence') {
       setupAudio();
@@ -88,27 +90,32 @@ function Meditation() {
     
     return () => {
       if (oscillator) {
-        oscillator.stop();
+        try {
+          if (Array.isArray(oscillator)) {
+            oscillator.forEach(osc => {
+              if (osc.stop) osc.stop();
+            });
+          } else {
+            if (oscillator.stop) oscillator.stop();
+          }
+        } catch (error) {
+          console.log('Audio cleanup error:', error);
+        }
       }
     };
   }, [isSessionActive, currentSoundscape]);
 
-  // Session timer with timezone awareness
+  // 3. Session timer with auto-stop functionality
   useEffect(() => {
     if (isSessionActive && !isPaused) {
       intervalRef.current = setInterval(() => {
         setSessionTime(prev => {
           const newTime = prev + 1;
           
-          // Check for deep state achievement (after 3 minutes of continuous meditation)
+          // Deep state notification at 3 minutes
           if (newTime >= 180 && !deepStateAchieved) {
             setDeepStateAchieved(true);
             showDeepStateNotification();
-          }
-          
-          // Auto-stop when target reached
-          if (newTime >= targetTime * 60) {
-            stopSession();
           }
           
           return newTime;
@@ -119,7 +126,33 @@ function Meditation() {
     }
 
     return () => clearInterval(intervalRef.current);
-  }, [isSessionActive, isPaused, targetTime, deepStateAchieved]);
+  }, [isSessionActive, isPaused, deepStateAchieved]);
+
+  // 4. Separate effect to handle session completion
+  useEffect(() => {
+    if (isSessionActive && sessionTime >= targetTime * 60) {
+      console.log('⏰ Timer completed! Auto-stopping session...');
+      console.log('📊 Final session stats:');
+      console.log('  - Duration:', Math.floor(sessionTime / 60), 'minutes');
+      console.log('  - Target:', targetTime, 'minutes');
+      console.log('  - Soundscape:', currentSoundscape);
+      console.log('  - Deep state achieved:', deepStateAchieved);
+      console.log('  - Start time:', timezoneUtils.formatLocalDateTime(sessionStartTime));
+      
+      showCompletionNotification();
+      
+      // Stop the session
+      stopSession();
+    }
+  }, [isSessionActive, sessionTime, targetTime, currentSoundscape, deepStateAchieved, sessionStartTime]);
+
+  // Filter today's meditations using timezone-aware comparison
+  const todayMeditations = meditations.filter(meditation => {
+    const isToday = meditation.isToday || timezoneUtils.isToday(meditation.date);
+    return isToday;
+  });
+
+  console.log('📋 Today\'s meditations:', todayMeditations.length);
 
   const setupAudio = () => {
     try {
@@ -131,34 +164,504 @@ function Meditation() {
       gain.gain.value = 0.1; // Low volume
       setGainNode(gain);
       
-      if (soundscapes[currentSoundscape]?.frequency) {
-        const osc = context.createOscillator();
-        
-        switch (soundscapes[currentSoundscape].frequency) {
-          case 'alpha':
-            osc.frequency.setValueAtTime(10, context.currentTime); // 10 Hz alpha waves
-            break;
-          case 'theta':
-            osc.frequency.setValueAtTime(7, context.currentTime); // 7 Hz theta waves
-            break;
-          case 'gamma':
-            osc.frequency.setValueAtTime(40, context.currentTime); // 40 Hz gamma waves
-            break;
-          case 'pink_noise':
-            osc.frequency.setValueAtTime(200, context.currentTime);
-            osc.type = 'sawtooth';
-            break;
-          default:
-            osc.frequency.setValueAtTime(10, context.currentTime);
-        }
-        
-        osc.connect(gain);
-        osc.start();
-        setOscillator(osc);
+      const soundscape = soundscapes[currentSoundscape];
+      if (!soundscape?.frequency) {
+        console.log('🔇 Silence selected');
+        return;
       }
+      
+      // Create oscillators based on soundscape type
+      switch (soundscape.frequency) {
+        case 'gamma':
+        case 'theta':
+          // Binaural beats - two slightly different frequencies
+          createBinauralBeats(context, gain, soundscape);
+          break;
+          
+        case 'alpha':
+          // Alpha waves binaural beats
+          createAlphaBinaural(context, gain, soundscape);
+          break;
+          
+        case 'ocean_waves':
+          // Realistic ocean waves with alpha entrainment
+          createOceanWaves(context, gain, soundscape);
+          break;
+          
+        case 'earth_binaural':
+          // Earth resonance with audible carrier
+          createEarthBinaural(context, gain, soundscape);
+          break;
+          
+        case 'harmonic':
+          // Multiple harmonic frequencies
+          createHarmonics(context, gain, soundscape.harmonics || [soundscape.baseFreq]);
+          break;
+          
+        case 'pink_noise':
+          // Pink noise generation
+          createPinkNoise(context, gain);
+          break;
+          
+        case 'white_noise':
+          // White noise generation
+          createWhiteNoise(context, gain);
+          break;
+          
+        case 'single_tone':  
+        case 'natural':
+          // Natural Earth frequency
+          createSingleTone(context, gain, soundscape.baseFreq, soundscape.waveType || 'sine');
+          break;
+          
+        default:
+          console.log('🔇 Unknown frequency type:', soundscape.frequency);
+      }
+      
     } catch (error) {
       console.error('Audio setup failed:', error);
     }
+  };
+
+  // Helper function for binaural beats
+  const createBinauralBeats = (context, gain, soundscape) => {
+    // Left ear oscillator
+    const leftOsc = context.createOscillator();
+    leftOsc.frequency.setValueAtTime(soundscape.leftEar, context.currentTime);
+    leftOsc.type = soundscape.waveType || 'sine';
+    
+    // Right ear oscillator  
+    const rightOsc = context.createOscillator();
+    rightOsc.frequency.setValueAtTime(soundscape.rightEar, context.currentTime);
+    rightOsc.type = soundscape.waveType || 'sine';
+    
+    // Create stereo panner for left/right separation
+    const leftPanner = context.createStereoPanner();
+    leftPanner.pan.value = -1; // Full left
+    
+    const rightPanner = context.createStereoPanner();
+    rightPanner.pan.value = 1; // Full right
+    
+    // Connect audio graph
+    leftOsc.connect(leftPanner);
+    leftPanner.connect(gain);
+    
+    rightOsc.connect(rightPanner);
+    rightPanner.connect(gain);
+    
+    // Start oscillators
+    leftOsc.start();
+    rightOsc.start();
+    
+    // Store for cleanup
+    setOscillator([leftOsc, rightOsc]);
+    
+    console.log(`🎧 Binaural beats: ${soundscape.leftEar}Hz (L) / ${soundscape.rightEar}Hz (R) = ${soundscape.binauralBeat}Hz beat`);
+  };
+
+  // New function for alpha binaural beats
+  const createAlphaBinaural = (context, gain, soundscape) => {
+    const baseFreq = 200; // Carrier frequency
+    const beatFreq = soundscape.baseFreq; // 10 Hz alpha beat
+    
+    // Left ear oscillator
+    const leftOsc = context.createOscillator();
+    leftOsc.frequency.setValueAtTime(baseFreq, context.currentTime);
+    leftOsc.type = soundscape.waveType || 'sine';
+    
+    // Right ear oscillator  
+    const rightOsc = context.createOscillator();
+    rightOsc.frequency.setValueAtTime(baseFreq + beatFreq, context.currentTime);
+    rightOsc.type = soundscape.waveType || 'sine';
+    
+    // Create stereo panner for left/right separation
+    const leftPanner = context.createStereoPanner();
+    leftPanner.pan.value = -1; // Full left
+    
+    const rightPanner = context.createStereoPanner();
+    rightPanner.pan.value = 1; // Full right
+    
+    // Connect audio graph
+    leftOsc.connect(leftPanner);
+    leftPanner.connect(gain);
+    
+    rightOsc.connect(rightPanner);
+    rightPanner.connect(gain);
+    
+    // Start oscillators
+    leftOsc.start();
+    rightOsc.start();
+    
+    // Store for cleanup
+    setOscillator([leftOsc, rightOsc]);
+    
+    console.log(`🌊 Alpha binaural: ${baseFreq}Hz (L) / ${baseFreq + beatFreq}Hz (R) = ${beatFreq}Hz beat`);
+  };
+
+  // Add this new function for Earth binaural
+  const createEarthBinaural = (context, gain, soundscape) => {
+    const carrierFreq = soundscape.carrierFreq || 136.1; // Audible OM frequency
+    const beatFreq = 7.83; // Schumann resonance
+    
+    // Left ear oscillator
+    const leftOsc = context.createOscillator();
+    leftOsc.frequency.setValueAtTime(carrierFreq, context.currentTime);
+    leftOsc.type = soundscape.waveType || 'sine';
+    
+    // Right ear oscillator  
+    const rightOsc = context.createOscillator();
+    rightOsc.frequency.setValueAtTime(carrierFreq + beatFreq, context.currentTime);
+    rightOsc.type = soundscape.waveType || 'sine';
+    
+    // Create stereo panner for left/right separation
+    const leftPanner = context.createStereoPanner();
+    leftPanner.pan.value = -1; // Full left
+    
+    const rightPanner = context.createStereoPanner();
+    rightPanner.pan.value = 1; // Full right
+    
+    // Connect audio graph
+    leftOsc.connect(leftPanner);
+    leftPanner.connect(gain);
+    
+    rightOsc.connect(rightPanner);
+    rightPanner.connect(gain);
+    
+    // Start oscillators
+    leftOsc.start();
+    rightOsc.start();
+    
+    // Store for cleanup
+    setOscillator([leftOsc, rightOsc]);
+    
+    console.log(`🌲 Earth binaural: ${carrierFreq}Hz (L) / ${carrierFreq + beatFreq}Hz (R) = ${beatFreq}Hz Schumann beat`);
+  };
+
+  // Helper function for single tone
+  const createSingleTone = (context, gain, frequency, waveType = 'sine') => {
+    const osc = context.createOscillator();
+    osc.frequency.setValueAtTime(frequency, context.currentTime);
+    osc.type = waveType;
+    osc.connect(gain);
+    osc.start();
+    setOscillator(osc);
+    
+    console.log(`🎵 Single tone: ${frequency}Hz (${waveType})`);
+  };
+
+  // Helper function for harmonics
+  const createHarmonics = (context, gain, frequencies) => {
+    const oscillators = frequencies.map(freq => {
+      const osc = context.createOscillator();
+      osc.frequency.setValueAtTime(freq, context.currentTime);
+      osc.type = 'triangle';
+      
+      // Reduce volume for each harmonic
+      const harmonicGain = context.createGain();
+      harmonicGain.gain.value = 0.3 / frequencies.length;
+      
+      osc.connect(harmonicGain);
+      harmonicGain.connect(gain);
+      osc.start();
+      
+      return osc;
+    });
+    
+    setOscillator(oscillators);
+    console.log(`🎼 Harmonics: ${frequencies.join(', ')}Hz`);
+  };
+
+  // Helper function for pink noise
+  const createPinkNoise = (context, gain) => {
+    const bufferSize = context.sampleRate * 2; // 2 seconds of audio
+    const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
+    const data = buffer.getChannelData(0);
+    
+    // Generate pink noise using multiple octaves
+    for (let i = 0; i < bufferSize; i++) {
+      let pink = 0;
+      for (let octave = 0; octave < 5; octave++) {
+        pink += (Math.random() * 2 - 1) / Math.pow(2, octave);
+      }
+      data[i] = pink * 0.1;
+    }
+    
+    const source = context.createBufferSource();
+    source.buffer = buffer;
+    source.loop = true;
+    source.connect(gain);
+    source.start();
+    
+    setOscillator(source);
+    console.log('🌧️ Pink noise generated');
+  };
+
+  // Helper function for white noise
+  const createWhiteNoise = (context, gain) => {
+    const bufferSize = context.sampleRate * 2;
+    const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
+    const data = buffer.getChannelData(0);
+    
+    // Generate white noise
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * 0.1;
+    }
+    
+    const source = context.createBufferSource();
+    source.buffer = buffer;
+    source.loop = true;
+    source.connect(gain);
+    source.start();
+    
+    setOscillator(source);
+    console.log('📻 White noise generated');
+  };
+
+  // Create ocean waves with healing frequencies (528Hz, 396Hz, 432Hz)
+  const createOceanWaves = (context, gain, soundscape) => {
+    const oscillators = [];
+    
+    // 1. Deep ocean base with 396 Hz healing frequency (Root Chakra - Grounding)
+    const deepBase = context.createOscillator();
+    deepBase.frequency.setValueAtTime(20, context.currentTime); // Deep ocean rumble
+    deepBase.type = 'sine';
+    
+    const deepGain = context.createGain();
+    deepGain.gain.value = 0.4;
+    
+    // 396 Hz healing frequency (very subtle, mixed with ocean)
+    const healing396 = context.createOscillator();
+    healing396.frequency.setValueAtTime(396, context.currentTime); // Liberation frequency
+    healing396.type = 'sine';
+    
+    const healing396Gain = context.createGain();
+    healing396Gain.gain.value = 0.05; // Very subtle
+    
+    // Super slow wave rhythm (8-12 waves per minute like real ocean)
+    const mainWaveLFO = context.createOscillator();
+    mainWaveLFO.frequency.setValueAtTime(0.15, context.currentTime); // ~9 waves per minute
+    mainWaveLFO.type = 'sine';
+    
+    const mainWaveGain = context.createGain();
+    mainWaveGain.gain.value = 0.3;
+    
+    mainWaveLFO.connect(mainWaveGain);
+    mainWaveGain.connect(deepGain.gain);
+    
+    deepBase.connect(deepGain);
+    deepGain.connect(gain);
+    
+    healing396.connect(healing396Gain);
+    healing396Gain.connect(gain);
+    
+    // 2. 432 Hz "Earth Frequency" with wave crashes
+    const crashBuffer = context.createBuffer(1, context.sampleRate * 8, context.sampleRate);
+    const crashData = crashBuffer.getChannelData(0);
+    
+    // Generate realistic wave crash using brown noise
+    let brownNoise = 0;
+    for (let i = 0; i < crashData.length; i++) {
+      const whiteNoise = (Math.random() * 2 - 1);
+      brownNoise = (brownNoise + whiteNoise * 0.02) * 0.99;
+      
+      // Add wave-like amplitude variation
+      const waveShape = Math.sin(i * 0.001) * 0.3 + 0.7;
+      crashData[i] = brownNoise * waveShape * 0.5;
+    }
+    
+    const crashSource = context.createBufferSource();
+    crashSource.buffer = crashBuffer;
+    crashSource.loop = true;
+    
+    // 432 Hz "Earth Frequency" mixed with crashes
+    const healing432 = context.createOscillator();
+    healing432.frequency.setValueAtTime(432, context.currentTime); // Natural tuning frequency
+    healing432.type = 'triangle';
+    
+    const healing432Gain = context.createGain();
+    healing432Gain.gain.value = 0.08; // Subtle but present
+    
+    // Filter for natural crash sound
+    const crashFilter = context.createBiquadFilter();
+    crashFilter.type = 'bandpass';
+    crashFilter.frequency.setValueAtTime(300, context.currentTime);
+    crashFilter.Q.setValueAtTime(0.8, context.currentTime);
+    
+    const crashGain = context.createGain();
+    crashGain.gain.value = 0.3;
+    
+    // Wave crash timing with 432 Hz modulation
+    const crashLFO = context.createOscillator();
+    crashLFO.frequency.setValueAtTime(0.13, context.currentTime);
+    crashLFO.type = 'triangle';
+    
+    const crashLFOGain = context.createGain();
+    crashLFOGain.gain.value = 0.25;
+    
+    crashLFO.connect(crashLFOGain);
+    crashLFOGain.connect(crashGain.gain);
+    crashLFOGain.connect(healing432Gain.gain); // Modulate 432 Hz with waves
+    
+    crashSource.connect(crashFilter);
+    crashFilter.connect(crashGain);
+    crashGain.connect(gain);
+    
+    healing432.connect(healing432Gain);
+    healing432Gain.connect(gain);
+    
+    // 3. 528 Hz "Love Frequency" with foam/bubbles
+    const foamBuffer = context.createBuffer(1, context.sampleRate * 6, context.sampleRate);
+    const foamData = foamBuffer.getChannelData(0);
+    
+    // Generate realistic foam/bubble sounds
+    for (let i = 0; i < foamData.length; i++) {
+      let foam = 0;
+      
+      // Multiple layers of high-frequency noise for bubbles
+      for (let j = 0; j < 3; j++) {
+        foam += (Math.random() * 2 - 1) * Math.pow(0.5, j);
+      }
+      
+      // Add crackling effect for bubbles
+      const crackle = Math.random() > 0.98 ? (Math.random() * 2 - 1) * 0.3 : 0;
+      foamData[i] = (foam + crackle) * 0.15;
+    }
+    
+    const foamSource = context.createBufferSource();
+    foamSource.buffer = foamBuffer;
+    foamSource.loop = true;
+    
+    // 528 Hz "Miracle/Love Frequency" (DNA repair)
+    const healing528 = context.createOscillator();
+    healing528.frequency.setValueAtTime(528, context.currentTime); // Love frequency
+    healing528.type = 'sine';
+    
+    const healing528Gain = context.createGain();
+    healing528Gain.gain.value = 0.06; // Gentle but therapeutic
+    
+    // High-pass filter for foam
+    const foamFilter = context.createBiquadFilter();
+    foamFilter.type = 'highpass';
+    foamFilter.frequency.setValueAtTime(1500, context.currentTime);
+    
+    const foamGain = context.createGain();
+    foamGain.gain.value = 0.12;
+    
+    // Gentle foam modulation with 528 Hz
+    const foamLFO = context.createOscillator();
+    foamLFO.frequency.setValueAtTime(0.5, context.currentTime); // Slow, peaceful
+    foamLFO.type = 'sine';
+    
+    const foamLFOGain = context.createGain();
+    foamLFOGain.gain.value = 0.04;
+    
+    foamLFO.connect(foamLFOGain);
+    foamLFOGain.connect(foamGain.gain);
+    foamLFOGain.connect(healing528Gain.gain); // Gentle 528 Hz modulation
+    
+    foamSource.connect(foamFilter);
+    foamFilter.connect(foamGain);
+    foamGain.connect(gain);
+    
+    healing528.connect(healing528Gain);
+    healing528Gain.connect(gain);
+    
+    // 4. Binaural beats for anxiety relief (Alpha waves 8-12 Hz)
+    if (soundscape.alphaCarrier && soundscape.alphaBeat) {
+      // Left ear: Base carrier + 396 Hz harmonics
+      const leftAlpha = context.createOscillator();
+      leftAlpha.frequency.setValueAtTime(soundscape.alphaCarrier, context.currentTime);
+      leftAlpha.type = 'sine';
+      
+      // Right ear: Carrier + alpha beat for relaxation
+      const rightAlpha = context.createOscillator();
+      rightAlpha.frequency.setValueAtTime(soundscape.alphaCarrier + soundscape.alphaBeat, context.currentTime);
+      rightAlpha.type = 'sine';
+      
+      const alphaGain = context.createGain();
+      alphaGain.gain.value = 0.03; // Very subtle binaural beats
+      
+      const leftPanner = context.createStereoPanner();
+      leftPanner.pan.value = -1;
+      
+      const rightPanner = context.createStereoPanner();
+      rightPanner.pan.value = 1;
+      
+      leftAlpha.connect(leftPanner);
+      leftPanner.connect(alphaGain);
+      
+      rightAlpha.connect(rightPanner);
+      rightPanner.connect(alphaGain);
+      
+      alphaGain.connect(gain);
+      
+      oscillators.push(leftAlpha, rightAlpha);
+      leftAlpha.start();
+      rightAlpha.start();
+    }
+    
+    // 5. Gentle water wash with healing frequency harmonics
+    const washBuffer = context.createBuffer(1, context.sampleRate * 10, context.sampleRate);
+    const washData = washBuffer.getChannelData(0);
+    
+    // Generate gentle water movement
+    for (let i = 0; i < washData.length; i++) {
+      let wash = 0;
+      for (let octave = 0; octave < 4; octave++) {
+        wash += (Math.random() * 2 - 1) / Math.pow(2, octave * 0.7);
+      }
+      washData[i] = wash * 0.2;
+    }
+    
+    const washSource = context.createBufferSource();
+    washSource.buffer = washBuffer;
+    washSource.loop = true;
+    
+    // Filter for gentle water movement
+    const washFilter = context.createBiquadFilter();
+    washFilter.type = 'bandpass';
+    washFilter.frequency.setValueAtTime(150, context.currentTime);
+    washFilter.Q.setValueAtTime(0.4, context.currentTime);
+    
+    const washGain = context.createGain();
+    washGain.gain.value = 0.15;
+    
+    // Very slow wash rhythm
+    const washLFO = context.createOscillator();
+    washLFO.frequency.setValueAtTime(0.07, context.currentTime);
+    washLFO.type = 'sine';
+    
+    const washLFOGain = context.createGain();
+    washLFOGain.gain.value = 0.1;
+    
+    washLFO.connect(washLFOGain);
+    washLFOGain.connect(washGain.gain);
+    
+    washSource.connect(washFilter);
+    washFilter.connect(washGain);
+    washGain.connect(gain);
+    
+    // Start all components
+    deepBase.start();
+    healing396.start();
+    mainWaveLFO.start();
+    crashSource.start();
+    healing432.start();
+    crashLFO.start();
+    foamSource.start();
+    healing528.start();
+    foamLFO.start();
+    washSource.start();
+    washLFO.start();
+    
+    // Store all components for cleanup
+    oscillators.push(
+      deepBase, healing396, mainWaveLFO, crashSource, healing432, crashLFO,
+      foamSource, healing528, foamLFO, washSource, washLFO
+    );
+    setOscillator(oscillators);
+    
+    console.log('🌊✨ Healing Ocean Waves: 396Hz (Liberation) + 432Hz (Earth) + 528Hz (Love) + Alpha binaural beats + Realistic ocean sounds');
   };
 
   const showDeepStateNotification = () => {
@@ -169,6 +672,26 @@ function Meditation() {
         body: `You've entered a deep meditative state at ${timezoneUtils.formatLocalTime(new Date())}. Well done!`,
         icon: '/meditation-icon.png'
       });
+    }
+  };
+
+  const showCompletionNotification = () => {
+    console.log('🎉 Session completed at:', timezoneUtils.formatLocalDateTime(new Date()));
+    
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('Meditation Complete! 🎉', {
+        body: `Great job! You completed your ${targetTime}-minute meditation session.`,
+        icon: '/meditation-icon.png'
+      });
+    }
+    
+    // Optional: Play a gentle completion sound
+    try {
+      const completionTone = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEcBhqXy/HVgzQIHm/J7+OZSA8PU6fm77BdGAcugtTxzD2sLYPs7lkgCBl5gQEDgVs+l4G6tGEcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEcBhqXy/HVgzQIHm/J7+OZSA8PU6fm77BdGAc=');
+      completionTone.volume = 0.3;
+      completionTone.play().catch(() => {}); // Ignore errors
+    } catch (error) {
+      // Ignore audio errors
     }
   };
 
@@ -210,19 +733,70 @@ function Meditation() {
     const now = timezoneUtils.getCurrentLocalTime();
     console.log('⏹️ Session ended at:', timezoneUtils.formatLocalDateTime(now));
     console.log('📊 Session duration:', Math.floor(sessionTime / 60), 'minutes');
+    console.log('🎯 Target duration:', targetTime, 'minutes');
+    console.log('✅ Session completed?', sessionTime >= targetTime * 60);
     
-    setIsSessionActive(false);
-    setIsPaused(false);
-    
+    // Stop audio first
     if (oscillator) {
-      oscillator.stop();
+      if (Array.isArray(oscillator)) {
+        // Multiple oscillators (binaural beats, harmonics, ocean waves)
+        oscillator.forEach(osc => {
+          try {
+            if (osc.stop) {
+              osc.stop();
+            } else if (osc.disconnect) {
+              osc.disconnect();
+            }
+          } catch (error) {
+            console.log('Oscillator cleanup:', error);
+          }
+        });
+      } else {
+        // Single oscillator
+        try {
+          if (oscillator.stop) {
+            oscillator.stop();
+          } else if (oscillator.disconnect) {
+            oscillator.disconnect();
+          }
+        } catch (error) {
+          console.log('Oscillator cleanup:', error);
+        }
+      }
       setOscillator(null);
     }
     
+    if (audioContext) {
+      try {
+        await audioContext.close();
+      } catch (error) {
+        console.log('AudioContext cleanup:', error);
+      }
+      setAudioContext(null);
+    }
+    
+    // Update session state
+    setIsSessionActive(false);
+    setIsPaused(false);
+    
     // Auto-log session if it was substantial (>1 minute)
     if (sessionTime >= 60) {
-      await autoLogSession();
+      console.log('💾 Auto-logging session (duration >= 1 minute)');
+      console.log('🔍 Session time check:', sessionTime, 'seconds');
+      console.log('🔍 Firebase user:', firebaseUser?.uid);
+      console.log('🔍 Session start time:', sessionStartTime);
+      
+      try {
+        await autoLogSession();
+        console.log('✅ Auto-log completed successfully');
+      } catch (error) {
+        console.error('❌ Auto-log failed:', error);
+      }
+    } else {
+      console.log('⚠️ Session too short, not logging (< 1 minute)');
     }
+    
+    console.log('🔇 Audio stopped and session ended successfully');
   };
 
   const autoLogSession = async () => {
@@ -230,6 +804,8 @@ function Meditation() {
     
     try {
       console.log('📝 Auto-logging session with timezone data');
+      console.log('🧘 Session start time:', timezoneUtils.formatLocalDateTime(sessionStartTime));
+      console.log('⏰ Session duration:', Math.floor(sessionTime / 60), 'minutes');
       
       const sessionData = {
         date: sessionStartTime, // Use the actual start time in local timezone
@@ -245,9 +821,10 @@ function Meditation() {
         userTimezone: timezoneUtils.getUserTimezone()
       };
       
-      console.log('📊 Session data:', sessionData);
+      console.log('📊 Session data being saved:', sessionData);
       
       const response = await meditationService.logMeditation(firebaseUser.uid, sessionData);
+      console.log('✅ API Response:', response);
       
       // Add timezone formatting to the new meditation
       const newMeditation = {
@@ -258,12 +835,22 @@ function Meditation() {
         isToday: timezoneUtils.isToday(response.meditation.date)
       };
       
-      setMeditations(prev => [newMeditation, ...prev]);
+      console.log('🔄 Adding meditation to UI:', newMeditation);
+      console.log('📅 Is today?', newMeditation.isToday);
+      console.log('📅 Local date:', newMeditation.localDate);
       
-      console.log('✅ Session auto-logged successfully');
+      // Add to the beginning of the meditations array (newest first)
+      setMeditations(prev => {
+        const updated = [newMeditation, ...prev];
+        console.log('📋 Updated meditations list:', updated.length, 'total');
+        return updated;
+      });
+      
+      console.log('✅ Session auto-logged and added to UI successfully');
       
     } catch (error) {
-      console.error('Error auto-logging session:', error);
+      console.error('💥 Error auto-logging session:', error);
+      console.error('💥 Error details:', error.message);
     }
   };
 
@@ -396,9 +983,6 @@ function Meditation() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Filter today's meditations using timezone-aware comparison
-  const todayMeditations = meditations.filter(meditation => meditation.isToday);
-
   if (isLoading) {
     return (
       <div className="meditation-loading">
@@ -500,7 +1084,8 @@ function Meditation() {
                 <div className="type-header">
                   <span className="type-icon">{type.icon}</span>
                   <h3>{type.name}</h3>
-                  {type.premium && <span className="premium-badge">PRO</span>}
+                  {/* FIX: Only show PRO badge for non-premium users */}
+                  {type.premium && !isPremium && <span className="premium-badge">PRO</span>}
                 </div>
                 <p className="type-description">{type.description}</p>
                 
@@ -532,18 +1117,31 @@ function Meditation() {
               {Object.entries(soundscapes).map(([key, soundscape]) => (
                 <div 
                   key={key} 
-                  className={`soundscape-option ${soundscape.premium ? 'premium' : ''} ${currentSoundscape === key ? 'selected' : ''}`}
+                  className={`soundscape-option ${soundscape.premium ? 'premium' : ''} ${currentSoundscape === key ? 'selected' : ''} ${soundscape.premium && !isPremium ? 'locked' : ''}`}
                   onClick={() => {
                     if (!soundscape.premium || isPremium) {
                       setCurrentSoundscape(key);
+                    } else {
+                      // Show premium gate or alert for non-premium users
+                      alert('This soundscape requires Clarity Premium. Upgrade to access premium features!');
                     }
                   }}
                 >
-                  <span className="soundscape-icon">{soundscape.icon}</span>
+                  <div className="soundscape-header">
+                    <span className="soundscape-icon">{soundscape.icon}</span>
+                    {soundscape.premium && !isPremium && (
+                      <span className="premium-badge">PRO</span>
+                    )}
+                  </div>
                   <h4>{soundscape.name}</h4>
                   <p className="soundscape-description">{soundscape.description}</p>
                   <small className="neurological-note">{soundscape.neurological}</small>
-                  {soundscape.premium && !isPremium && <span className="premium-badge">PRO</span>}
+                  
+                  {soundscape.premium && !isPremium && (
+                    <div className="premium-overlay">
+                      <span className="lock-icon">🔒</span>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

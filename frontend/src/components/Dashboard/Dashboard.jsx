@@ -171,7 +171,7 @@ function Dashboard() {
             value={workoutProgress}
             text={`${Math.round(workoutProgress)}%`}
             styles={buildStyles({
-              pathColor: `rgba(62, 152, 199, ${workoutProgress / 100})`,
+              pathColor: `rgba(62, 152, 199, ${Math.max(workoutProgress / 100, 0.3)})`,
               textColor: '#3e98c7',
             })}
           />

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { waterService } from "../../services/waterService";
 import './Water.css';
+import timezoneUtils from "../../utils/timezone";
 
 function Water() {
     const { user: firebaseUser } = useAuth();
@@ -20,6 +21,7 @@ function Water() {
     const [todayTotal, setTodayTotal] = useState(0);
     const [userGoal, setUserGoal] = useState(64);
 
+    // Replace the simple today calculation with this timezone-aware version:
     const today = new Date().toISOString().split('T')[0];
 
     // Fetch water intake and user goal on component mount
@@ -61,25 +63,87 @@ function Water() {
         }));
     };
 
+    // Replace your handleSubmit function with this timezone-aware version:
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!firebaseUser?.uid) return;
         
-        setIsSubmitting(true);
-        setError('');
+        console.log('💧 Water submit started');
+        console.log('📊 Form data:', formData);
+        console.log('👤 Firebase user:', firebaseUser?.uid);
+        
+        if (!firebaseUser?.uid) {
+            console.error('❌ No user ID found');
+            setError('Please log in to save water intake');
+            return;
+        }
+
+        if (!formData.amount || !formData.date) {
+            setError('Please fill in all required fields');
+            return;
+        }
 
         try {
+            setIsSubmitting(true);
+            setError('');
+            
+            // Use same timezone utilities for proper date handling
+            let waterDate;
+            if (formData.date) {
+                // Parse the date string manually to avoid UTC conversion
+                const dateParts = formData.date.split('-'); // ['2025', '06', '28']
+                const year = parseInt(dateParts[0]);   // 2025
+                const month = parseInt(dateParts[1]);  // 6 (June in human terms)
+                const day = parseInt(dateParts[2]);    // 28
+                
+                const now = new Date();
+                
+                console.log('🔍 Water date parsing debug:');
+                console.log('  Form input:', formData.date);
+                console.log('  Split parts:', dateParts);
+                console.log('  Parsed year:', year);
+                console.log('  Parsed month (human readable):', month);
+                console.log('  Parsed day:', day);
+                console.log('  Month for Date constructor (0-indexed):', month - 1);
+                
+                // Create date in LOCAL timezone with CORRECT month indexing
+                waterDate = new Date(
+                    year,           // 2025
+                    month - 1,      // 6 - 1 = 5 (June in 0-indexed terms)
+                    day,            // 28
+                    now.getHours(),
+                    now.getMinutes(),
+                    now.getSeconds()
+                );
+                
+                console.log('📅 Created water date:', waterDate);
+                console.log('📅 Verify - Year:', waterDate.getFullYear());
+                console.log('📅 Verify - Month (0-indexed):', waterDate.getMonth());
+                console.log('📅 Verify - Month (human):', waterDate.getMonth() + 1);
+                console.log('📅 Verify - Day:', waterDate.getDate());
+                console.log('📅 Final formatted:', waterDate.toLocaleDateString());
+                
+            } else {
+                waterDate = new Date(); // Current local time
+            }
+            
+            const waterData = {
+                date: waterDate,
+                amount: parseFloat(formData.amount),
+                type: formData.type,
+                notes: formData.notes
+            };
+            
+            console.log('💧 Final water data:', waterData);
+            console.log('📅 Will be saved as:', waterData.date.toLocaleDateString());
+            
             if (editMode) {
                 // Update existing water intake
-                await waterService.updateWaterIntake(firebaseUser.uid, editId, {
-                    ...formData,
-                    amount: parseFloat(formData.amount)
-                });
+                await waterService.updateWaterIntake(firebaseUser.uid, editId, waterData);
                 
                 // Update local state
                 setWaters(prev => prev.map(water => 
                     water.id === editId 
-                        ? { ...water, ...formData, amount: parseFloat(formData.amount) }
+                        ? { ...water, ...waterData }
                         : water
                 ));
                 
@@ -87,10 +151,7 @@ function Water() {
                 setEditId(null);
             } else {
                 // Create new water intake
-                const response = await waterService.logWaterIntake(firebaseUser.uid, {
-                    ...formData,
-                    amount: parseFloat(formData.amount)
-                });
+                const response = await waterService.logWaterIntake(firebaseUser.uid, waterData);
                 
                 // Add to local state
                 setWaters(prev => [response.waterIntake, ...prev]);
@@ -108,8 +169,10 @@ function Water() {
                 notes: ''
             });
             
+            console.log('✅ Water intake logged successfully!');
+            
         } catch (error) {
-            console.error('Error saving water intake:', error);
+            console.error('💥 Water logging error:', error);
             setError(editMode ? 'Failed to update water intake' : 'Failed to log water intake');
         } finally {
             setIsSubmitting(false);
@@ -169,8 +232,23 @@ function Water() {
         
         try {
             setIsSubmitting(true);
+            
+            // Create proper local date for today
+            const now = new Date();
+            const todayDate = new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                now.getDate(),
+                now.getHours(),
+                now.getMinutes(),
+                now.getSeconds()
+            );
+            
+            console.log('💧 Quick add date:', todayDate);
+            console.log('📅 Quick add formatted:', todayDate.toLocaleDateString());
+            
             await waterService.logWaterIntake(firebaseUser.uid, {
-                date: today,
+                date: todayDate,
                 amount: amount,
                 type: 'water',
                 notes: ''
@@ -183,8 +261,10 @@ function Water() {
             const todayResponse = await waterService.getTodayWaterIntake(firebaseUser.uid);
             setTodayTotal(todayResponse.totalOz || 0);
             
+            console.log('✅ Quick add water successful!');
+            
         } catch (error) {
-            console.error('Error quick adding water:', error);
+            console.error('💥 Error quick adding water:', error);
             setError('Failed to log water intake');
         } finally {
             setIsSubmitting(false);
@@ -196,6 +276,13 @@ function Water() {
         const waterDate = water.date instanceof Date 
             ? water.date.toISOString().split('T')[0]
             : new Date(water.date).toISOString().split('T')[0];
+        
+        console.log('🔍 Comparing dates:', {
+            waterDate,
+            today,
+            match: waterDate === today
+        });
+        
         return waterDate === today;
     });
 

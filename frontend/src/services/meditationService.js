@@ -255,10 +255,34 @@ export const meditationService = {
   
   // Helper function: Get time of day from date
   getTimeOfDay(date) {
-    const hour = date.getHours();
+    // Ensure we have a proper Date object
+    let dateObj;
+    
+    if (date instanceof Date) {
+      dateObj = date;
+    } else if (typeof date === 'string') {
+      dateObj = new Date(date);
+    } else if (date && date.seconds) {
+      // Handle Firestore timestamp
+      dateObj = new Date(date.seconds * 1000);
+    } else {
+      console.warn('Invalid date format:', date);
+      return 'unknown';
+    }
+    
+    // Validate the date object
+    if (isNaN(dateObj.getTime())) {
+      console.warn('Invalid date object:', date);
+      return 'unknown';
+    }
+    
+    const hour = dateObj.getHours();
+    
+    if (hour < 6) return 'night';
     if (hour < 12) return 'morning';
-    if (hour < 18) return 'afternoon';
-    return 'evening';
+    if (hour < 17) return 'afternoon';
+    if (hour < 21) return 'evening';
+    return 'night';
   },
   
   // Helper function: Calculate mood improvement
