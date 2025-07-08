@@ -102,7 +102,7 @@ function ProfileButton() {
                 : userProfile?.username || 'User'
               }
             </span>
-            <span className="user-email">{userProfile?.email || user.email}</span>
+            {/* <span className="user-email">{userProfile?.email || user.email}</span> */}
           </div>
         </li>
         

@@ -205,29 +205,29 @@ export const meditationService = {
   },
 
   // Get meditation summary for dashboard
-  async getMeditationSummary(userId, days = 7) {
+  async getMeditationSummary(userId) {
     try {
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - days);
-      
+      const { startDate, endDate } = timezoneUtils.getCurrentWeekRange();
+
       const q = query(
         collection(db, `users/${userId}/meditations`),
         where('date', '>=', startDate),
+        where('date', '<=', endDate),
         orderBy('date', 'desc')
       );
-      
+
       const snapshot = await getDocs(q);
       const meditations = snapshot.docs.map(doc => doc.data());
-      
+
       // Fix: Add initial value of 0 to prevent "empty array" error
       const totalMinutes = meditations.reduce((sum, m) => sum + (m.durationMinutes || 0), 0);
       const averageDuration = meditations.length > 0 ? totalMinutes / meditations.length : 0;
-      
+
       // Fix: Handle empty array for deep state calculation
       const deepStateRate = meditations.length > 0 
         ? (meditations.filter(m => m.deepStateAchieved).length / meditations.length * 100)
         : 0;
-      
+
       return {
         totalSessions: meditations.length,
         totalMinutes,

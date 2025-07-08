@@ -125,33 +125,35 @@ export const waterService = {
   },
 
   // Get water summary for progress tracking (Plus tier feature)
-  async getWaterSummary(userId, days = 7) {
+  async getWaterSummary(userId) {
     try {
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - days);
-      
+      const { startDate, endDate } = timezoneUtils.getCurrentWeekRange();
+
       const q = query(
         collection(db, `users/${userId}/waterIntake`),
         where('date', '>=', startDate),
+        where('date', '<=', endDate),
         orderBy('date', 'desc')
       );
-      
+
       const snapshot = await getDocs(q);
       const waterIntakes = snapshot.docs.map(doc => doc.data());
-      
+
       // Group by date for charts
       const dailyTotals = {};
       waterIntakes.forEach(intake => {
         const dateKey = intake.date.toDate().toDateString();
         dailyTotals[dateKey] = (dailyTotals[dateKey] || 0) + intake.amount;
       });
-      
+
       const totalOz = waterIntakes.reduce((sum, intake) => 
         sum + (intake.amount || 0), 0
       );
-      
-      const averageOz = totalOz / days;
-      
+
+      // Avoid division by zero
+      const daysInWeek = 7;
+      const averageOz = daysInWeek > 0 ? totalOz / daysInWeek : 0;
+
       return {
         totalOz,
         averageOz,

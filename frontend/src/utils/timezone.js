@@ -77,7 +77,25 @@ export const timezoneUtils = {
     if (diffDays === 1) return 'Yesterday';
     if (diffDays < 7) return `${diffDays} days ago`;
     return this.formatLocalDate(date);
-  }
+  },
+  
+  // Get start and end of the current week (Sunday to Saturday)
+  getCurrentWeekRange() {
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+
+    // Start: previous Sunday
+    const startDate = new Date(now);
+    startDate.setHours(0, 0, 0, 0);
+    startDate.setDate(now.getDate() - dayOfWeek);
+
+    // End: next Saturday
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 6);
+    endDate.setHours(23, 59, 59, 999);
+
+    return { startDate, endDate };
+  },
 };
 
 export default timezoneUtils;

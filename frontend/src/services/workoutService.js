@@ -105,36 +105,36 @@ export const workoutService = {
   },
 
   // Get workout summary for dashboard
-  async getWorkoutSummary(userId, days = 7) {
+  async getWorkoutSummary(userId) {
     try {
-      const { startDate, endDate } = timezoneUtils.getLocalDateRange(days);
-      
+      const { startDate, endDate } = timezoneUtils.getCurrentWeekRange();
+
       console.log('🌍 Weekly workout query for timezone:', timezoneUtils.getUserTimezone());
       console.log('📅 Query range:', timezoneUtils.formatLocalDateTime(startDate), 'to', timezoneUtils.formatLocalDateTime(endDate));
-      
+
       const q = query(
         collection(db, `users/${userId}/workouts`),
         where('date', '>=', startDate),
         where('date', '<=', endDate),
         orderBy('date', 'desc')
       );
-      
+
       const snapshot = await getDocs(q);
       const workouts = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         date: doc.data().date?.toDate()
       }));
-      
+
       const totalMinutes = workouts.reduce((sum, workout) => sum + (workout.durationMinutes || 0), 0);
       const totalCalories = workouts.reduce((sum, workout) => sum + (workout.caloriesBurned || 0), 0);
-      
+
       return {
         totalWorkouts: workouts.length,
         totalMinutes,
         totalCalories,
         workouts: workouts.slice(0, 5),
-        period: `${days} days`,
+        period: 'This week',
         userTimezone: timezoneUtils.getUserTimezone()
       };
     } catch (error) {

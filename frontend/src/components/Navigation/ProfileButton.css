@@ -1,3 +1,10 @@
+.profile-button-container,
+.profile-button,
+.profile-dropdown,
+.profile-dropdown * {
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+}
+
 .profile-button {
   background: none;
   border: none;

@@ -74,21 +74,6 @@ function WelcomePage() {
     }
   };
 
-  const handleDemoLogin = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    try {
-      // Create a demo user or use existing demo credentials
-      await authService.login('demo@clarity.com', 'demopassword');
-    } catch (error) {
-      // If demo user doesn't exist, you might want to create it
-      setErrors({ demo: 'Demo login unavailable. Please sign up or use existing credentials.' });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <div className="welcome-container">
         <img src={flowers} className="flowers" alt="Flowers" />
@@ -216,7 +201,6 @@ function WelcomePage() {
             </button>
           </form>
         ) : (
-          <>
           <form className="welcome-form" onSubmit={handleLoginSubmit}>
             <div className="form-group">
               <label>Username or Email</label>
@@ -243,9 +227,6 @@ function WelcomePage() {
             {errors.credential && (
               <p className="error-message">{errors.credential}</p>
             )}
-            {errors.demo && (
-              <p className="error-message">{errors.demo}</p>
-            )}
             <button 
               type="submit" 
               className="primary-button"
@@ -254,14 +235,6 @@ function WelcomePage() {
               {isSubmitting ? 'Logging In...' : 'Log In'}
             </button>
           </form>
-          <button 
-            onClick={handleDemoLogin}
-            className="demo-button"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Loading...' : 'Demo Login'}
-          </button>
-        </>
         )}  
         <button 
           className="secondary-button"
