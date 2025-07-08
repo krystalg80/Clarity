@@ -19,14 +19,18 @@
   }
   /* Card styling */
 .welcome-card {
-    background-color: white;
-    border-radius: 20px;
-    padding: 40px;
-    width: 100%;
-    max-width: 400px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1;
-  }
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 24px;
+  padding: 40px 28px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.18);
+  z-index: 2;
+  transition: box-shadow 0.3s;
+}
   
 .welcome-header {
     display: flex;
@@ -74,9 +78,10 @@
   }
   
 .form-group input:focus {
-    outline: none;
-    border-color: #9BAF88;
-  }
+  outline: none;
+  border-color: #9BAF88;
+  box-shadow: 0 0 0 2px #b3e5fc55;
+}
   
   /* Button styling */
 .primary-button {
@@ -125,3 +130,149 @@
     font-size: 0.85rem;
     margin-top: 4px;
   }
+
+/* Overlay for awakening animation */
+.awakening-bg {
+  position: fixed;
+  inset: 0;
+  background: #d2ddbf; /* Match your app's green background */
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 2s;
+}
+
+/* Pulse animation */
+.awakening-pulse.pulse,
+.awakening-eye {
+  width: 30vw;
+  height: 30vw;
+  max-width: 160px;
+  max-height: 160px;
+  min-width: 80px;
+  min-height: 80px;
+}
+
+.awakening-pulse.pulse {
+  background: radial-gradient(circle, #b3e5fc 60%, #0a1a1f 100%);
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+  opacity: 0.8;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
+/* Bouncing eye animation */
+.awakening-eye {
+  position: absolute;
+  width: 30vw;
+  height: 30vw;
+  max-width: 160px;
+  max-height: 160px;
+  min-width: 80px;
+  min-height: 80px;
+  background: #fff;
+  border-radius: 50%;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%) scaleY(1);
+  opacity: 1;
+  z-index: 101;
+  box-shadow: 0 0 40px 10px #b3e5fc88, 0 0 0 0 #b3e5fc44;
+  animation: eye-glow 3s ease-in-out;
+  transition: 
+    border-radius 1.2s cubic-bezier(.77,0,.18,1),
+    height 1.2s cubic-bezier(.77,0,.18,1),
+    opacity 0.7s;
+}
+
+@keyframes eye-glow {
+  0% {
+    box-shadow: 0 0 0 0 #b3e5fc00, 0 0 0 0 #b3e5fc00;
+    opacity: 0.7;
+  }
+  50% {
+    box-shadow: 0 0 80px 30px #b3e5fcbb, 0 0 0 0 #b3e5fc44;
+    opacity: 1;
+  }
+  100% {
+    box-shadow: 0 0 40px 10px #b3e5fc88, 0 0 0 0 #b3e5fc44;
+    opacity: 1;
+  }
+}
+
+/* Eye opens (stretch)
+.awakening-bg.open .awakening-eye {
+  height: 180px;
+  border-radius: 50% / 40%;
+  box-shadow: 0 0 60px 10px #b3e5fcbb;
+  animation: none;
+} */
+
+/* Hide overlay when form is shown */
+.awakening-bg.form {
+  opacity: 0;
+  pointer-events: none;
+  display: none;
+  transition: opacity 1s;
+}
+
+/* Show form after animation */
+.welcome-card {
+  opacity: 0;
+  transform: translateY(40px) scale(0.98);
+  transition: opacity 0.8s 0.2s, transform 0.8s 0.2s;
+}
+.welcome-card.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Hello text animation */
+.awakening-hello {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.2rem;
+  color: #4a5a2c;
+  font-weight: 600;
+  opacity: 0; /* Start hidden */
+  z-index: 102;
+  animation: hello-float 3.5s ease-in-out 0.5s forwards, hello-glow 3s ease-in-out 0.5s forwards;
+  /*                                ^^^^ add delay and forwards */
+  transition: opacity 1s;
+  pointer-events: none;
+  text-shadow: 0 0 20px #b3e5fc88, 0 0 40px #b3e5fc44;
+}
+
+@keyframes hello-float {
+  0% { opacity: 0; transform: translate(-50%, -60%);}
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -80%);}
+}
+
+@keyframes hello-glow {
+  0% {
+    text-shadow: 0 0 0px #b3e5fc00, 0 0 0px #b3e5fc00;
+    opacity: 0.7;
+  }
+  50% {
+    text-shadow: 0 0 40px #b3e5fcbb, 0 0 80px #b3e5fc44;
+    opacity: 1;
+  }
+  100% {
+    text-shadow: 0 0 20px #b3e5fc88, 0 0 40px #b3e5fc44;
+    opacity: 1;
+  }
+}
+
+.awakening-bg.open .awakening-hello,
+.awakening-bg.form .awakening-hello {
+  opacity: 0;
+}

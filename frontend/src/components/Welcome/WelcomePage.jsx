@@ -1,13 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/authService';
 import logo from '../../assets/logo.png';
-import flowers from '../../assets/flowers.png';
 import './WelcomePage.css';
 
 function WelcomePage() {
-  const { user, loading } = useAuth(); // Replace Redux selector
+  const { user, loading } = useAuth();
   const [credential, setCredential] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
@@ -21,11 +20,21 @@ function WelcomePage() {
   const [errors, setErrors] = useState({});
   const [isSignup, setIsSignup] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [awakeningStage, setAwakeningStage] = useState('pulse'); // 'pulse', 'eye', 'form'
 
   // Redirect if already logged in
   if (user && !loading) return <Navigate to="/dashboard" replace={true} />;
 
   if (loading) return <div>Loading...</div>;
+
+  useEffect(() => {
+    // Pulse & hello for 2.5s, then eye open for 2s, then show form
+    const timers = [
+      setTimeout(() => setAwakeningStage('open'), 2500),
+      setTimeout(() => setAwakeningStage('form'), 4500)
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, []);
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
@@ -76,9 +85,16 @@ function WelcomePage() {
 
   return (
     <div className="welcome-container">
-        <img src={flowers} className="flowers" alt="Flowers" />
-        {/* <div className="flowers">🌸</div> Temporary emoji replacement */}
-      <div className="welcome-card">
+      {/* Awakening Animation Overlay */}
+      {awakeningStage !== 'form' && (
+        <div className={`awakening-bg ${awakeningStage}`}>
+          <span className={`awakening-hello ${awakeningStage}`}>Welcome</span>
+          <div className="awakening-eye"></div>
+        </div>
+      )}
+
+      {/* Login/Signup Form */}
+      <div className={`welcome-card ${awakeningStage === 'form' ? 'visible' : ''}`}>
         <div className="welcome-header">
           <img src={logo} alt="Clarity logo" />
           {/* <h1>Clarity</h1> Temporary text replacement */}
