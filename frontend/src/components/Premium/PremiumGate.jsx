@@ -1,5 +1,6 @@
 import { useAuth } from '../../contexts/AuthContext';
 import './PremiumGate.css';
+import { startStripeUpgrade } from '../../services/stripeUpgrade';
 
 function PremiumGate({ 
   children, 
@@ -26,7 +27,7 @@ function PremiumGate({
         <p>Upgrade to unlock {feature}</p>
         {showUpgrade && (
           <button 
-            onClick={upgradeToPremium}
+            onClick={startStripeUpgrade}
             className="unlock-button"
           >
             Upgrade to Premium - $4.99/month

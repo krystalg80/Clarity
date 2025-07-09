@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/authService';
 import './Profile.css';
+import { startStripeUpgrade } from '../../services/stripeUpgrade'; // Fixed: Import the upgrade function
 
 function Profile() {
   // Fixed: Get ALL needed values from useAuth in one destructure
@@ -348,7 +349,7 @@ function Profile() {
                   </ul>
                 </div>
                 <button 
-                  onClick={upgradeToPremium}
+                  onClick={startStripeUpgrade}
                   className="keep-premium-btn"
                 >
                   Keep Premium Access - $4.99/month
@@ -436,7 +437,7 @@ function Profile() {
                   </div>
                 </div>
                 <button 
-                  onClick={upgradeToPremium}
+                  onClick={startStripeUpgrade}
                   className="upgrade-btn"
                 >
                   Upgrade to Premium - $4.99/month

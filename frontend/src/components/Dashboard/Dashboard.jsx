@@ -12,6 +12,7 @@ import affirmations from '../../data/affirmations';
 import timezoneUtils from '../../utils/timezone';
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { getAuth } from "firebase/auth";
+import { startStripeUpgrade } from '../../services/stripeUpgrade';
 
 function getRandomAffirmation() {
   const randomIndex = Math.floor(Math.random() * affirmations.length);
@@ -142,7 +143,7 @@ function Dashboard() {
       const dontRemind = localStorage.getItem("dontRemindTrial");
       const lastReminded = localStorage.getItem("lastTrialReminded");
       console.log("dontRemindTrial:", dontRemind);
-      console.log("lastTrialReminded:", lastReminded);
+      console.log("lastReminded:", lastReminded);
       const oneWeek = 1000 * 60 * 60 * 24 * 7;
       const now = Date.now();
 
@@ -410,13 +411,7 @@ function Dashboard() {
             <p>Upgrade to keep enjoying premium features!</p>
             <button
               className="primary-button"
-              onClick={async () => {
-                const functions = getFunctions();
-                const createSession = httpsCallable(functions, 'createStripeCheckoutSession');
-                const user = getAuth().currentUser;
-                const result = await createSession({ uid: user.uid });
-                window.location.href = result.data.url;
-              }}
+              onClick={startStripeUpgrade}
             >
               Upgrade with Stripe
             </button>

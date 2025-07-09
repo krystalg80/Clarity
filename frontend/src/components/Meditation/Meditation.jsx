@@ -5,6 +5,7 @@ import { soundscapes, meditationTypes } from '../../data/soundscapes';
 import timezoneUtils from '../../utils/timezone';
 import './Meditation.css';
 import PremiumGate from '../Premium/PremiumGate';
+import { startStripeUpgrade } from '../../services/stripeUpgrade';
 
 function Meditation() {
   const { user: firebaseUser, isPremium } = useAuth();
@@ -1434,6 +1435,13 @@ function Meditation() {
             <li>⏰ Smart session reminders based on your timezone</li>
             <li>📈 Mood tracking and insights</li>
           </ul>
+          <button
+            className="primary-button"
+            onClick={startStripeUpgrade}
+            style={{ marginTop: '1rem' }}
+          >
+            Upgrade with Stripe
+          </button>
         </div>
       </PremiumGate>
     </div>

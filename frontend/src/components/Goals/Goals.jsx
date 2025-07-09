@@ -6,6 +6,7 @@ import { meditationService } from '../../services/meditationService';
 import { authService } from '../../services/authService';
 import PremiumGate from '../Premium/PremiumGate';
 import timezoneUtils from '../../utils/timezone';
+import { startStripeUpgrade } from '../../services/stripeUpgrade';
 import './Goals.css';
 
 function Goals() {
@@ -303,8 +304,11 @@ function Goals() {
                 <span>Challenge competitions</span>
               </div>
             </div>
-            <button className="upgrade-button">
-              Upgrade to Premium
+            <button 
+              className="upgrade-button"
+              onClick={startStripeUpgrade}
+            >
+              Upgrade with Stripe
             </button>
           </div>
         ) : (

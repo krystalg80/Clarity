@@ -1,50 +1,90 @@
-const functions = require('firebase-functions');
+const { onRequest } = require('firebase-functions/v2/https');
 const admin = require('firebase-admin');
-const stripe = require('stripe')(functions.config().stripe.secret);
 
 admin.initializeApp();
 
-exports.createStripeCheckoutSession = functions.https.onCall(async (data, context) => {
-  const { uid } = data;
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ['card'],
-    mode: 'subscription',
-    line_items: [{ price: functions.config().stripe.price_id, quantity: 1 }],
-    success_url: 'https://yourapp.com/stripe-success?session_id={CHECKOUT_SESSION_ID}',
-    cancel_url: 'https://yourapp.com/stripe-cancel',
-    client_reference_id: uid,
-    allow_promotion_codes: true,
-  });
-  return { url: session.url };
-});
+exports.createStripeCheckoutSession = onRequest(
+  async (req, res) => {
+    const stripe = require('stripe')(process.env.STRIPE_SECRET);
 
-exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
-  const sig = req.headers['stripe-signature'];
-  let event;
+    // CORS for all responses
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
 
-  try {
-    event = stripe.webhooks.constructEvent(req.rawBody, sig, functions.config().stripe.webhook_secret);
-  } catch (err) {
-    console.error('Webhook signature verification failed.', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
+    if (req.method === 'OPTIONS') {
+      return res.status(204).send('');
+    }
 
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object;
-    const uid = session.client_reference_id;
+    let uid;
+    try {
+      uid = req.body.uid || (typeof req.body === 'string' ? JSON.parse(req.body).uid : undefined);
+    } catch (e) {
+      return res.status(400).json({ error: 'Invalid request body' });
+    }
+    if (!uid) {
+      return res.status(400).json({ error: 'Missing uid' });
+    }
 
     try {
-      await admin.firestore().collection('users').doc(uid).set({
-        subscription: 'premium',
-        subscriptionStatus: 'active',
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        stripeSubscriptionId: session.subscription,
-      }, { merge: true });
-      console.log(`User ${uid} upgraded to premium.`);
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        mode: 'subscription',
+        line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
+        success_url: 'https://clarity-nixb.onrender.com/premium-success?session_id={CHECKOUT_SESSION_ID}',
+        cancel_url: 'https://clarity-nixb.onrender.com/premium-cancel',
+        client_reference_id: uid,
+        allow_promotion_codes: true,
+      });
+      return res.json({ url: session.url });
     } catch (err) {
-      console.error('Error updating user to premium:', err);
+      return res.status(500).json({ error: err.message });
     }
   }
+);
 
-  res.json({ received: true });
-});
+// Stripe webhook (raw body required)
+exports.stripeWebhook = onRequest(
+  { rawBody: true },
+  async (req, res) => {
+    const stripe = require('stripe')(process.env.STRIPE_SECRET);
+
+    const sig = req.headers['stripe-signature'];
+    let event;
+
+    try {
+      event = stripe.webhooks.constructEvent(req.rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    } catch (err) {
+      console.error('Webhook signature verification failed.', err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object;
+      const uid = session.client_reference_id;
+
+      try {
+        await admin.firestore().collection('users').doc(uid).update({
+          subscription: 'premium',
+          subscriptionStatus: 'active',
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          stripeSubscriptionId: session.subscription,
+        });
+        console.log(`User ${uid} upgraded to premium.`);
+      } catch (err) {
+        console.error('Error updating user to premium:', err);
+        // If document doesn't exist, create it
+        if (err.code === 'not-found') {
+          await admin.firestore().collection('users').doc(uid).set({
+            subscription: 'premium',
+            subscriptionStatus: 'active',
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            stripeSubscriptionId: session.subscription,
+          });
+        }
+      }
+    }
+
+    res.json({ received: true });
+  }
+);
