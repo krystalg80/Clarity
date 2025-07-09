@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import './Navigation.css';
-import logo from '../../assets/logo.png'; // Update this path to where your logo actually is
+import logo from '../../assets/Logo.png' // Update this path to where your logo actually is
 import ProfileButton from './ProfileButton';
 import TrialBanner from '../Trial/TrialBanner';
 
