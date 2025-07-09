@@ -31,8 +31,8 @@ exports.createStripeCheckoutSession = onRequest(
         payment_method_types: ['card'],
         mode: 'subscription',
         line_items: [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }],
-        success_url: 'https://clarity-nixb.onrender.com/premium-success?session_id={CHECKOUT_SESSION_ID}',
-        cancel_url: 'https://clarity-nixb.onrender.com/premium-cancel',
+        success_url: 'https://clarity-one-beryl.vercel.app/premium-success?session_id={CHECKOUT_SESSION_ID}',
+        cancel_url: 'https://clarity-one-beryl.vercel.app/premium-cancel',
         client_reference_id: uid,
         allow_promotion_codes: true,
       });
