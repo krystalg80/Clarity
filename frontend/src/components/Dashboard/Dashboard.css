@@ -756,6 +756,89 @@
   font-size: 1rem;
 }
 
+/* Trial Modal Styles */
+/* Modal overlay */
+.trial-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(30, 30, 30, 0.65);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Modal box */
+.trial-modal {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 2.5rem 2rem 2rem 2rem;
+  max-width: 350px;
+  width: 90%;
+  text-align: center;
+  animation: popIn 0.25s cubic-bezier(.4,2,.6,1) both;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.trial-modal h2 {
+  margin-bottom: 0.5rem;
+  color: #3e98c7;
+  font-size: 1.5rem;
+}
+
+.trial-modal p {
+  margin-bottom: 1.5rem;
+  color: #444;
+}
+
+.trial-modal .primary-button {
+  background: #3e98c7;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  transition: background 0.2s;
+}
+
+.trial-modal .primary-button:hover {
+  background: #357ca5;
+}
+
+.trial-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.trial-modal .secondary-button,
+.trial-modal .link-button {
+  background: none;
+  border: none;
+  color: #3e98c7;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.3rem 0;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.trial-modal .secondary-button:hover,
+.trial-modal .link-button:hover {
+  background: #f0f8ff;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .ai-features-grid {

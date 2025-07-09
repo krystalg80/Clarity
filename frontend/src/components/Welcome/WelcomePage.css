@@ -32,6 +32,10 @@
   transition: box-shadow 0.3s;
 }
   
+.welcome-card:hover {
+  box-shadow: 0 12px 36px 0 rgba(31, 38, 135, 0.22);
+}
+
 .welcome-header {
     display: flex;
     flex-direction: column;
@@ -275,4 +279,13 @@
 .awakening-bg.open .awakening-hello,
 .awakening-bg.form .awakening-hello {
   opacity: 0;
+}
+
+@media (max-width: 500px) {
+  .form-group input,
+  .primary-button,
+  .secondary-button {
+    font-size: 1.1rem;
+    padding: 16px;
+  }
 }

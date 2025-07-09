@@ -9,8 +9,9 @@ import { workoutService } from '../../services/workoutService';
 import { waterService } from '../../services/waterService';
 import { meditationService } from '../../services/meditationService';
 import affirmations from '../../data/affirmations';
-import PremiumGate from '../Premium/PremiumGate';
 import timezoneUtils from '../../utils/timezone';
+import { getFunctions, httpsCallable } from "firebase/functions";
+import { getAuth } from "firebase/auth";
 
 function getRandomAffirmation() {
   const randomIndex = Math.floor(Math.random() * affirmations.length);
@@ -33,6 +34,7 @@ function Dashboard() {
   const [waterGoalOz, setWaterGoalOz] = useState(64);
   const [affirmation, setAffirmation] = useState(getRandomAffirmation());
   const [isLoading, setIsLoading] = useState(true);
+  const [showTrialModal, setShowTrialModal] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -129,6 +131,31 @@ function Dashboard() {
     }
   }, []);
 
+  // Trial modal logic
+  useEffect(() => {
+    console.log("Trial modal effect running", userProfile);
+    if (
+      userProfile &&
+      userProfile.subscriptionStatus === "trial_expired" &&
+      userProfile.subscription === "free"
+    ) {
+      const dontRemind = localStorage.getItem("dontRemindTrial");
+      const lastReminded = localStorage.getItem("lastTrialReminded");
+      console.log("dontRemindTrial:", dontRemind);
+      console.log("lastTrialReminded:", lastReminded);
+      const oneWeek = 1000 * 60 * 60 * 24 * 7;
+      const now = Date.now();
+
+      if (!dontRemind) {
+        if (!lastReminded || now - Number(lastReminded) > oneWeek) {
+          setShowTrialModal(true);
+          localStorage.setItem("lastTrialReminded", now);
+          console.log("Showing trial modal!");
+        }
+      }
+    }
+  }, [userProfile]);
+
   // Loading states (unchanged)
   if (authLoading || isLoading) {
     return <div className="dashboard-loading">Loading...</div>;
@@ -141,12 +168,16 @@ function Dashboard() {
   if (!userProfile) {
     return <div className="dashboard-loading">Loading user data...</div>;
   }
+  
 
   // Calculate progress percentages using daily data
   const workoutProgress = Math.min((dailyData.workout.totalMinutes / exerciseGoalMinutes) * 100, 100) || 0;
   const meditationProgress = Math.min((dailyData.meditation.totalMinutes / meditationGoalMinutes) * 100, 100) || 0;
   const waterIntakeProgress = Math.min((dailyData.water.totalOz / waterGoalOz) * 100, 100) || 0;
   const remainingWorkoutMinutes = Math.max(exerciseGoalMinutes - dailyData.workout.totalMinutes, 0);
+  const showTrialEndedBanner =
+    userProfile.subscriptionStatus === "trial_expired" &&
+    userProfile.subscription === "free";
 
   return (
     <div className="dashboard-page">
@@ -370,7 +401,45 @@ function Dashboard() {
             </button>
           </div>
         </div>
-      </div>
+      </div> {/* End of .ai-analytics-coming-soon */}
+
+      {showTrialModal && (
+        <div className="trial-modal-overlay">
+          <div className="trial-modal">
+            <h2>Your free trial has ended</h2>
+            <p>Upgrade to keep enjoying premium features!</p>
+            <button
+              className="primary-button"
+              onClick={async () => {
+                const functions = getFunctions();
+                const createSession = httpsCallable(functions, 'createStripeCheckoutSession');
+                const user = getAuth().currentUser;
+                const result = await createSession({ uid: user.uid });
+                window.location.href = result.data.url;
+              }}
+            >
+              Upgrade with Stripe
+            </button>
+            <div className="trial-modal-actions">
+              <button
+                className="secondary-button"
+                onClick={() => setShowTrialModal(false)}
+              >
+                Remind me later
+              </button>
+              <button
+                className="link-button"
+                onClick={() => {
+                  localStorage.setItem("dontRemindTrial", "true");
+                  setShowTrialModal(false);
+                }}
+              >
+                Don't remind me again
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
