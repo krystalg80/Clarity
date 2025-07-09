@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/authService';
-import logo from '../../assets/logo.png';
+import logo from '../../assets/Logo.png';
 import './WelcomePage.css';
 
 function WelcomePage() {
