@@ -1,4 +1,3 @@
-// filepath: /Users/krystalgaldamez/Desktop/Capstone Final/Clarity/frontend/src/contexts/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from 'react';
 import { 
   onAuthStateChanged, 
@@ -29,30 +28,9 @@ export const AuthProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [userSubscription, setUserSubscription] = useState('free');
   const [loading, setLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // Add this
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log('🔥 Auth state changed:', firebaseUser ? 'User logged in' : 'User logged out');
-      
-      setUser(firebaseUser);
-      setIsAuthenticated(!!firebaseUser); // Set authentication status
-      
-      if (firebaseUser) {
-        // Fetch user profile and subscription info
-        await fetchUserProfile(firebaseUser.uid);
-      } else {
-        setUserProfile(null);
-        setUserSubscription('free');
-      }
-      
-      setLoading(false);
-    });
-
-    return unsubscribe;
-  }, []);
-
-  // Replace your calculateTrialStatus function with this:
+  // Calculate trial status function
   const calculateTrialStatus = (trialStartDate, trialEndDate) => {
     if (!trialStartDate || !trialEndDate) return { isTrialActive: false, daysRemaining: 0 };
     
@@ -85,22 +63,58 @@ export const AuthProvider = ({ children }) => {
         
         // Only auto-downgrade if trial is ACTUALLY expired
         if (profileData.subscription === 'trial' && !trialStatus.isTrialActive) {
+          const updatedProfile = {
+            ...profileData,
+            subscription: 'free',
+            subscriptionStatus: 'trial_expired',
+            updatedAt: new Date()
+          };
+          
           await updateDoc(doc(db, 'users', userId), {
             subscription: 'free',
             subscriptionStatus: 'trial_expired',
             updatedAt: new Date()
           });
-          profileData.subscription = 'free';
-          profileData.subscriptionStatus = 'trial_expired';
+          
+          setUserProfile({ ...updatedProfile, ...trialStatus });
+          setUserSubscription('free');
+        } else {
+          setUserProfile({ ...profileData, ...trialStatus });
+          setUserSubscription(profileData.subscription);
         }
-        
-        setUserProfile({ ...profileData, ...trialStatus });
-        setUserSubscription(profileData.subscription);
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
+      // Set loading to false even on error to prevent infinite loading
+      setLoading(false);
     }
   };
+
+  // Auth state change listener
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log('🔥 Auth state changed:', firebaseUser ? 'User logged in' : 'User logged out');
+      
+      try {
+        setUser(firebaseUser);
+        setIsAuthenticated(!!firebaseUser);
+        
+        if (firebaseUser) {
+          // Fetch user profile and subscription info
+          await fetchUserProfile(firebaseUser.uid);
+        } else {
+          setUserProfile(null);
+          setUserSubscription('free');
+        }
+      } catch (error) {
+        console.error('Error in auth state change:', error);
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    return unsubscribe;
+  }, []);
 
   // Sign up with subscription choice
   const signup = async (email, password, additionalData = {}) => {
@@ -118,16 +132,16 @@ export const AuthProvider = ({ children }) => {
         updatedAt: new Date(),
         firstName: additionalData.firstName || '',
         lastName: additionalData.lastName || '',
-        goals: {
-          workout: additionalData.workoutGoal || 30,
-          water: additionalData.waterGoal || 64,
-          meditation: additionalData.meditationGoal || 15
-        }
+        exerciseGoalMinutes: additionalData.exerciseGoalMinutes || 30,
+        waterGoalOz: additionalData.waterGoalOz || 64,
+        meditationGoalMinutes: additionalData.meditationGoalMinutes || 10
       };
 
       await setDoc(doc(db, 'users', firebaseUser.uid), userProfile);
       
-      setUserProfile(userProfile);
+      // Calculate trial status for new user
+      const trialStatus = calculateTrialStatus(userProfile.trialStartDate, userProfile.trialEndDate);
+      setUserProfile({ ...userProfile, ...trialStatus });
       setUserSubscription('trial');
       
       return { success: true, user: firebaseUser };
@@ -156,7 +170,7 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       setUserProfile(null);
       setUserSubscription('free');
-      setIsAuthenticated(false); // Add this
+      setIsAuthenticated(false);
       return { success: true };
     } catch (error) {
       console.error('Logout error:', error);
@@ -168,18 +182,19 @@ export const AuthProvider = ({ children }) => {
   const upgradeToPremium = async () => {
     try {
       if (user?.uid) {
-        await updateDoc(doc(db, 'users', user.uid), {
+        const updates = {
           subscription: 'premium',
           subscriptionStatus: 'premium_paid',
           premiumStartDate: new Date(),
           updatedAt: new Date()
-        });
+        };
+        
+        await updateDoc(doc(db, 'users', user.uid), updates);
         
         setUserSubscription('premium');
         setUserProfile(prev => ({
           ...prev,
-          subscription: 'premium',
-          subscriptionStatus: 'premium_paid'
+          ...updates
         }));
         
         return { success: true };
@@ -194,17 +209,18 @@ export const AuthProvider = ({ children }) => {
   const cancelSubscription = async () => {
     try {
       if (user?.uid) {
-        await updateDoc(doc(db, 'users', user.uid), {
+        const updates = {
           subscription: 'free',
           subscriptionCancelledAt: new Date(),
           updatedAt: new Date()
-        });
+        };
+        
+        await updateDoc(doc(db, 'users', user.uid), updates);
         
         setUserSubscription('free');
         setUserProfile(prev => ({
           ...prev,
-          subscription: 'free',
-          subscriptionCancelledAt: new Date()
+          ...updates
         }));
         
         return { success: true };
@@ -219,7 +235,7 @@ export const AuthProvider = ({ children }) => {
     user,
     userProfile,
     userSubscription,
-    isAuthenticated, // Add this to the context value
+    isAuthenticated,
     isPremium: userSubscription === 'premium' || userSubscription === 'trial',
     isTrialActive: userProfile?.isTrialActive || false,
     trialDaysRemaining: userProfile?.daysRemaining || 0,
