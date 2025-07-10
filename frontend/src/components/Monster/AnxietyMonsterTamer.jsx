@@ -34,7 +34,7 @@ const MONSTERS = {
     icon: "🐉",
     color: "#8B0000",
     size: "boss",
-    technique: "combo",
+    technique: "breathing",
     description: "The big bad of catastrophic thinking",
     tamedMessage: "Doom Dragon is now your wise protector! ✨"
   }
@@ -62,6 +62,12 @@ const TECHNIQUES = {
     duration: 15000,
     color: "#FF9800"
   }
+};
+
+// LocalStorage keys
+const STORAGE_KEYS = {
+  TAMED_MONSTERS: 'anxiety_game_tamed_monsters',
+  PLAYER_STATS: 'anxiety_game_player_stats'
 };
 
 function AnxietyMonsterTamer({ user, onUpdateStats }) {
