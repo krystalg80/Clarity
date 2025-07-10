@@ -1435,13 +1435,13 @@ function Meditation() {
             <li>⏰ Smart session reminders based on your timezone</li>
             <li>📈 Mood tracking and insights</li>
           </ul>
-          <button
+          {/* <button
             className="primary-button"
             onClick={startStripeUpgrade}
             style={{ marginTop: '1rem' }}
           >
             Upgrade with Stripe
-          </button>
+          </button> */}
         </div>
       </PremiumGate>
     </div>
