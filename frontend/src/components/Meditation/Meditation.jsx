@@ -1079,41 +1079,17 @@ function Meditation() {
             {/* <small>Your timezone: {timezoneUtils.getUserTimezone()} | Local time: {timezoneUtils.formatLocalTime(new Date())}</small> */}
           </p>
           
-          <div className="quick-start-grid">
-            {Object.entries(meditationTypes).map(([key, type]) => (
-              <div key={key} className={`meditation-type ${type.premium ? 'premium' : ''}`}>
-                <div className="type-header">
-                  <span className="type-icon">{type.icon}</span>
-                  <h3>{type.name}</h3>
-                  {/* FIX: Only show PRO badge for non-premium users */}
-                  {type.premium && !isPremium && <span className="premium-badge">PRO</span>}
-                </div>
-                <p className="type-description">{type.description}</p>
-                
-                <div className="duration-options">
-                  {type.duration.map(duration => (
-                    <button 
-                      key={duration}
-                      onClick={() => {
-                        if (!sessionMoodBefore) {
-                          setSessionMoodBefore(prompt('How are you feeling right now? (😊😔😴😤😌🤔🎉😰)') || '😐');
-                        }
-                        startSession(duration, key, currentSoundscape);
-                      }}
-                      className="duration-btn"
-                      disabled={type.premium && !isPremium}
-                    >
-                      {duration}min
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          {/* Soundscape Selection */}
+          {/* Soundscape Selection - Moved to top with instructions */}
           <div className="soundscape-section">
-            <h3>🎵 Choose Your Soundscape</h3>
+            <h3>🎵 Step 1: Choose Your Soundscape</h3>
+            <div className="soundscape-instructions">
+              <p>Select a soundscape below to enable meditation sessions. Click again to deselect.</p>
+              {currentSoundscape === 'silence' && (
+                <div className="no-soundscape-warning">
+                  ⚠️ Please select a soundscape before starting your meditation session
+                </div>
+              )}
+            </div>
             <div className="soundscape-grid">
               {Object.entries(soundscapes).map(([key, soundscape]) => (
                 <div 
@@ -1121,7 +1097,12 @@ function Meditation() {
                   className={`soundscape-option ${soundscape.premium ? 'premium' : ''} ${currentSoundscape === key ? 'selected' : ''} ${soundscape.premium && !isPremium ? 'locked' : ''}`}
                   onClick={() => {
                     if (!soundscape.premium || isPremium) {
-                      setCurrentSoundscape(key);
+                      // Toggle selection - if already selected, deselect to silence
+                      if (currentSoundscape === key) {
+                        setCurrentSoundscape('silence');
+                      } else {
+                        setCurrentSoundscape(key);
+                      }
                     } else {
                       // Show premium gate or alert for non-premium users
                       alert('This soundscape requires Clarity Premium. Upgrade to access premium features!');
@@ -1146,6 +1127,46 @@ function Meditation() {
                 </div>
               ))}
             </div>
+          </div>
+          
+          {/* Quick Start Grid - Step 2 */}
+          <div className="quick-start-grid">
+            <h3>⏰ Step 2: Choose Your Session</h3>
+            {Object.entries(meditationTypes).map(([key, type]) => (
+              <div key={key} className={`meditation-type ${type.premium ? 'premium' : ''}`}>
+                <div className="type-header">
+                  <span className="type-icon">{type.icon}</span>
+                  <h3>{type.name}</h3>
+                  {/* FIX: Only show PRO badge for non-premium users */}
+                  {type.premium && !isPremium && <span className="premium-badge">PRO</span>}
+                </div>
+                <p className="type-description">{type.description}</p>
+                
+                <div className="duration-options">
+                  {type.duration.map(duration => (
+                    <button 
+                      key={duration}
+                      onClick={() => {
+                        // Check if soundscape is selected
+                        if (currentSoundscape === 'silence') {
+                          alert('Please select a soundscape first before starting your meditation session!');
+                          return;
+                        }
+                        
+                        if (!sessionMoodBefore) {
+                          setSessionMoodBefore(prompt('How are you feeling right now? (😊😔😴😤😌🤔🎉😰)') || '😐');
+                        }
+                        startSession(duration, key, currentSoundscape);
+                      }}
+                      className={`duration-btn ${currentSoundscape === 'silence' ? 'disabled' : ''}`}
+                      disabled={type.premium && !isPremium || currentSoundscape === 'silence'}
+                    >
+                      {duration}min
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
