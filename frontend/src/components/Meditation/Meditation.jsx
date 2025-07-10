@@ -34,6 +34,11 @@ function Meditation() {
   const [isPaused, setIsPaused] = useState(false);
   const [deepStateAchieved, setDeepStateAchieved] = useState(false);
   const [currentSoundscape, setCurrentSoundscape] = useState('silence');
+  
+  // Debug: Log whenever currentSoundscape changes
+  useEffect(() => {
+    console.log('🔍 currentSoundscape changed to:', currentSoundscape);
+  }, [currentSoundscape]);
   const [sessionMoodBefore, setSessionMoodBefore] = useState('');
   const [sessionStartTime, setSessionStartTime] = useState(null);
   
@@ -1016,7 +1021,12 @@ function Meditation() {
   };
 
   return (
-    <div className="meditation-page">
+    <div 
+      className="meditation-page"
+      // onClick={(e) => {
+      //   console.log('🖱️ Page clicked:', e.target.className, e.target.tagName);
+      // }}
+    >
       {/* Live Session Interface */}
       {isSessionActive && (
         <div className="session-interface">
