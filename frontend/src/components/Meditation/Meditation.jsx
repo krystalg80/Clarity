@@ -85,7 +85,10 @@ function Meditation() {
 
   // 2. Audio setup for soundscapes
   useEffect(() => {
+    console.log('🎵 Audio effect triggered - isSessionActive:', isSessionActive, 'currentSoundscape:', currentSoundscape);
+    
     if (isSessionActive && currentSoundscape !== 'silence') {
+      console.log('🔊 Setting up audio for soundscape:', currentSoundscape);
       setupAudio();
     }
     
@@ -701,9 +704,10 @@ function Meditation() {
     
     console.log('🌍 Starting meditation session in timezone:', timezoneUtils.getUserTimezone());
     console.log('🧘 Session start time:', timezoneUtils.formatLocalDateTime(now));
+    console.log('🎵 Selected soundscape:', soundscape);
     
     setTargetTime(duration);
-    setCurrentSoundscape(soundscape);
+    // Don't reset currentSoundscape here - keep the user's selection
     setSessionTime(0);
     setIsSessionActive(true);
     setIsPaused(false);
@@ -1096,11 +1100,15 @@ function Meditation() {
                   key={key} 
                   className={`soundscape-option ${soundscape.premium ? 'premium' : ''} ${currentSoundscape === key ? 'selected' : ''} ${soundscape.premium && !isPremium ? 'locked' : ''}`}
                   onClick={() => {
+                    console.log('🎵 Soundscape clicked:', key, 'current selection:', currentSoundscape);
+                    
                     if (!soundscape.premium || isPremium) {
                       // Toggle selection - if already selected, deselect to silence
                       if (currentSoundscape === key) {
+                        console.log('🔇 Deselecting soundscape to silence');
                         setCurrentSoundscape('silence');
                       } else {
+                        console.log('🔊 Selecting soundscape:', key);
                         setCurrentSoundscape(key);
                       }
                     } else {
