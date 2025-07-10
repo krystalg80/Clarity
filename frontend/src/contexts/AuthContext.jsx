@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { 
   onAuthStateChanged, 
   createUserWithEmailAndPassword,
@@ -29,6 +29,9 @@ export const AuthProvider = ({ children }) => {
   const [userSubscription, setUserSubscription] = useState('free');
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  // Add ref to track if component is mounted
+  const isMounted = useRef(true);
 
   // Calculate trial status function
   const calculateTrialStatus = (trialStartDate, trialEndDate) => {
@@ -61,6 +64,9 @@ export const AuthProvider = ({ children }) => {
         console.log('🔍 Profile Data:', profileData);
         console.log('📅 Trial Status:', trialStatus);
         
+        // Only update state if component is still mounted
+        if (!isMounted.current) return;
+        
         // Only auto-downgrade if trial is ACTUALLY expired
         if (profileData.subscription === 'trial' && !trialStatus.isTrialActive) {
           const updatedProfile = {
@@ -76,17 +82,25 @@ export const AuthProvider = ({ children }) => {
             updatedAt: new Date()
           });
           
-          setUserProfile({ ...updatedProfile, ...trialStatus });
-          setUserSubscription('free');
+          // Check again before updating state
+          if (isMounted.current) {
+            setUserProfile({ ...updatedProfile, ...trialStatus });
+            setUserSubscription('free');
+          }
         } else {
-          setUserProfile({ ...profileData, ...trialStatus });
-          setUserSubscription(profileData.subscription);
+          // Check again before updating state
+          if (isMounted.current) {
+            setUserProfile({ ...profileData, ...trialStatus });
+            setUserSubscription(profileData.subscription);
+          }
         }
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
       // Set loading to false even on error to prevent infinite loading
-      setLoading(false);
+      if (isMounted.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -96,6 +110,9 @@ export const AuthProvider = ({ children }) => {
       console.log('🔥 Auth state changed:', firebaseUser ? 'User logged in' : 'User logged out');
       
       try {
+        // Only update state if component is still mounted
+        if (!isMounted.current) return;
+        
         setUser(firebaseUser);
         setIsAuthenticated(!!firebaseUser);
         
@@ -103,17 +120,30 @@ export const AuthProvider = ({ children }) => {
           // Fetch user profile and subscription info
           await fetchUserProfile(firebaseUser.uid);
         } else {
-          setUserProfile(null);
-          setUserSubscription('free');
+          // Only update state if component is still mounted
+          if (isMounted.current) {
+            setUserProfile(null);
+            setUserSubscription('free');
+          }
         }
       } catch (error) {
         console.error('Error in auth state change:', error);
       } finally {
-        setLoading(false);
+        // Only update state if component is still mounted
+        if (isMounted.current) {
+          setLoading(false);
+        }
       }
     });
 
     return unsubscribe;
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
   // Sign up with subscription choice
@@ -139,10 +169,13 @@ export const AuthProvider = ({ children }) => {
 
       await setDoc(doc(db, 'users', firebaseUser.uid), userProfile);
       
-      // Calculate trial status for new user
-      const trialStatus = calculateTrialStatus(userProfile.trialStartDate, userProfile.trialEndDate);
-      setUserProfile({ ...userProfile, ...trialStatus });
-      setUserSubscription('trial');
+      // Only update state if component is still mounted
+      if (isMounted.current) {
+        // Calculate trial status for new user
+        const trialStatus = calculateTrialStatus(userProfile.trialStartDate, userProfile.trialEndDate);
+        setUserProfile({ ...userProfile, ...trialStatus });
+        setUserSubscription('trial');
+      }
       
       return { success: true, user: firebaseUser };
     } catch (error) {
@@ -167,10 +200,15 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await signOut(auth);
-      setUser(null);
-      setUserProfile(null);
-      setUserSubscription('free');
-      setIsAuthenticated(false);
+      
+      // Only update state if component is still mounted
+      if (isMounted.current) {
+        setUser(null);
+        setUserProfile(null);
+        setUserSubscription('free');
+        setIsAuthenticated(false);
+      }
+      
       return { success: true };
     } catch (error) {
       console.error('Logout error:', error);
@@ -191,11 +229,14 @@ export const AuthProvider = ({ children }) => {
         
         await updateDoc(doc(db, 'users', user.uid), updates);
         
-        setUserSubscription('premium');
-        setUserProfile(prev => ({
-          ...prev,
-          ...updates
-        }));
+        // Only update state if component is still mounted
+        if (isMounted.current) {
+          setUserSubscription('premium');
+          setUserProfile(prev => ({
+            ...prev,
+            ...updates
+          }));
+        }
         
         return { success: true };
       }
@@ -217,11 +258,14 @@ export const AuthProvider = ({ children }) => {
         
         await updateDoc(doc(db, 'users', user.uid), updates);
         
-        setUserSubscription('free');
-        setUserProfile(prev => ({
-          ...prev,
-          ...updates
-        }));
+        // Only update state if component is still mounted
+        if (isMounted.current) {
+          setUserSubscription('free');
+          setUserProfile(prev => ({
+            ...prev,
+            ...updates
+          }));
+        }
         
         return { success: true };
       }
