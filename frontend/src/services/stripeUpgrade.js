@@ -1,6 +1,6 @@
 import { getAuth } from "firebase/auth";
 
-const baseUrl = "https://us-central1-clarity-311c3.cloudfunctions.net";
+const baseUrl = "https://createstripecheckoutsession-z5fchdkthq-uc.a.run.app";
 
 export async function startStripeUpgrade() {
   const user = getAuth().currentUser;
@@ -8,7 +8,7 @@ export async function startStripeUpgrade() {
     alert("You must be logged in to upgrade.");
     return;
   }
-  const response = await fetch(`${baseUrl}/createStripeCheckoutSession`, {
+  const response = await fetch(`${baseUrl}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ uid: user.uid }),
