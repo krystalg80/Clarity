@@ -29,10 +29,14 @@ export const AuthProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null);
   const [userSubscription, setUserSubscription] = useState('free');
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // Add this
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log('🔥 Auth state changed:', firebaseUser ? 'User logged in' : 'User logged out');
+      
       setUser(firebaseUser);
+      setIsAuthenticated(!!firebaseUser); // Set authentication status
       
       if (firebaseUser) {
         // Fetch user profile and subscription info
@@ -137,6 +141,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const { user: firebaseUser } = await signInWithEmailAndPassword(auth, email, password);
+      console.log('✅ Login successful, Firebase will trigger auth state change');
       return { success: true, user: firebaseUser };
     } catch (error) {
       console.error('Login error:', error);
@@ -151,6 +156,7 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       setUserProfile(null);
       setUserSubscription('free');
+      setIsAuthenticated(false); // Add this
       return { success: true };
     } catch (error) {
       console.error('Logout error:', error);
@@ -213,6 +219,7 @@ export const AuthProvider = ({ children }) => {
     user,
     userProfile,
     userSubscription,
+    isAuthenticated, // Add this to the context value
     isPremium: userSubscription === 'premium' || userSubscription === 'trial',
     isTrialActive: userProfile?.isTrialActive || false,
     trialDaysRemaining: userProfile?.daysRemaining || 0,
