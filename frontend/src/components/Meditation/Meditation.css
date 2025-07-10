@@ -332,19 +332,41 @@
   padding: 16px 12px;
   text-align: center;
   border: 1px solid var(--sage-100);
-  cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 8px; /* Add spacing between elements */
   min-height: 140px; /* Ensure enough height */
+  /* Remove cursor pointer from the container */
+}
+
+.soundscape-option .soundscape-content {
+  cursor: pointer;
+  pointer-events: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .soundscape-option:hover {
   transform: translateY(-2px);
   border-color: var(--sage-300);
   box-shadow: 0 4px 12px rgba(107, 128, 105, 0.1);
+}
+
+.soundscape-option.selected {
+  border-color: var(--sage-500);
+  background: var(--sage-50);
+  box-shadow: 0 4px 12px rgba(107, 128, 105, 0.2);
+}
+
+.soundscape-option.selected .soundscape-content {
+  background: var(--sage-100);
+  border-radius: 8px;
+  padding: 8px;
+  margin: -8px;
 }
 
 .soundscape-option.premium {
@@ -934,6 +956,8 @@
   inset: 0;
   background: rgba(255,255,255,0.7);
   border-radius: 12px;
+  pointer-events: none;
+  z-index: 5;
 }
 
 .soundscape-instructions {

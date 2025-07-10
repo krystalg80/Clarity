@@ -1099,23 +1099,6 @@ function Meditation() {
                 <div 
                   key={key} 
                   className={`soundscape-option ${soundscape.premium ? 'premium' : ''} ${currentSoundscape === key ? 'selected' : ''} ${soundscape.premium && !isPremium ? 'locked' : ''}`}
-                  onClick={() => {
-                    console.log('🎵 Soundscape clicked:', key, 'current selection:', currentSoundscape);
-                    
-                    if (!soundscape.premium || isPremium) {
-                      // Toggle selection - if already selected, deselect to silence
-                      if (currentSoundscape === key) {
-                        console.log('🔇 Deselecting soundscape to silence');
-                        setCurrentSoundscape('silence');
-                      } else {
-                        console.log('🔊 Selecting soundscape:', key);
-                        setCurrentSoundscape(key);
-                      }
-                    } else {
-                      // Show premium gate or alert for non-premium users
-                      alert('This soundscape requires Clarity Premium. Upgrade to access premium features!');
-                    }
-                  }}
                 >
                   <div className="soundscape-header">
                     <span className="soundscape-icon">{soundscape.icon}</span>
@@ -1123,9 +1106,31 @@ function Meditation() {
                       <span className="premium-badge">PRO</span>
                     )}
                   </div>
-                  <h4>{soundscape.name}</h4>
-                  <p className="soundscape-description">{soundscape.description}</p>
-                  <small className="neurological-note">{soundscape.neurological}</small>
+                  
+                  <div 
+                    className="soundscape-content"
+                    onClick={() => {
+                      console.log('🎵 Soundscape clicked:', key, 'current selection:', currentSoundscape);
+                      
+                      if (!soundscape.premium || isPremium) {
+                        // Toggle selection - if already selected, deselect to silence
+                        if (currentSoundscape === key) {
+                          console.log('🔇 Deselecting soundscape to silence');
+                          setCurrentSoundscape('silence');
+                        } else {
+                          console.log('🔊 Selecting soundscape:', key);
+                          setCurrentSoundscape(key);
+                        }
+                      } else {
+                        // Show premium gate or alert for non-premium users
+                        alert('This soundscape requires Clarity Premium. Upgrade to access premium features!');
+                      }
+                    }}
+                  >
+                    <h4>{soundscape.name}</h4>
+                    <p className="soundscape-description">{soundscape.description}</p>
+                    <small className="neurological-note">{soundscape.neurological}</small>
+                  </div>
                   
                   {soundscape.premium && !isPremium && (
                     <div className="premium-overlay">
