@@ -12,67 +12,64 @@ const sourceIcon = path.join(__dirname, 'src', 'assets', 'clarityicon.png');
 // PWA icon sizes
 const iconSizes = [16, 32, 72, 96, 128, 144, 152, 192, 384, 512];
 
+// How much to zoom in (0 = no zoom, 0.2 = crop 20% from each side)
+const ZOOM = 0.15; // 15% crop for a tighter fit
+
 // Create icons directory if it doesn't exist
 if (!fs.existsSync(iconsDir)) {
   fs.mkdirSync(iconsDir, { recursive: true });
 }
 
-// Generate PNG icons from clarityicon.png
+const cropAndResize = async (input, output, size) => {
+  // Get metadata to determine crop
+  const meta = await sharp(input).metadata();
+  const minDim = Math.min(meta.width, meta.height);
+  const cropSize = Math.floor(minDim * (1 - ZOOM * 2));
+  const left = Math.floor((meta.width - cropSize) / 2);
+  const top = Math.floor((meta.height - cropSize) / 2);
+
+  await sharp(input)
+    .extract({ left, top, width: cropSize, height: cropSize })
+    .resize(size, size)
+    .png()
+    .toFile(output);
+};
+
 const generateIcons = async () => {
   try {
-    console.log('🔄 Generating PWA icons from clarityicon.png...');
+    console.log('🔄 Generating ZOOMED PWA icons from clarityicon.png...');
     
     for (const size of iconSizes) {
       const outputPath = path.join(iconsDir, `icon-${size}x${size}.png`);
-      
-      await sharp(sourceIcon)
-        .resize(size, size)
-        .png()
-        .toFile(outputPath);
-      
+      await cropAndResize(sourceIcon, outputPath, size);
       console.log(`✅ Generated icon-${size}x${size}.png`);
     }
 
-    // Generate favicon sizes
+    // Favicons
     const faviconSizes = [16, 32];
     for (const size of faviconSizes) {
       const outputPath = path.join(iconsDir, `favicon-${size}x${size}.png`);
-      
-      await sharp(sourceIcon)
-        .resize(size, size)
-        .png()
-        .toFile(outputPath);
-      
+      await cropAndResize(sourceIcon, outputPath, size);
       console.log(`✅ Generated favicon-${size}x${size}.png`);
     }
 
-    // Generate Apple touch icons
+    // Apple touch icons
     const appleSizes = [152, 167, 180];
     for (const size of appleSizes) {
       const outputPath = path.join(iconsDir, `apple-touch-icon-${size}x${size}.png`);
-      
-      await sharp(sourceIcon)
-        .resize(size, size)
-        .png()
-        .toFile(outputPath);
-      
+      await cropAndResize(sourceIcon, outputPath, size);
       console.log(`✅ Generated apple-touch-icon-${size}x${size}.png`);
     }
 
-    // Generate shortcut icons
+    // Shortcut icons
     const shortcutIcons = ['meditation', 'water', 'workout'];
     for (const name of shortcutIcons) {
       const outputPath = path.join(iconsDir, `${name}-shortcut.png`);
-      
-      await sharp(sourceIcon)
-        .resize(96, 96)
-        .png()
-        .toFile(outputPath);
-      
+      await cropAndResize(sourceIcon, outputPath, 96);
       console.log(`✅ Generated ${name}-shortcut.png`);
     }
 
-    console.log('🎉 All PWA icons generated successfully from clarityicon.png!');
+    console.log('🎉 All ZOOMED PWA icons generated successfully from clarityicon.png!');
     
   } catch (error) {
     console.error('❌ Error generating icons:', error);
