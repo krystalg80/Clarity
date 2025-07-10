@@ -399,7 +399,7 @@
 }
 
 .monster-icon.happy {
-  filter: hue-rotate(120deg) brightness(1.2);
+  filter: brightness(1.2);
 }
 
 @keyframes victoryBounce {

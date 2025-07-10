@@ -86,6 +86,30 @@ function AnxietyMonsterTamer({ user, onUpdateStats }) {
   const [isBreathing, setIsBreathing] = useState(false);
   const timerRef = useRef(null);
 
+  // Load saved data from localStorage on component mount
+  useEffect(() => {
+    try {
+      // Load tamed monster IDs and reconstruct monster objects
+      const savedTamedMonsterIds = localStorage.getItem(STORAGE_KEYS.TAMED_MONSTERS);
+      if (savedTamedMonsterIds) {
+        const monsterIds = JSON.parse(savedTamedMonsterIds);
+        const reconstructedMonsters = monsterIds.map(id => ({
+          ...MONSTERS[id],
+          id: id
+        }));
+        setTamedMonsters(reconstructedMonsters);
+      }
+      // Load player stats
+      const savedPlayerStats = localStorage.getItem(STORAGE_KEYS.PLAYER_STATS);
+      if (savedPlayerStats) {
+        const parsed = JSON.parse(savedPlayerStats);
+        setPlayerStats(parsed);
+      }
+    } catch (error) {
+      console.error('Error loading game data from localStorage:', error);
+    }
+  }, []);
+
   // Generate random monster encounter
   const encounterMonster = () => {
     const monsterKeys = Object.keys(MONSTERS);
@@ -180,6 +204,26 @@ function AnxietyMonsterTamer({ user, onUpdateStats }) {
       }
     };
   }, []);
+
+  // Save tamed monsters to localStorage whenever they change
+  useEffect(() => {
+    try {
+      // Store only the monster IDs to avoid serialization issues
+      const monsterIds = tamedMonsters.map(monster => monster.id);
+      localStorage.setItem(STORAGE_KEYS.TAMED_MONSTERS, JSON.stringify(monsterIds));
+    } catch (error) {
+      console.error('Error saving tamed monsters to localStorage:', error);
+    }
+  }, [tamedMonsters]);
+
+  // Save player stats to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.PLAYER_STATS, JSON.stringify(playerStats));
+    } catch (error) {
+      console.error('Error saving player stats to localStorage:', error);
+    }
+  }, [playerStats]);
 
   return (
     <div className="monster-tamer-game">
