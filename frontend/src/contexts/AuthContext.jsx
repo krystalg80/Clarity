@@ -289,7 +289,9 @@ export const AuthProvider = ({ children }) => {
     logout,
     upgradeToPremium,
     cancelSubscription,
-    fetchUserProfile
+    fetchUserProfile,
+    // Add a key to force re-renders when auth state changes
+    authKey: user?.uid || 'no-user'
   };
 
   return (
