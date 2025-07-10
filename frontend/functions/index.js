@@ -7,13 +7,28 @@ exports.createStripeCheckoutSession = onRequest(
   async (req, res) => {
     const stripe = require('stripe')(process.env.STRIPE_SECRET);
 
-    // CORS for all responses
-    res.set('Access-Control-Allow-Origin', '*');
+    // CORS configuration - allow specific origins
+    const allowedOrigins = [
+      'https://clarity-one-beryl.vercel.app',
+      'http://localhost:5173',
+      'http://localhost:3000'
+    ];
+    
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+      res.set('Access-Control-Allow-Origin', origin);
+    } else {
+      res.set('Access-Control-Allow-Origin', '*');
+    }
+    
     res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.set('Access-Control-Allow-Headers', 'Content-Type');
+    res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.set('Access-Control-Allow-Credentials', 'true');
 
+    // Handle preflight requests
     if (req.method === 'OPTIONS') {
-      return res.status(204).send('');
+      res.status(204).send('');
+      return;
     }
 
     let uid;
