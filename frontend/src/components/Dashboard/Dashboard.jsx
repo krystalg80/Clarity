@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import { useNavigate } from 'react-router-dom';
 import 'react-circular-progressbar/dist/styles.css';
 import './Dashboard.css';
@@ -191,27 +190,17 @@ function Dashboard() {
       <div className="welcome-section">
         <h1>Welcome back, {userProfile.firstName}!</h1>
         <p>Here's your wellness progress for today</p>
-        {/* <div className="today-date">
-          {timezoneUtils.formatLocalDateTime(new Date())}
-          <br />
-          <small>({timezoneUtils.getUserTimezone()})</small>
-        </div> */}
       </div>
 
-      {/* Updated progress bars with enhanced daily info */}
+      {/* Simplified progress bars without CircularProgressbar */}
       <div className="progress-bars">
         <div className="progress-bar">
           <h2>💪 Today's Workout</h2>
           <p className="goal-text">Daily Goal: {exerciseGoalMinutes} minutes</p>
           <p className="current-text">{dailyData.workout.totalMinutes} / {exerciseGoalMinutes} min</p>
-          <CircularProgressbar
-            value={workoutProgress}
-            text={`${Math.round(workoutProgress)}%`}
-            styles={buildStyles({
-              pathColor: `rgba(62, 152, 199, ${Math.max(workoutProgress / 100, 0.3)})`,
-              textColor: '#3e98c7',
-            })}
-          />
+          <div className="progress-display">
+            <p>Progress: {Math.round(workoutProgress)}%</p>
+          </div>
           <div className="daily-stats">
             {dailyData.workout.hasWorkoutsToday ? (
               <span>✅ {dailyData.workout.sessions} workouts logged</span>
@@ -231,14 +220,9 @@ function Dashboard() {
           <h2>🧘‍♀️ Today's Meditation</h2>
           <p className="goal-text">Daily Goal: {meditationGoalMinutes} minutes</p>
           <p className="current-text">{dailyData.meditation.totalMinutes} / {meditationGoalMinutes} min</p>
-          <CircularProgressbar
-            value={meditationProgress}
-            text={`${Math.round(meditationProgress)}%`}
-            styles={buildStyles({
-              pathColor: `rgba(138, 43, 226, ${Math.max(meditationProgress / 100, 0.3)})`,
-              textColor: '#8a2be2',
-            })}
-          />
+          <div className="progress-display">
+            <p>Progress: {Math.round(meditationProgress)}%</p>
+          </div>
           <div className="daily-stats">
             {dailyData.meditation.hasSessionsToday ? (
               <span>✅ {dailyData.meditation.sessions} sessions completed</span>
@@ -261,14 +245,9 @@ function Dashboard() {
           <h2>💧 Today's Hydration</h2>
           <p className="goal-text">Daily Goal: {waterGoalOz} oz</p>
           <p className="current-text">{dailyData.water.totalOz} / {waterGoalOz} oz</p>
-          <CircularProgressbar
-            value={waterIntakeProgress}
-            text={`${Math.round(waterIntakeProgress)}%`}
-            styles={buildStyles({
-              pathColor: `rgba(30, 144, 255, ${Math.max(waterIntakeProgress / 100, 0.3)})`,
-              textColor: '#1e90ff',
-            })}
-          />
+          <div className="progress-display">
+            <p>Progress: {Math.round(waterIntakeProgress)}%</p>
+          </div>
           <div className="daily-stats">
             {dailyData.water.hasWaterToday ? (
               <span>✅ {dailyData.water.entries} water entries</span>
@@ -322,124 +301,6 @@ function Dashboard() {
           <span className="stat-label">Minutes Meditated Today</span>
         </div>
       </div>
-
-      {/* AI Analytics Coming Soon Section */}
-      <div className="ai-analytics-coming-soon">
-        <h2>
-          🤖 AI Analytics
-          <span className="coming-soon-badge">Coming Soon</span>
-        </h2>
-        
-        <div className="coming-soon-preview">
-          <div className="preview-content">
-            <div className="ai-features-grid">
-              <div className="ai-feature-card">
-                <div className="feature-icon">🧠</div>
-                <h3>Smart Insights</h3>
-                <p>AI-powered analysis of your wellness patterns and personalized recommendations</p>
-              </div>
-              
-              <div className="ai-feature-card">
-                <div className="feature-icon">📈</div>
-                <h3>Predictive Analytics</h3>
-                <p>Forecast your progress and identify optimal times for workouts and meditation</p>
-              </div>
-              
-              <div className="ai-feature-card">
-                <div className="feature-icon">🎯</div>
-                <h3>Goal Optimization</h3>
-                <p>AI-suggested goal adjustments based on your lifestyle and progress patterns</p>
-              </div>
-              
-              <div className="ai-feature-card">
-                <div className="feature-icon">💡</div>
-                <h3>Habit Coaching</h3>
-                <p>Intelligent recommendations to build sustainable wellness habits</p>
-              </div>
-            </div>
-            
-            <div className="coming-soon-mockup">
-              <div className="mockup-header">
-                <span className="mockup-title">AI Wellness Coach</span>
-                <div className="mockup-status">
-                  <span className="status-dot"></span>
-                  Analyzing your data...
-                </div>
-              </div>
-              
-              <div className="mockup-content">
-                <div className="ai-message">
-                  <div className="ai-avatar">🤖</div>
-                  <div className="message-bubble">
-                    "Based on your patterns, I recommend meditating at 7 AM on weekdays for optimal results. You're 40% more consistent during morning sessions."
-                  </div>
-                </div>
-                
-                <div className="insight-preview">
-                  <div className="insight-item">
-                    <span className="insight-icon">⚡</span>
-                    <span>Peak energy time: 9:30 AM</span>
-                  </div>
-                  <div className="insight-item">
-                    <span className="insight-icon">🧘</span>
-                    <span>Best meditation window: 7-8 AM</span>
-                  </div>
-                  <div className="insight-item">
-                    <span className="insight-icon">💧</span>
-                    <span>Hydration reminder: Every 2 hours</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="coming-soon-cta">
-            <h3>Be the first to know!</h3>
-            <p>AI Analytics will be powered by advanced machine learning to provide personalized wellness insights.</p>
-            <div className="tech-stack">
-              <span className="tech-badge">AWS SageMaker</span>
-              <span className="tech-badge">Machine Learning</span>
-              <span className="tech-badge">Predictive Analytics</span>
-            </div>
-            <button className="notify-button" disabled>
-              <span className="button-icon">🔔</span>
-              Notify Me When Available
-            </button>
-          </div>
-        </div>
-      </div> {/* End of .ai-analytics-coming-soon */}
-
-      {showTrialModal && (
-        <div className="trial-modal-overlay">
-          <div className="trial-modal">
-            <h2>Your free trial has ended</h2>
-            <p>Upgrade to keep enjoying premium features!</p>
-            <button
-              className="primary-button"
-              onClick={startStripeUpgrade}
-            >
-              Upgrade with Stripe
-            </button>
-            <div className="trial-modal-actions">
-              <button
-                className="secondary-button"
-                onClick={() => setShowTrialModal(false)}
-              >
-                Remind me later
-              </button>
-              <button
-                className="link-button"
-                onClick={() => {
-                  localStorage.setItem("dontRemindTrial", "true");
-                  setShowTrialModal(false);
-                }}
-              >
-                Don't remind me again
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
