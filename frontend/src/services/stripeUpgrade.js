@@ -1,5 +1,6 @@
 import { getAuth } from "firebase/auth";
-import { getFunctions, httpsCallable } from "firebase/functions";
+import { httpsCallable } from "firebase/functions";
+import { functions } from "../firebase/config";
 
 export async function startStripeUpgrade() {
   const user = getAuth().currentUser;
@@ -9,7 +10,6 @@ export async function startStripeUpgrade() {
   }
 
   try {
-    const functions = getFunctions();
     const createStripeCheckoutSession = httpsCallable(functions, 'createStripeCheckoutSession');
     
     const result = await createStripeCheckoutSession({ uid: user.uid });
