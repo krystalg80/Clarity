@@ -1,32 +1,16 @@
-const { onRequest } = require('firebase-functions/v2/https');
+const { onRequest, onCall } = require('firebase-functions/v2/https');
 const admin = require('firebase-admin');
 
 admin.initializeApp();
 
-exports.createStripeCheckoutSession = onRequest(
-  async (req, res) => {
+exports.createStripeCheckoutSession = onCall(
+  async (request) => {
     const stripe = require('stripe')(process.env.STRIPE_SECRET);
 
-    // Add CORS headers for debugging
-    res.set('Access-Control-Allow-Origin', 'https://clarity-one-beryl.vercel.app');
-    res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.set('Access-Control-Allow-Credentials', 'true');
-
-    // Handle preflight requests
-    if (req.method === 'OPTIONS') {
-      res.status(204).send('');
-      return;
-    }
-
-    let uid;
-    try {
-      uid = req.body.uid || (typeof req.body === 'string' ? JSON.parse(req.body).uid : undefined);
-    } catch (e) {
-      return res.status(400).json({ error: 'Invalid request body' });
-    }
+    const { uid } = request.data;
+    
     if (!uid) {
-      return res.status(400).json({ error: 'Missing uid' });
+      throw new Error('Missing uid');
     }
 
     try {
@@ -39,9 +23,10 @@ exports.createStripeCheckoutSession = onRequest(
         client_reference_id: uid,
         allow_promotion_codes: true,
       });
-      return res.json({ url: session.url });
+      
+      return { url: session.url };
     } catch (err) {
-      return res.status(500).json({ error: err.message });
+      throw new Error(err.message);
     }
   }
 );
