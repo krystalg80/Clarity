@@ -21,3 +21,5 @@ export async function startStripeUpgrade() {
     alert('Error creating checkout session. Please try again.');
   }
 }
+
+// hi
