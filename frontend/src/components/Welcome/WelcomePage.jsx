@@ -88,7 +88,7 @@ function WelcomePage() {
       {/* Awakening Animation Overlay */}
       {awakeningStage !== 'form' && (
         <div className={`awakening-bg ${awakeningStage}`}>
-          <span className={`awakening-hello ${awakeningStage}`}>Welcome</span>
+          {/* <span className={`awakening-hello ${awakeningStage}`}>Welcome</span> */}
           <div className="awakening-eye"></div>
         </div>
       )}
