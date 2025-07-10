@@ -31,13 +31,19 @@ const cropAndResize = async (input, output, size) => {
   await sharp(input)
     .extract({ left, top, width: cropSize, height: cropSize })
     .resize(size, size)
+    // Enhance the icon to make it more bold
+    .modulate({
+      brightness: 1.1,  // Slightly brighter
+      contrast: 1.3,    // Increase contrast to make details more visible
+      saturation: 1.1   // Slightly more saturated
+    })
     .png()
     .toFile(output);
 };
 
 const generateIcons = async () => {
   try {
-    console.log('🔄 Generating ZOOMED PWA icons from clarityicon.png...');
+    console.log('🔄 Generating BOLD PWA icons from clarityicon.png...');
     
     for (const size of iconSizes) {
       const outputPath = path.join(iconsDir, `icon-${size}x${size}.png`);
@@ -69,7 +75,7 @@ const generateIcons = async () => {
       console.log(`✅ Generated ${name}-shortcut.png`);
     }
 
-    console.log('🎉 All ZOOMED PWA icons generated successfully from clarityicon.png!');
+    console.log('🎉 All BOLD PWA icons generated successfully from clarityicon.png!');
     
   } catch (error) {
     console.error('❌ Error generating icons:', error);

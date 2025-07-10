@@ -4,19 +4,30 @@ const FloatingInstallButton = () => {
   const [showButton, setShowButton] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [hasShown, setHasShown] = useState(false);
 
   useEffect(() => {
-    // Check if already installed
+    // Check if already installed or previously dismissed
     if (window.matchMedia('(display-mode: standalone)').matches) {
       setIsInstalled(true);
+      return;
+    }
+
+    const hasDismissed = localStorage.getItem('clarity-pwa-dismissed') === 'true';
+    const hasInstalled = localStorage.getItem('clarity-pwa-installed') === 'true';
+    
+    if (hasDismissed || hasInstalled) {
       return;
     }
 
     // Listen for beforeinstallprompt event
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
-      setDeferredPrompt(e);
-      setShowButton(true);
+      if (!hasShown) {
+        setDeferredPrompt(e);
+        setShowButton(true);
+        setHasShown(true);
+      }
     };
 
     // Listen for appinstalled event
@@ -24,6 +35,7 @@ const FloatingInstallButton = () => {
       setIsInstalled(true);
       setShowButton(false);
       setDeferredPrompt(null);
+      localStorage.setItem('clarity-pwa-installed', 'true');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -31,9 +43,12 @@ const FloatingInstallButton = () => {
 
     // Show button for iOS after a delay (iOS doesn't support beforeinstallprompt)
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    if (isIOS && !isInstalled) {
+    if (isIOS && !isInstalled && !hasShown) {
       const timer = setTimeout(() => {
-        setShowButton(true);
+        if (!hasShown) {
+          setShowButton(true);
+          setHasShown(true);
+        }
       }, 5000); // Show after 5 seconds
 
       return () => clearTimeout(timer);
@@ -43,7 +58,7 @@ const FloatingInstallButton = () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
-  }, [isInstalled]);
+  }, [isInstalled, hasShown]);
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
@@ -53,6 +68,7 @@ const FloatingInstallButton = () => {
         setIsInstalled(true);
         setShowButton(false);
         setDeferredPrompt(null);
+        localStorage.setItem('clarity-pwa-installed', 'true');
       }
     } else {
       // For iOS or other browsers, show instructions

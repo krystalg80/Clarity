@@ -4,8 +4,17 @@ const InstallPrompt = () => {
   const [showPrompt, setShowPrompt] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [deviceType, setDeviceType] = useState('unknown');
+  const [hasShown, setHasShown] = useState(false);
 
   useEffect(() => {
+    // Check if already installed or previously dismissed
+    const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
+    const hasDismissed = localStorage.getItem('clarity-pwa-dismissed') === 'true';
+    
+    if (isInstalled || hasDismissed) {
+      return;
+    }
+
     // Detect device type
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isAndroid = /Android/.test(navigator.userAgent);
@@ -18,23 +27,30 @@ const InstallPrompt = () => {
     // Listen for beforeinstallprompt event (Android Chrome)
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
-      setDeferredPrompt(e);
-      setShowPrompt(true);
+      if (!hasShown) {
+        setDeferredPrompt(e);
+        setShowPrompt(true);
+        setHasShown(true);
+      }
     };
 
     // Listen for appinstalled event
     const handleAppInstalled = () => {
       setShowPrompt(false);
       setDeferredPrompt(null);
+      localStorage.setItem('clarity-pwa-installed', 'true');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
-    // Show manual install prompt for iOS after a delay
-    if (isIOS) {
+    // Show manual install prompt for iOS after a delay (only once)
+    if (isIOS && !hasShown) {
       const timer = setTimeout(() => {
-        setShowPrompt(true);
+        if (!hasShown) {
+          setShowPrompt(true);
+          setHasShown(true);
+        }
       }, 3000); // Show after 3 seconds
 
       return () => clearTimeout(timer);
@@ -44,7 +60,7 @@ const InstallPrompt = () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
-  }, []);
+  }, [hasShown]);
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
@@ -53,12 +69,14 @@ const InstallPrompt = () => {
       if (outcome === 'accepted') {
         setShowPrompt(false);
         setDeferredPrompt(null);
+        localStorage.setItem('clarity-pwa-installed', 'true');
       }
     }
   };
 
   const handleClose = () => {
     setShowPrompt(false);
+    localStorage.setItem('clarity-pwa-dismissed', 'true');
   };
 
   if (!showPrompt) return null;
