@@ -12,10 +12,10 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-// Prevent re-initialization
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+// // Prevent re-initialization
+// const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 
-export const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+export const db = getFirestore(app);
 export const functions = getFunctions(app, 'us-central1');
-export default app;

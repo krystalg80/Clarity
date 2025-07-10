@@ -12,12 +12,11 @@ export async function startStripeUpgrade() {
   try {
     console.log('🔧 Starting Stripe upgrade with Firebase Functions SDK');
     console.log('👤 User ID:', user.uid);
-    console.log('🌍 Functions region:', functions.region);
     
     const createStripeCheckoutSession = httpsCallable(functions, 'createStripeCheckoutSession');
     
     console.log('📞 Calling createStripeCheckoutSession function...');
-    const result = await createStripeCheckoutSession({ uid: user.uid });
+    const result = await createStripeCheckoutSession({});
     
     console.log('✅ Function call successful:', result);
     const { url } = result.data;
@@ -30,5 +29,3 @@ export async function startStripeUpgrade() {
     alert('Error creating checkout session. Please try again.');
   }
 }
-
-// hi

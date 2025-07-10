@@ -1,17 +1,20 @@
-const { onRequest, onCall } = require('firebase-functions/v2/https');
+const { onCall, onRequest } = require('firebase-functions/v2/https');
 const admin = require('firebase-admin');
 
 admin.initializeApp();
 
+// Callable function for creating Stripe checkout sessions
 exports.createStripeCheckoutSession = onCall(
   async (request) => {
     const stripe = require('stripe')(process.env.STRIPE_SECRET);
-
-    const { uid } = request.data;
     
+    // Get the UID from the authenticated user
+    const uid = request.auth?.uid;
     if (!uid) {
-      throw new Error('Missing uid');
+      throw new Error('User must be authenticated');
     }
+
+    console.log('📞 Callable function called for user:', uid);
 
     try {
       const session = await stripe.checkout.sessions.create({
@@ -26,12 +29,13 @@ exports.createStripeCheckoutSession = onCall(
       
       return { url: session.url };
     } catch (err) {
-      throw new Error(err.message);
+      console.error('Stripe error:', err);
+      throw new Error(`Stripe error: ${err.message}`);
     }
   }
 );
 
-// Stripe webhook (raw body required)
+// HTTP endpoint for Stripe webhooks (must remain as onRequest)
 exports.stripeWebhook = onRequest(
   { rawBody: true },
   async (req, res) => {
