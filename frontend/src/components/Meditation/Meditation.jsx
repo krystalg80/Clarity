@@ -1087,12 +1087,7 @@ function Meditation() {
           <div className="soundscape-section">
             <h3>🎵 Step 1: Choose Your Soundscape</h3>
             <div className="soundscape-instructions">
-              <p>Select a soundscape below to enable meditation sessions. Click again to deselect.</p>
-              {currentSoundscape === 'silence' && (
-                <div className="no-soundscape-warning">
-                  ⚠️ Please select a soundscape before starting your meditation session
-                </div>
-              )}
+              <p>Select a soundscape below (or choose silence for quiet meditation). Click again to deselect.</p>
             </div>
             <div className="soundscape-grid">
               {Object.entries(soundscapes).map(([key, soundscape]) => (
@@ -1109,7 +1104,11 @@ function Meditation() {
                   
                   <div 
                     className="soundscape-content"
-                    onClick={() => {
+                    onClick={(e) => {
+                      // Prevent event bubbling to parent elements
+                      e.stopPropagation();
+                      e.preventDefault();
+                      
                       console.log('🎵 Soundscape clicked:', key, 'current selection:', currentSoundscape);
                       
                       if (!soundscape.premium || isPremium) {
@@ -1160,19 +1159,13 @@ function Meditation() {
                     <button 
                       key={duration}
                       onClick={() => {
-                        // Check if soundscape is selected
-                        if (currentSoundscape === 'silence') {
-                          alert('Please select a soundscape first before starting your meditation session!');
-                          return;
-                        }
-                        
                         if (!sessionMoodBefore) {
                           setSessionMoodBefore(prompt('How are you feeling right now? (😊😔😴😤😌🤔🎉😰)') || '😐');
                         }
                         startSession(duration, key, currentSoundscape);
                       }}
-                      className={`duration-btn ${currentSoundscape === 'silence' ? 'disabled' : ''}`}
-                      disabled={type.premium && !isPremium || currentSoundscape === 'silence'}
+                      className={`duration-btn`}
+                      disabled={type.premium && !isPremium}
                     >
                       {duration}min
                     </button>

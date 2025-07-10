@@ -339,6 +339,8 @@
   gap: 8px; /* Add spacing between elements */
   min-height: 140px; /* Ensure enough height */
   /* Remove cursor pointer from the container */
+  /* Prevent touch events on the container itself */
+  pointer-events: none;
 }
 
 .soundscape-option .soundscape-content {
@@ -348,6 +350,11 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  /* Prevent touch events from bubbling to parent */
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .soundscape-option:hover {
@@ -378,6 +385,10 @@
   font-size: 32px;
   display: block;
   margin-bottom: 4px;
+}
+
+.soundscape-header {
+  pointer-events: none;
 }
 
 .soundscape-option h4 {
