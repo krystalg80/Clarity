@@ -6,7 +6,7 @@ import logo from '../../assets/Logo.png';
 import './WelcomePage.css';
 
 function WelcomePage() {
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user, loading } = useAuth();
   const [credential, setCredential] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
@@ -24,7 +24,7 @@ function WelcomePage() {
 
 // Redirect if already logged in
 if (loading) return <div>Loading...</div>;
-if (isAuthenticated) return <Navigate to="/dashboard" replace={true} />;
+if (user) return <Navigate to="/dashboard" replace={true} />;
 
   useEffect(() => {
     // Pulse & hello for 2.5s, then eye open for 2s, then show form

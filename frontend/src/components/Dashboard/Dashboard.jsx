@@ -230,7 +230,7 @@ function Dashboard() {
             value={meditationProgress}
             text={`${Math.round(meditationProgress)}%`}
             styles={buildStyles({
-              pathColor: `rgba(138, 43, 226, ${meditationProgress / 100})`,
+              pathColor: `rgba(138, 43, 226, ${Math.max(meditationProgress / 100, 0.3)})`,
               textColor: '#8a2be2',
             })}
           />
@@ -260,7 +260,7 @@ function Dashboard() {
             value={waterIntakeProgress}
             text={`${Math.round(waterIntakeProgress)}%`}
             styles={buildStyles({
-              pathColor: `rgba(30, 144, 255, ${waterIntakeProgress / 100})`,
+              pathColor: `rgba(30, 144, 255, ${Math.max(waterIntakeProgress / 100, 0.3)})`,
               textColor: '#1e90ff',
             })}
           />
