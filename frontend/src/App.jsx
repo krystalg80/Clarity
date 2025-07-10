@@ -9,6 +9,7 @@ import Water from './components/Water/Water';
 import Goals from './components/Goals/Goals';
 import Profile from './components/Profile/Profile';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
+import PWARegistration from './components/PWA/PWARegistration';
 import './App.css'; // Import global styles
 import Games from './components/Games/Games';
 
@@ -35,6 +36,7 @@ function App() {
           {/* Catch all route */}
           <Route path="*" element={<Navigate to="/welcome" replace />} />
         </Routes>
+        <PWARegistration />
       </Router>
     </AuthProvider>
   );
