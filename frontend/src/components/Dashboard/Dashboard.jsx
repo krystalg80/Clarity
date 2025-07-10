@@ -102,7 +102,7 @@ function Dashboard() {
             entries: waterData.totalEntries || waterData.entries || 0,
             hasWaterToday: (waterData.totalOz || 0) > 0,
             averagePerEntry: waterData.averagePerEntry || 0,
-            isOnTrack: (waterData.totalOz || 0) >= (waterGoalOz * 0.75)
+            isOnTrack: (waterData.totalOz || 0) >= ((profileResponse.user.waterGoalOz || 64) * 0.75)
           }
         });
         
@@ -168,6 +168,11 @@ function Dashboard() {
 
   if (!userProfile) {
     return <div className="dashboard-loading">Loading user data...</div>;
+  }
+
+  // Additional safety check for required data
+  if (!userProfile.firstName || !userProfile.exerciseGoalMinutes || !userProfile.waterGoalOz || !userProfile.meditationGoalMinutes) {
+    return <div className="dashboard-loading">Loading user profile...</div>;
   }
   
 
