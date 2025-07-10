@@ -1,20 +1,42 @@
-const { onCall, onRequest } = require('firebase-functions/v2/https');
+const { onRequest } = require('firebase-functions/v2/https');
 const admin = require('firebase-admin');
 
 admin.initializeApp();
 
-// Callable function for creating Stripe checkout sessions
-exports.createStripeCheckoutSession = onCall(
-  async (request) => {
+// Simple HTTP function for creating Stripe checkout sessions
+exports.createStripeCheckoutSession = onRequest(
+  async (req, res) => {
     const stripe = require('stripe')(process.env.STRIPE_SECRET);
-    
-    // Get the UID from the authenticated user
-    const uid = request.auth?.uid;
-    if (!uid) {
-      throw new Error('User must be authenticated');
+
+    // Set CORS headers
+    res.set('Access-Control-Allow-Origin', 'https://clarity-one-beryl.vercel.app');
+    res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.set('Access-Control-Allow-Credentials', 'true');
+
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+      res.status(204).send('');
+      return;
     }
 
-    console.log('📞 Callable function called for user:', uid);
+    console.log('📞 HTTP function called with method:', req.method);
+    console.log('📤 Request body:', req.body);
+
+    let uid;
+    try {
+      uid = req.body.uid;
+    } catch (e) {
+      console.error('❌ Error parsing request body:', e);
+      return res.status(400).json({ error: 'Invalid request body' });
+    }
+    
+    if (!uid) {
+      console.error('❌ Missing uid in request');
+      return res.status(400).json({ error: 'Missing uid' });
+    }
+
+    console.log('👤 Processing request for user:', uid);
 
     try {
       const session = await stripe.checkout.sessions.create({
@@ -27,10 +49,11 @@ exports.createStripeCheckoutSession = onCall(
         allow_promotion_codes: true,
       });
       
-      return { url: session.url };
+      console.log('✅ Stripe session created successfully');
+      return res.json({ url: session.url });
     } catch (err) {
-      console.error('Stripe error:', err);
-      throw new Error(`Stripe error: ${err.message}`);
+      console.error('❌ Stripe error:', err);
+      return res.status(500).json({ error: err.message });
     }
   }
 );
