@@ -12,8 +12,8 @@ export default defineConfig({
         name: 'Clarity - Wellness & Mindfulness App',
         short_name: 'Clarity',
         description: 'Your personal wellness companion for meditation, water tracking, workouts, and mental health support',
-        theme_color: '#6c5ce7',
-        background_color: '#f8f9fa',
+        theme_color: '#6b8069',
+        background_color: '#f6f7f6',
         display: 'standalone',
         orientation: 'portrait-primary',
         scope: '/',
@@ -65,7 +65,7 @@ export default defineConfig({
             src: '/icons/icon-512x512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'maskable any'
+            purpose: 'any'
           }
         ],
         shortcuts: [
