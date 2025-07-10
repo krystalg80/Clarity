@@ -1,25 +1,17 @@
 import { useAuth } from '../../contexts/AuthContext';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 
 function ProtectedRoute({ children }) {
-  const { user, loading, authKey } = useAuth();
-  const location = useLocation();
-  const [shouldRender, setShouldRender] = useState(false);
+  const { user, loading } = useAuth();
 
-  console.log('🔐 ProtectedRoute - loading:', loading, 'user:', !!user, 'authKey:', authKey);
+  console.log('🔐 ProtectedRoute - loading:', loading, 'user:', !!user);
 
-  // Force re-render when auth state changes
-  useEffect(() => {
-    if (!loading) {
-      setShouldRender(true);
-    }
-  }, [loading, authKey]);
-
-  if (loading || !shouldRender) {
+  // Show loading while auth is being determined
+  if (loading) {
     return <div className="loading">Loading...</div>;
   }
 
+  // If no user, redirect to welcome
   if (!user) {
     console.log('🚫 Not authenticated, redirecting to welcome');
     return <Navigate to="/welcome" replace />;

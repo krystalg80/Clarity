@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/authService';
 import logo from '../../assets/Logo.png';
 import './WelcomePage.css';
 
 function WelcomePage() {
-  const { user, loading, authKey } = useAuth();
-  const navigate = useNavigate();
+  const { user, loading } = useAuth();
   const [credential, setCredential] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
@@ -23,18 +22,6 @@ function WelcomePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [awakeningStage, setAwakeningStage] = useState('pulse'); // 'pulse', 'eye', 'form'
 
-  // Handle auth state changes more robustly
-  useEffect(() => {
-    if (!loading && user) {
-      console.log('🔄 Auth state changed, redirecting to dashboard');
-      navigate('/dashboard', { replace: true });
-    }
-  }, [user, loading, authKey, navigate]);
-
-// Redirect if already logged in
-if (loading) return <div>Loading...</div>;
-if (user) return <Navigate to="/dashboard" replace={true} />;
-
   useEffect(() => {
     // Pulse & hello for 2.5s, then eye open for 2s, then show form
     const timers = [
@@ -43,6 +30,10 @@ if (user) return <Navigate to="/dashboard" replace={true} />;
     ];
     return () => timers.forEach(clearTimeout);
   }, []);
+
+// Redirect if already logged in
+if (loading) return <div>Loading...</div>;
+if (user) return <Navigate to="/dashboard" replace={true} />;
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();

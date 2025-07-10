@@ -324,7 +324,7 @@ function Dashboard() {
       </div>
 
       {/* AI Analytics Coming Soon Section */}
-      <div className="ai-analytics-coming-soon">
+      {/* <div className="ai-analytics-coming-soon">
         <h2>
           🤖 AI Analytics
           <span className="coming-soon-badge">Coming Soon</span>
@@ -407,7 +407,7 @@ function Dashboard() {
             </button>
           </div>
         </div>
-      </div> {/* End of .ai-analytics-coming-soon */}
+      </div> End of .ai-analytics-coming-soon */}
 
       {showTrialModal && (
         <div className="trial-modal-overlay">
