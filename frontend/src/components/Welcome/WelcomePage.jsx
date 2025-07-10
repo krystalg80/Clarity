@@ -6,7 +6,7 @@ import logo from '../../assets/Logo.png';
 import './WelcomePage.css';
 
 function WelcomePage() {
-  const { user, loading } = useAuth();
+  const { user, loading, isAuthenticated } = useAuth();
   const [credential, setCredential] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
@@ -22,10 +22,9 @@ function WelcomePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [awakeningStage, setAwakeningStage] = useState('pulse'); // 'pulse', 'eye', 'form'
 
-  // Redirect if already logged in
-  if (user && !loading) return <Navigate to="/dashboard" replace={true} />;
-
-  if (loading) return <div>Loading...</div>;
+// Redirect if already logged in
+if (loading) return <div>Loading...</div>;
+if (isAuthenticated) return <Navigate to="/dashboard" replace={true} />;
 
   useEffect(() => {
     // Pulse & hello for 2.5s, then eye open for 2s, then show form
