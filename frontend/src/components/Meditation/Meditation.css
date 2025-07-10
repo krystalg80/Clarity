@@ -52,6 +52,32 @@
   border-radius: 2rem;
 }
 
+/* Wake Lock Status Styles */
+.wake-lock-status {
+  font-size: 0.9rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 1rem;
+  font-weight: 500;
+}
+
+.wake-lock-active {
+  background: rgba(76, 175, 80, 0.3);
+  color: #4CAF50;
+  border: 1px solid rgba(76, 175, 80, 0.5);
+}
+
+.wake-lock-inactive {
+  background: rgba(255, 152, 0, 0.3);
+  color: #FF9800;
+  border: 1px solid rgba(255, 152, 0, 0.5);
+}
+
+.wake-lock-unsupported {
+  background: rgba(158, 158, 158, 0.3);
+  color: #9E9E9E;
+  border: 1px solid rgba(158, 158, 158, 0.5);
+}
+
 /* Session Timer - Oura style ring */
 .session-timer {
   display: flex;

@@ -262,6 +262,30 @@ function AnxietyMonsterTamer({ user, onUpdateStats }) {
             {playerStats.calmness < 10 ? 'Rest First 😴' : 'Encounter Monster 👾'}
           </button>
           
+          {playerStats.calmness < 10 && (
+            <button 
+              className="rest-btn"
+              onClick={() => setPlayerStats(prev => ({
+                ...prev,
+                calmness: Math.min(100, prev.calmness + 50)
+              }))}
+              style={{
+                background: 'linear-gradient(135deg, #FF9800 0%, #FF5722 100%)',
+                color: 'white',
+                border: 'none',
+                padding: '12px 24px',
+                borderRadius: '20px',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                marginTop: '12px'
+              }}
+            >
+              Rest & Recover 🧘‍♀️ (+50 Calmness)
+            </button>
+          )}
+          
           <div className="tamed-collection">
             <h3>Your Tamed Monsters:</h3>
             <div className="tamed-grid">

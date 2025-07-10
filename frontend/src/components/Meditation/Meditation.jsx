@@ -47,12 +47,29 @@ function Meditation() {
   const [oscillator, setOscillator] = useState(null);
   const [gainNode, setGainNode] = useState(null);
   
+  // Wake Lock State
+  const [wakeLock, setWakeLock] = useState(null);
+  const [wakeLockSupported, setWakeLockSupported] = useState(false);
+  const [wakeLockActive, setWakeLockActive] = useState(false);
+  
   const intervalRef = useRef(null);
   
   // Get today in user's local timezone
   const today = timezoneUtils.formatLocalDate(new Date());
 
   // ALL USEEFFECT HOOKS TOGETHER AT THE TOP
+  
+  // 0. Check wake lock support on mount
+  useEffect(() => {
+    const checkWakeLockSupport = () => {
+      const supported = 'wakeLock' in navigator;
+      setWakeLockSupported(supported);
+      console.log('🔒 Wake Lock API supported:', supported);
+    };
+    
+    checkWakeLockSupport();
+  }, []);
+  
   // 1. Fetch meditations on mount
   useEffect(() => {
     const fetchMeditations = async () => {
@@ -162,6 +179,80 @@ function Meditation() {
   });
 
   console.log('📋 Today\'s meditations:', todayMeditations.length);
+
+  // Cleanup effect for wake lock and timers
+  useEffect(() => {
+    return () => {
+      // Release wake lock on component unmount
+      releaseWakeLock();
+      // Clear any remaining intervals
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
+
+  // Wake Lock Functions
+  const requestWakeLock = async () => {
+    try {
+      if (!wakeLockSupported) {
+        console.log('🔒 Wake Lock API not supported, using fallback methods');
+        return false;
+      }
+      
+      const wakeLockInstance = await navigator.wakeLock.request('screen');
+      setWakeLock(wakeLockInstance);
+      setWakeLockActive(true);
+      
+      console.log('🔒 Wake lock activated');
+      
+      // Listen for wake lock release
+      wakeLockInstance.addEventListener('release', () => {
+        console.log('🔒 Wake lock was released');
+        setWakeLockActive(false);
+        setWakeLock(null);
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('🔒 Failed to request wake lock:', error);
+      return false;
+    }
+  };
+
+  const releaseWakeLock = () => {
+    try {
+      if (wakeLock) {
+        wakeLock.release();
+        setWakeLock(null);
+        setWakeLockActive(false);
+        console.log('🔒 Wake lock released');
+      }
+    } catch (error) {
+      console.error('🔒 Error releasing wake lock:', error);
+    }
+  };
+
+  // Fallback methods to keep device awake
+  const startFallbackKeepAwake = () => {
+    if (!wakeLockSupported) {
+      console.log('🔒 Using fallback keep-awake methods');
+      
+      // Method 1: Audio context keep-alive
+      if (audioContext && audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+      
+      // Method 2: Periodic vibration (if supported)
+      if ('vibrate' in navigator) {
+        const vibrationInterval = setInterval(() => {
+          navigator.vibrate(1); // Very short vibration
+        }, 30000); // Every 30 seconds
+        return vibrationInterval;
+      }
+    }
+    return null;
+  };
 
   const setupAudio = () => {
     try {
@@ -704,7 +795,7 @@ function Meditation() {
     }
   };
 
-  const startSession = (duration, type, soundscape) => {
+  const startSession = async (duration, type, soundscape) => {
     const now = timezoneUtils.getCurrentLocalTime();
     
     console.log('🌍 Starting meditation session in timezone:', timezoneUtils.getUserTimezone());
@@ -718,6 +809,18 @@ function Meditation() {
     setIsPaused(false);
     setDeepStateAchieved(false);
     setSessionStartTime(now);
+    
+    // Request wake lock to prevent screen sleep
+    const wakeLockSuccess = await requestWakeLock();
+    if (!wakeLockSuccess) {
+      console.log('🔒 Wake lock failed, using fallback methods');
+      // Start fallback keep-awake methods
+      const fallbackInterval = startFallbackKeepAwake();
+      if (fallbackInterval) {
+        // Store the interval for cleanup
+        intervalRef.current = fallbackInterval;
+      }
+    }
     
     // Request notification permission
     if ('Notification' in window && Notification.permission === 'default') {
@@ -745,6 +848,9 @@ function Meditation() {
     console.log('📊 Session duration:', Math.floor(sessionTime / 60), 'minutes');
     console.log('🎯 Target duration:', targetTime, 'minutes');
     console.log('✅ Session completed?', sessionTime >= targetTime * 60);
+    
+    // Release wake lock
+    releaseWakeLock();
     
     // Stop audio first
     if (oscillator) {
@@ -1040,6 +1146,22 @@ function Meditation() {
                 Started: {sessionStartTime ? timezoneUtils.formatLocalTime(sessionStartTime) : 'Now'}
                 <br />
                 <small>{timezoneUtils.getUserTimezone()}</small>
+              </div>
+              {/* Wake Lock Status Indicator */}
+              <div className="wake-lock-status">
+                {wakeLockActive ? (
+                  <span className="wake-lock-active" title="Screen will stay awake during meditation">
+                    🔒 Screen Awake
+                  </span>
+                ) : wakeLockSupported ? (
+                  <span className="wake-lock-inactive" title="Screen may sleep during meditation">
+                    ⚠️ Screen May Sleep
+                  </span>
+                ) : (
+                  <span className="wake-lock-unsupported" title="Wake lock not supported on this device">
+                    📱 Using Fallback
+                  </span>
+                )}
               </div>
             </div>
           </div>
