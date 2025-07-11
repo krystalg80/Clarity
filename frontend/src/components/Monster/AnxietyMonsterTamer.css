@@ -18,6 +18,21 @@
   height: 200%;
   background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
   animation: shimmer 6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Fix for green screen issue */
+.monster-tamer-game {
+  background: linear-gradient(135deg, var(--sage-500) 0%, var(--sage-600) 100%);
+  border-radius: 20px;
+  padding: 24px;
+  color: white;
+  min-height: 400px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(107, 128, 105, 0.3);
+  isolation: isolate; /* Prevents CSS filter bleeding */
 }
 
 @keyframes shimmer {

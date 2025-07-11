@@ -13,15 +13,88 @@ function Games() {
     currentStreak: 0
   });
 
+  // Load game stats from localStorage on component mount and sync with actual data
+  useEffect(() => {
+    try {
+      const savedStats = localStorage.getItem('clarity_game_stats');
+      if (savedStats) {
+        const parsedStats = JSON.parse(savedStats);
+        setGameStats(parsedStats);
+        console.log('🎮 Loaded saved game stats:', parsedStats);
+      }
+      
+      // Sync with actual tamed monsters count
+      const tamedMonsters = localStorage.getItem('anxiety_game_tamed_monsters');
+      if (tamedMonsters) {
+        const monsterIds = JSON.parse(tamedMonsters);
+        const actualMonsterCount = monsterIds.length;
+        
+        setGameStats(prev => {
+          const updatedStats = {
+            ...prev,
+            anxietyGameScore: Math.max(prev.anxietyGameScore, actualMonsterCount)
+          };
+          
+          // Save the corrected stats
+          localStorage.setItem('clarity_game_stats', JSON.stringify(updatedStats));
+          console.log('🎮 Synced monster count:', actualMonsterCount);
+          
+          return updatedStats;
+        });
+      }
+    } catch (error) {
+      console.error('Error loading game stats:', error);
+    }
+  }, []);
+
   const handleUpdateStats = (stats) => {
-    setGameStats(prev => ({
-      ...prev,
-      anxietyGameScore: stats.anxietyGameScore || prev.anxietyGameScore,
-      mindfulnessPoints: prev.mindfulnessPoints + (stats.mindfulnessPoints || 0),
-      totalGamesPlayed: prev.totalGamesPlayed + 1
-    }));
+    console.log('🎮 handleUpdateStats called with:', stats);
+    
+    setGameStats(prev => {
+      const updatedStats = {
+        ...prev,
+        anxietyGameScore: stats.anxietyGameScore || prev.anxietyGameScore,
+        mindfulnessPoints: prev.mindfulnessPoints + (stats.mindfulnessPoints || 0),
+        totalGamesPlayed: prev.totalGamesPlayed + 1
+      };
+      
+      // Save to localStorage
+      try {
+        localStorage.setItem('clarity_game_stats', JSON.stringify(updatedStats));
+        console.log('🎮 Saved game stats to localStorage:', updatedStats);
+      } catch (error) {
+        console.error('Error saving game stats:', error);
+      }
+      
+      return updatedStats;
+    });
     
     console.log('🎮 Game stats updated:', stats);
+  };
+
+  // Debug function to manually refresh stats
+  const refreshStats = () => {
+    try {
+      const tamedMonsters = localStorage.getItem('anxiety_game_tamed_monsters');
+      const playerStats = localStorage.getItem('anxiety_game_player_stats');
+      
+      console.log('🎮 Debug - Tamed monsters:', tamedMonsters);
+      console.log('🎮 Debug - Player stats:', playerStats);
+      
+      if (tamedMonsters) {
+        const monsterIds = JSON.parse(tamedMonsters);
+        const actualMonsterCount = monsterIds.length;
+        
+        setGameStats(prev => ({
+          ...prev,
+          anxietyGameScore: actualMonsterCount
+        }));
+        
+        console.log('🎮 Debug - Updated anxietyGameScore to:', actualMonsterCount);
+      }
+    } catch (error) {
+      console.error('Error refreshing stats:', error);
+    }
   };
 
   return (
@@ -34,7 +107,16 @@ function Games() {
 
       {/* Game Stats Display */}
       <div className="game-stats-section">
-        <h2 className="section-title">Your Gaming Stats</h2>
+        <div className="stats-header">
+          <h2 className="section-title">Your Gaming Stats</h2>
+          <button 
+            onClick={refreshStats}
+            className="refresh-stats-btn"
+            title="Refresh stats from game data"
+          >
+            🔄 Refresh
+          </button>
+        </div>
         <div className="game-stats-grid">
           <div className="game-stat-card">
             <div className="stat-icon">👾</div>
@@ -90,35 +172,7 @@ function Games() {
           </div>
         </div>
 
-        {/* Coming Soon Games */}
-        <div className="coming-soon-games">
-          <h3 className="section-title">More Games Coming Soon</h3>
-          
-          <div className="game-preview-grid">
-            <div className="game-preview-card">
-              <div className="game-preview-icon">🌱</div>
-              <h4>Mindful Garden</h4>
-              <p>Grow a virtual garden through daily meditation practice</p>
-              <span className="coming-soon-badge">Coming Soon</span>
-            </div>
-            
-            <div className="game-preview-card">
-              <div className="game-preview-icon">🌊</div>
-              <h4>Calm Waters</h4>
-              <p>Navigate peaceful waters while practicing breathing exercises</p>
-              <span className="coming-soon-badge">Coming Soon</span>
-            </div>
-            
-            <div className="game-preview-card">
-              <div className="game-preview-icon">🎯</div>
-              <h4>Focus Quest</h4>
-              <p>Complete challenges that improve concentration and focus</p>
-              <span className="coming-soon-badge">Coming Soon</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
+        
       {/* Daily Gaming Challenges */}
       <div className="daily-challenges">
         <h2 className="section-title">Daily Gaming Challenges</h2>
@@ -205,6 +259,34 @@ function Games() {
               </div>
             </div>
           )}
+        </div>
+      </div>
+      {/* Coming Soon Games */}
+      <div className="coming-soon-games">
+          <h3 className="section-title">More Games Coming Soon</h3>
+          
+          <div className="game-preview-grid">
+            <div className="game-preview-card">
+              <div className="game-preview-icon">🌱</div>
+              <h4>Mindful Garden</h4>
+              <p>Grow a virtual garden through daily meditation practice</p>
+              <span className="coming-soon-badge">Coming Soon</span>
+            </div>
+            
+            <div className="game-preview-card">
+              <div className="game-preview-icon">🌊</div>
+              <h4>Calm Waters</h4>
+              <p>Navigate peaceful waters while practicing breathing exercises</p>
+              <span className="coming-soon-badge">Coming Soon</span>
+            </div>
+            
+            <div className="game-preview-card">
+              <div className="game-preview-icon">🎯</div>
+              <h4>Focus Quest</h4>
+              <p>Complete challenges that improve concentration and focus</p>
+              <span className="coming-soon-badge">Coming Soon</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

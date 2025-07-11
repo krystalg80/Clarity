@@ -156,3 +156,28 @@
 .challenge-card:nth-child(2) {
   margin-top: 1rem;
 }
+
+/* Stats Header and Refresh Button */
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.refresh-stats-btn {
+  background: rgba(107, 128, 105, 0.1);
+  border: 1px solid rgba(107, 128, 105, 0.2);
+  color: var(--sage-700);
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.refresh-stats-btn:hover {
+  background: rgba(107, 128, 105, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(107, 128, 105, 0.15);
+}
