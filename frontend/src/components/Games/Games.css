@@ -5,6 +5,10 @@
   margin: 0 auto;
   min-height: 100vh;
   background: linear-gradient(135deg, #f8fffe 0%, #f0f4f3 50%, #e8f0ef 100%);
+  position: relative;
+  z-index: 1;
+  /* Ensure no CSS bleeding from other components */
+  contain: layout style;
 }
 
 /* Games Header */
@@ -29,6 +33,9 @@
   height: 200%;
   background: radial-gradient(circle, rgba(107, 128, 105, 0.05) 0%, transparent 70%);
   animation: float 6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
 }
 
 @keyframes float {

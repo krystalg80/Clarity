@@ -22,7 +22,7 @@
   z-index: 1;
 }
 
-/* Fix for green screen issue */
+/* Fix for green screen issue - only apply to monster tamer game */
 .monster-tamer-game {
   background: linear-gradient(135deg, var(--sage-500) 0%, var(--sage-600) 100%);
   border-radius: 20px;
@@ -32,7 +32,7 @@
   position: relative;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(107, 128, 105, 0.3);
-  isolation: isolate; /* Prevents CSS filter bleeding */
+  contain: layout style paint; /* More specific containment */
 }
 
 @keyframes shimmer {
