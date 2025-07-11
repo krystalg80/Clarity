@@ -529,13 +529,16 @@
   padding: 24px 20px;
   box-shadow: 0 2px 8px rgba(107, 128, 105, 0.08);
   border: 1px solid var(--sage-100);
+  margin-bottom: 16px; /* Add spacing between cards */
 }
 
 .challenge-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 16px; /* Increase spacing */
+  flex-wrap: wrap; /* Allow wrapping on small screens */
+  gap: 8px; /* Add gap between elements */
 }
 
 .challenge-header h3 {
@@ -557,12 +560,12 @@
 .challenge-description {
   font-size: 14px;
   color: var(--gray-600);
-  margin: 0 0 16px 0;
-  line-height: 1.4;
+  margin: 0 0 20px 0; /* Increase bottom margin */
+  line-height: 1.5; /* Improve line height for readability */
 }
 
 .challenge-progress {
-  margin-bottom: 16px;
+  margin-bottom: 20px; /* Increase spacing */
 }
 
 .challenge-bar {
@@ -589,6 +592,8 @@
   font-size: 12px;
   color: var(--sage-600);
   font-weight: 500;
+  margin-top: 8px; /* Add top margin for spacing */
+  display: block; /* Ensure it's on its own line */
 }
 
 .challenge-premium {
@@ -779,17 +784,18 @@
 
 .challenge-preview {
   display: grid;
-  gap: 16px;
-  margin-top: 16px;
+  gap: 20px; /* Increase gap between cards */
+  margin-top: 20px; /* Increase top margin */
 }
 
 .challenge-card.premium {
   background: linear-gradient(135deg, var(--sage-50) 0%, var(--white) 100%);
   border: 2px solid var(--sage-300);
   border-radius: 16px;
-  padding: 20px;
+  padding: 24px 20px; /* Increase padding */
   position: relative;
   overflow: hidden;
+  margin-bottom: 16px; /* Add spacing between cards */
 }
 
 .challenge-card.premium::before {
@@ -803,8 +809,8 @@
 }
 
 .challenge-participants {
-  margin-top: 12px;
-  padding: 8px 16px;
+  margin-top: 16px; /* Increase top margin */
+  padding: 12px 16px; /* Increase padding */
   background: var(--sage-50);
   border-radius: 20px;
   border: 1px solid var(--sage-100);
