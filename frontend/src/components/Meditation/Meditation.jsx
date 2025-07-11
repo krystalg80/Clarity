@@ -1174,7 +1174,7 @@ function Meditation() {
             
             <div className="progress-ring">
               <div 
-                className="progress-fill" 
+                className="meditation-progress-fill" 
                 style={{ 
                   background: `conic-gradient(#4CAF50 ${(sessionTime / (targetTime * 60)) * 360}deg, #eee 0deg)`
                 }}

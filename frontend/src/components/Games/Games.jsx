@@ -184,7 +184,7 @@ function Games() {
             <p>Tame 3 anxiety monsters today</p>
             <div className="challenge-progress">
               <div className="progress-bar">
-                <div className="progress-fill" style={{ 
+                <div className="challenge-progress-fill" style={{ 
                   width: `${Math.min((gameStats.anxietyGameScore / 3) * 100, 100)}%` 
                 }}></div>
               </div>
@@ -203,7 +203,7 @@ function Games() {
             <p>Earn 100 mindfulness points</p>
             <div className="challenge-progress">
               <div className="progress-bar">
-                <div className="progress-fill" style={{ 
+                <div className="challenge-progress-fill" style={{ 
                   width: `${Math.min((gameStats.mindfulnessPoints / 100) * 100, 100)}%` 
                 }}></div>
               </div>

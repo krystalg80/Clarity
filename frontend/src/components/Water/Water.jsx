@@ -304,7 +304,7 @@ function Water() {
                     </span> */}
                     <div className="water-progress-bar">
                         <div 
-                            className="progress-fill" 
+                            className="water-progress-fill" 
                             style={{ width: `${progressPercentage}%` }}
                         ></div>
                     </div>

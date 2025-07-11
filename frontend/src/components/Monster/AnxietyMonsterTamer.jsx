@@ -341,7 +341,7 @@ function AnxietyMonsterTamer({ user, onUpdateStats }) {
             <h3>Taming {currentMonster.name}</h3>
             <div className="anxiety-progress">
               <div 
-                className="progress-fill" 
+                className="anxiety-progress-fill" 
                 style={{ width: `${techniqueProgress}%` }}
               ></div>
             </div>
