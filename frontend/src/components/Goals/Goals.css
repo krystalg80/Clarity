@@ -535,10 +535,11 @@
 .challenge-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start; /* Align to top to prevent overlap */
   margin-bottom: 16px; /* Increase spacing */
   flex-wrap: wrap; /* Allow wrapping on small screens */
-  gap: 8px; /* Add gap between elements */
+  gap: 12px; /* Increase gap between elements */
+  min-height: 40px; /* Ensure minimum height for the header */
 }
 
 .challenge-header h3 {
@@ -546,6 +547,8 @@
   font-weight: 600;
   color: var(--sage-700);
   margin: 0;
+  flex: 1; /* Take up available space */
+  min-width: 0; /* Allow text to wrap */
 }
 
 .challenge-reward {
@@ -555,6 +558,9 @@
   border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
+  flex-shrink: 0; /* Prevent shrinking */
+  white-space: nowrap; /* Keep text on one line */
+  align-self: flex-start; /* Align to top */
 }
 
 .challenge-description {
@@ -562,6 +568,8 @@
   color: var(--gray-600);
   margin: 0 0 20px 0; /* Increase bottom margin */
   line-height: 1.5; /* Improve line height for readability */
+  clear: both; /* Clear any floating elements */
+  width: 100%; /* Ensure full width */
 }
 
 .challenge-progress {
@@ -796,6 +804,13 @@
   position: relative;
   overflow: hidden;
   margin-bottom: 16px; /* Add spacing between cards */
+}
+
+.challenge-card.premium p {
+  margin: 0 0 16px 0; /* Add proper margin to description */
+  line-height: 1.5;
+  color: var(--gray-600);
+  font-size: 14px;
 }
 
 .challenge-card.premium::before {
