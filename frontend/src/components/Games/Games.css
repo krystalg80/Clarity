@@ -249,6 +249,26 @@
   min-width: 4px; /* Ensure minimum width for visibility */
 }
 
+/* Fallback styles in case the above don't work */
+.challenge-card .progress-bar {
+  background: rgba(107, 128, 105, 0.1);
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.challenge-card .challenge-progress-fill {
+  background: linear-gradient(90deg, var(--sage-400) 0%, var(--sage-500) 100%);
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 2px 4px rgba(107, 128, 105, 0.2);
+  min-width: 4px;
+}
+
 .challenge-reward {
   background: linear-gradient(135deg, var(--sage-500), var(--sage-600));
   color: var(--white);
