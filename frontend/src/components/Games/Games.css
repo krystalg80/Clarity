@@ -246,6 +246,7 @@
   position: relative;
   z-index: 1;
   box-shadow: 0 2px 4px rgba(107, 128, 105, 0.2);
+  min-width: 4px; /* Ensure minimum width for visibility */
 }
 
 .challenge-reward {

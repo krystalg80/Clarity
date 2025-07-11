@@ -578,6 +578,7 @@
   height: 100%;
   border-radius: 4px;
   transition: width 0.5s ease;
+  min-width: 4px; /* Ensure minimum width for visibility */
 }
 
 .challenge-status {
