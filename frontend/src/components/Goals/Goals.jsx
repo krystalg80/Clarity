@@ -452,24 +452,30 @@ function Goals() {
         >
           <div className="challenge-preview">
             <div className="challenge-card premium">
-              <div className="challenge-header">
-                <h3>💎 Diamond Week Challenge</h3>
-                <span className="challenge-reward">+200 points</span>
-              </div>
-              <p>Complete 125% of all goals for 7 consecutive days</p>
-              <div className="challenge-participants">
-                <span>🏆 1,247 participants this week</span>
+              <div className="challenge-icon">💎</div>
+              <div className="challenge-content">
+                <div className="challenge-header">
+                  <h3>Diamond Week Challenge</h3>
+                  <span className="challenge-reward">+200 points</span>
+                </div>
+                <p>Complete 125% of all goals for 7 consecutive days</p>
+                <div className="challenge-participants">
+                  <span>🏆 1,247 participants this week</span>
+                </div>
               </div>
             </div>
             
             <div className="challenge-card premium">
-              <div className="challenge-header">
-                <h3>🎯 Perfect Balance</h3>
-                <span className="challenge-reward">+150 points</span>
-              </div>
-              <p>Hit exactly 100% on all three goals in one day</p>
-              <div className="challenge-participants">
-                <span>🎉 892 members completed</span>
+              <div className="challenge-icon">🎯</div>
+              <div className="challenge-content">
+                <div className="challenge-header">
+                  <h3>Perfect Balance</h3>
+                  <span className="challenge-reward">+150 points</span>
+                </div>
+                <p>Hit exactly 100% on all three goals in one day</p>
+                <div className="challenge-participants">
+                  <span>🎉 892 members completed</span>
+                </div>
               </div>
             </div>
           </div>
