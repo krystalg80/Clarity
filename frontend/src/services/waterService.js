@@ -39,8 +39,10 @@ export const waterService = {
   // Fetch user water intake (replaces Redux fetchWaterIntakeByUser)
   async fetchWaterIntakeByUser(userId, days = 30) {
     try {
-      const startDate = new Date();
+      const startDate = timezoneUtils.getStartOfDay(new Date());
       startDate.setDate(startDate.getDate() - days);
+      
+      console.log('💧 fetchWaterIntakeByUser - Start date:', startDate.toLocaleDateString());
       
       const q = query(
         collection(db, `users/${userId}/waterIntake`),
@@ -49,14 +51,20 @@ export const waterService = {
       );
       
       const snapshot = await getDocs(q);
-      const waterIntakes = snapshot.docs.map(doc => ({ 
-        id: doc.id, 
-        ...doc.data(),
-        date: doc.data().date?.toDate() // Convert Firestore timestamp
-      }));
+      const waterIntakes = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return { 
+          id: doc.id, 
+          ...data,
+          date: data.date?.toDate ? data.date.toDate() : data.date // Convert Firestore timestamp
+        };
+      });
+      
+      console.log('💧 fetchWaterIntakeByUser - Found intakes:', waterIntakes.length);
       
       return { waterIntakes };
     } catch (error) {
+      console.error('💧 fetchWaterIntakeByUser error:', error);
       throw new Error('Error fetching water intake: ' + error.message);
     }
   },
@@ -95,10 +103,17 @@ export const waterService = {
   // Get today's water intake for dashboard
   async getTodayWaterIntake(userId) {
     try {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
+      // Use timezone utilities to get proper start/end of day
+      const today = timezoneUtils.getStartOfDay(new Date());
+      const tomorrow = timezoneUtils.getEndOfDay(new Date());
+      tomorrow.setMilliseconds(tomorrow.getMilliseconds() + 1); // Add 1ms to make it exclusive
+      
+      console.log('💧 getTodayWaterIntake - Date range:', {
+        today: today.toLocaleDateString(),
+        tomorrow: tomorrow.toLocaleDateString(),
+        todayISO: today.toISOString(),
+        tomorrowISO: tomorrow.toISOString()
+      });
       
       const q = query(
         collection(db, `users/${userId}/waterIntake`),
@@ -108,7 +123,18 @@ export const waterService = {
       );
       
       const snapshot = await getDocs(q);
-      const todayIntakes = snapshot.docs.map(doc => doc.data());
+      const todayIntakes = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          ...data,
+          date: data.date?.toDate ? data.date.toDate() : data.date
+        };
+      });
+      
+      console.log('💧 getTodayWaterIntake - Found intakes:', todayIntakes.length);
+      todayIntakes.forEach(intake => {
+        console.log('  -', intake.amount, 'oz on', intake.date?.toLocaleDateString());
+      });
       
       const totalOz = todayIntakes.reduce((sum, intake) => 
         sum + (intake.amount || 0), 0
@@ -120,6 +146,7 @@ export const waterService = {
         intakes: todayIntakes
       };
     } catch (error) {
+      console.error('💧 getTodayWaterIntake error:', error);
       throw new Error('Error fetching today\'s water intake: ' + error.message);
     }
   },

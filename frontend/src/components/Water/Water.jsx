@@ -271,19 +271,23 @@ function Water() {
         }
     };
 
-    // Filter today's water intake
+    // Filter today's water intake using timezone utilities
     const todayWaters = waters.filter(water => {
         const waterDate = water.date instanceof Date 
-            ? water.date.toISOString().split('T')[0]
-            : new Date(water.date).toISOString().split('T')[0];
+            ? water.date
+            : new Date(water.date);
+        
+        const isToday = timezoneUtils.isToday(waterDate);
         
         console.log('🔍 Comparing dates:', {
-            waterDate,
-            today,
-            match: waterDate === today
+            waterDate: waterDate.toLocaleDateString(),
+            today: new Date().toLocaleDateString(),
+            isToday,
+            waterDateObj: waterDate,
+            waterDateType: typeof water.date
         });
         
-        return waterDate === today;
+        return isToday;
     });
 
     // Calculate progress percentage
