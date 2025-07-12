@@ -210,7 +210,8 @@
 .achievements-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 20px;
+  margin-top: 20px;
 }
 
 .achievement-card {
@@ -787,13 +788,14 @@
 
 /* Premium Challenges Section */
 .premium-challenges {
-  margin-top: 32px;
+  margin-bottom: 32px;
 }
 
 .challenge-preview {
   display: grid;
-  gap: 20px; /* Increase gap between cards */
-  margin-top: 20px; /* Increase top margin */
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-top: 20px;
 }
 
 .challenge-card.premium {
@@ -889,6 +891,10 @@
     grid-template-columns: 1fr;
   }
   
+  .challenge-preview {
+    grid-template-columns: 1fr;
+  }
+  
   .weekly-progress {
     grid-template-columns: 1fr;
     gap: 16px;
@@ -971,6 +977,10 @@
   
   .achievements-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .challenge-preview {
+    grid-template-columns: repeat(2, 1fr);
   }
   
   .premium-features {
