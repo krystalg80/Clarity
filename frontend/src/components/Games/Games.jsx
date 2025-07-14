@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import AnxietyMonsterTamer from '../Monster/AnxietyMonsterTamer';
 import './Games.css';
+import { authService } from '../../services/authService';
 
 function Games() {
   const { user: firebaseUser } = useAuth();
@@ -12,6 +13,33 @@ function Games() {
     totalGamesPlayed: 0,
     currentStreak: 0
   });
+  const [monsterChallengeClaimed, setMonsterChallengeClaimed] = useState(false);
+  const [mindfulnessChallengeClaimed, setMindfulnessChallengeClaimed] = useState(false);
+  const [userPoints, setUserPoints] = useState(0);
+
+  // Fetch user points
+  useEffect(() => {
+    const fetchPoints = async () => {
+      if (firebaseUser?.uid) {
+        const points = await authService.getPoints(firebaseUser.uid);
+        setUserPoints(points);
+      }
+    };
+    fetchPoints();
+  }, [firebaseUser]);
+
+  // Check if challenges are already claimed for today
+  useEffect(() => {
+    const checkClaims = async () => {
+      if (firebaseUser?.uid) {
+        const monsterClaimed = await authService.isChallengeCompleted(firebaseUser.uid, 'monster_tamer_daily', 'daily');
+        const mindfulnessClaimed = await authService.isChallengeCompleted(firebaseUser.uid, 'mindfulness_master_daily', 'daily');
+        setMonsterChallengeClaimed(monsterClaimed);
+        setMindfulnessChallengeClaimed(mindfulnessClaimed);
+      }
+    };
+    checkClaims();
+  }, [firebaseUser]);
 
   // Load game stats from localStorage on component mount and sync with actual data
   useEffect(() => {
@@ -97,8 +125,39 @@ function Games() {
     }
   };
 
+  // Real challenge logic: check if user completed the challenge today
+  const monsterTamerComplete = gameStats.anxietyGameScore >= 3;
+  const mindfulnessMasterComplete = gameStats.mindfulnessPoints >= 100;
+
+  // Claim handlers
+  const handleClaimMonsterTamer = async () => {
+    if (!firebaseUser?.uid || monsterChallengeClaimed || !monsterTamerComplete) return;
+    await authService.addPoints(firebaseUser.uid, 50);
+    await authService.completeChallenge(firebaseUser.uid, 'monster_tamer_daily', 'daily');
+    setMonsterChallengeClaimed(true);
+    // Update points display
+    const points = await authService.getPoints(firebaseUser.uid);
+    setUserPoints(points);
+    alert('You claimed 50 points for Monster Tamer Challenge!');
+  };
+
+  const handleClaimMindfulnessMaster = async () => {
+    if (!firebaseUser?.uid || mindfulnessChallengeClaimed || !mindfulnessMasterComplete) return;
+    await authService.addPoints(firebaseUser.uid, 75);
+    await authService.completeChallenge(firebaseUser.uid, 'mindfulness_master_daily', 'daily');
+    setMindfulnessChallengeClaimed(true);
+    // Update points display
+    const points = await authService.getPoints(firebaseUser.uid);
+    setUserPoints(points);
+    alert('You claimed 75 points for Mindfulness Master Challenge!');
+  };
+
   return (
     <div className="games-page">
+      {/* Points Balance Display */}
+      <div className="points-balance">
+        <span role="img" aria-label="points">⭐</span> {userPoints} Points
+      </div>
       {/* Games Header */}
       <div className="games-header">
         <h1 className="games-title">Mental Wellness Games</h1>
@@ -193,6 +252,13 @@ function Games() {
           </div>
           <div className="challenge-reward">
             <span>+50 points</span>
+            <button 
+              className="claim-btn"
+              onClick={handleClaimMonsterTamer}
+              disabled={!monsterTamerComplete || monsterChallengeClaimed}
+            >
+              {monsterChallengeClaimed ? 'Claimed' : 'Claim'}
+            </button>
           </div>
         </div>
 
@@ -211,6 +277,13 @@ function Games() {
           </div>
           <div className="challenge-reward">
             <span>+75 points</span>
+            <button 
+              className="claim-btn"
+              onClick={handleClaimMindfulnessMaster}
+              disabled={!mindfulnessMasterComplete || mindfulnessChallengeClaimed}
+            >
+              {mindfulnessChallengeClaimed ? 'Claimed' : 'Claim'}
+            </button>
           </div>
         </div>
       </div>

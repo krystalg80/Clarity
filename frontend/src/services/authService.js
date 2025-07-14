@@ -64,6 +64,58 @@ async function getPoints(userId) {
   }
 }
 
+// Mark a challenge as completed for a user (daily or weekly)
+async function completeChallenge(userId, challengeId, period = 'daily') {
+  try {
+    const today = new Date();
+    let periodKey;
+    if (period === 'daily') {
+      periodKey = today.toISOString().split('T')[0]; // e.g., '2024-06-30'
+    } else if (period === 'weekly') {
+      // Use ISO week string, e.g., '2024-W27'
+      const year = today.getFullYear();
+      const week = Math.ceil(((today - new Date(year, 0, 1)) / 86400000 + new Date(year, 0, 1).getDay() + 1) / 7);
+      periodKey = `${year}-W${week}`;
+    } else {
+      periodKey = 'unknown';
+    }
+    const challengeRef = doc(db, `users/${userId}/challenges`, `${challengeId}_${periodKey}`);
+    await setDoc(challengeRef, {
+      challengeId,
+      period,
+      periodKey,
+      completedAt: new Date(),
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('Error completing challenge:', error);
+    return { success: false, error };
+  }
+}
+
+// Check if a challenge is already completed for a user (daily or weekly)
+async function isChallengeCompleted(userId, challengeId, period = 'daily') {
+  try {
+    const today = new Date();
+    let periodKey;
+    if (period === 'daily') {
+      periodKey = today.toISOString().split('T')[0];
+    } else if (period === 'weekly') {
+      const year = today.getFullYear();
+      const week = Math.ceil(((today - new Date(year, 0, 1)) / 86400000 + new Date(year, 0, 1).getDay() + 1) / 7);
+      periodKey = `${year}-W${week}`;
+    } else {
+      periodKey = 'unknown';
+    }
+    const challengeRef = doc(db, `users/${userId}/challenges`, `${challengeId}_${periodKey}`);
+    const challengeDoc = await getDoc(challengeRef);
+    return challengeDoc.exists();
+  } catch (error) {
+    console.error('Error checking challenge completion:', error);
+    return false;
+  }
+}
+
 export const authService = {
   // Register new user (replaces Redux session actions)
   async register(userData) {
@@ -150,7 +202,9 @@ export const authService = {
 
   addPoints,
   deductPoints,
-  getPoints
+  getPoints,
+  completeChallenge,
+  isChallengeCompleted
 };
 
 export default authService;

@@ -25,6 +25,10 @@ function Goals() {
   const [customWaterGoal, setCustomWaterGoal] = useState(64);
   const [customMeditationGoal, setCustomMeditationGoal] = useState(15);
   const [userPoints, setUserPoints] = useState(0);
+  const [weeklyChallengeClaimed, setWeeklyChallengeClaimed] = useState(false);
+  const [diamondWeekClaimed, setDiamondWeekClaimed] = useState(false);
+  const [perfectBalanceClaimed, setPerfectBalanceClaimed] = useState(false);
+  const [soundscapeActiveUntil, setSoundscapeActiveUntil] = useState(null);
 
   // Helper function to get days remaining in the current week
   const getDaysRemainingInWeek = () => {
@@ -94,6 +98,110 @@ function Goals() {
     };
     fetchPoints();
   }, [firebaseUser]);
+
+  // Check if weekly challenge is already claimed for this week
+  useEffect(() => {
+    const checkWeeklyClaim = async () => {
+      if (firebaseUser?.uid) {
+        const claimed = await authService.isChallengeCompleted(firebaseUser.uid, 'weekly_meditation_3', 'weekly');
+        setWeeklyChallengeClaimed(claimed);
+      }
+    };
+    checkWeeklyClaim();
+  }, [firebaseUser]);
+
+  // Check if exclusive challenges are already claimed for this week
+  useEffect(() => {
+    const checkExclusiveClaims = async () => {
+      if (firebaseUser?.uid) {
+        const diamondClaimed = await authService.isChallengeCompleted(firebaseUser.uid, 'diamond_week', 'weekly');
+        const perfectClaimed = await authService.isChallengeCompleted(firebaseUser.uid, 'perfect_balance', 'weekly');
+        setDiamondWeekClaimed(diamondClaimed);
+        setPerfectBalanceClaimed(perfectClaimed);
+      }
+    };
+    checkExclusiveClaims();
+  }, [firebaseUser]);
+
+  // Fetch premium soundscape status
+  useEffect(() => {
+    const fetchSoundscapeStatus = async () => {
+      if (firebaseUser?.uid) {
+        const profile = await authService.getUserProfile(firebaseUser.uid);
+        setSoundscapeActiveUntil(profile.user.premiumSoundscapeUntil ? new Date(profile.user.premiumSoundscapeUntil) : null);
+      }
+    };
+    fetchSoundscapeStatus();
+  }, [firebaseUser]);
+
+  // Check if user can redeem premium soundscape
+  const now = new Date();
+  const canRedeemSoundscape = userPoints >= 150 && (!soundscapeActiveUntil || soundscapeActiveUntil < now);
+  const soundscapeActive = soundscapeActiveUntil && soundscapeActiveUntil > now;
+
+  // Redeem handler
+  const handleRedeemSoundscape = async () => {
+    if (!firebaseUser?.uid || !canRedeemSoundscape) return;
+    await authService.deductPoints(firebaseUser.uid, 150);
+    const until = new Date();
+    until.setDate(until.getDate() + 7);
+    await authService.updateUserProfile(firebaseUser.uid, { premiumSoundscapeUntil: until });
+    setSoundscapeActiveUntil(until);
+    const points = await authService.getPoints(firebaseUser.uid);
+    setUserPoints(points);
+    alert('You unlocked Premium Soundscape for 1 week!');
+  };
+
+  // Real weekly challenge logic: 3 meditation sessions this week
+  const meditationSessionsThisWeek = weeklyData.meditation.current / (customMeditationGoal || 15);
+  const weeklyChallengeComplete = meditationSessionsThisWeek >= 3;
+
+  // Real logic for exclusive challenges
+  // Diamond Week: Complete 125% of all goals for 7 consecutive days
+  // For demo, we'll check if all three goals are >= 125% (for the week)
+  const diamondWeekComplete =
+    (weeklyData.workout.current / weeklyData.workout.goal >= 1.25) &&
+    (weeklyData.water.current / weeklyData.water.goal >= 1.25) &&
+    (weeklyData.meditation.current / weeklyData.meditation.goal >= 1.25);
+
+  // Perfect Balance: Hit exactly 100% on all three goals in one day
+  // For demo, we'll check if all three goals are >= 100% (for the week)
+  const perfectBalanceComplete =
+    (weeklyData.workout.current / weeklyData.workout.goal >= 1) &&
+    (weeklyData.water.current / weeklyData.water.goal >= 1) &&
+    (weeklyData.meditation.current / weeklyData.meditation.goal >= 1);
+
+  // Claim handlers for exclusive challenges
+  const handleClaimWeeklyChallenge = async () => {
+    if (!firebaseUser?.uid || weeklyChallengeClaimed || !weeklyChallengeComplete) return;
+    await authService.addPoints(firebaseUser.uid, 50);
+    await authService.completeChallenge(firebaseUser.uid, 'weekly_meditation_3', 'weekly');
+    setWeeklyChallengeClaimed(true);
+    // Update points display
+    const points = await authService.getPoints(firebaseUser.uid);
+    setUserPoints(points);
+    alert('You claimed 50 points for the Weekly Meditation Challenge!');
+  };
+
+  const handleClaimDiamondWeek = async () => {
+    if (!firebaseUser?.uid || diamondWeekClaimed || !diamondWeekComplete) return;
+    await authService.addPoints(firebaseUser.uid, 200);
+    await authService.completeChallenge(firebaseUser.uid, 'diamond_week', 'weekly');
+    setDiamondWeekClaimed(true);
+    const points = await authService.getPoints(firebaseUser.uid);
+    setUserPoints(points);
+    alert('You claimed 200 points for Diamond Week Challenge!');
+  };
+
+  const handleClaimPerfectBalance = async () => {
+    if (!firebaseUser?.uid || perfectBalanceClaimed || !perfectBalanceComplete) return;
+    await authService.addPoints(firebaseUser.uid, 150);
+    await authService.completeChallenge(firebaseUser.uid, 'perfect_balance', 'weekly');
+    setPerfectBalanceClaimed(true);
+    const points = await authService.getPoints(firebaseUser.uid);
+    setUserPoints(points);
+    alert('You claimed 150 points for Perfect Balance Challenge!');
+  };
 
   const calculateAchievements = () => {
     const newAchievements = [];
@@ -338,7 +446,17 @@ function Goals() {
               <div className="reward-info">
                 <h4>Premium Soundscape</h4>
                 <p>Unlock for 1 week</p>
-                <span className="reward-cost">50 points</span>
+                <span className="reward-cost">150 points</span>
+                <button
+                  className="claim-btn"
+                  onClick={handleRedeemSoundscape}
+                  disabled={!canRedeemSoundscape}
+                >
+                  {soundscapeActive ? 'Active' : 'Redeem'}
+                </button>
+                {soundscapeActive && (
+                  <div className="reward-status">Active until {soundscapeActiveUntil?.toLocaleDateString()}</div>
+                )}
               </div>
             </div>
             <div className="reward-item">
@@ -360,15 +478,22 @@ function Goals() {
           <div className="challenge-header">
             <h3>Mindful Monday</h3>
             <span className="challenge-reward">+50 points</span>
+            <button 
+              className="claim-btn"
+              onClick={handleClaimWeeklyChallenge}
+              disabled={!weeklyChallengeComplete || weeklyChallengeClaimed}
+            >
+              {weeklyChallengeClaimed ? 'Claimed' : 'Claim'}
+            </button>
           </div>
           <p className="challenge-description">
             Complete 3 meditation sessions this week
           </p>
           <div className="challenge-progress">
             <div className="challenge-bar">
-              <div className="challenge-fill" style={{ width: '33%' }}></div>
+              <div className="challenge-fill" style={{ width: `${Math.min((meditationSessionsThisWeek / 3) * 100, 100)}%` }}></div>
             </div>
-            <span className="challenge-status">1/3 completed</span>
+            <span className="challenge-status">{Math.floor(meditationSessionsThisWeek)}/3 completed</span>
           </div>
           {!isPremium && (
             <div className="challenge-premium">
@@ -465,7 +590,6 @@ function Goals() {
       {/* Premium Challenges */}
       <div className="premium-challenges">
         <h2 className="section-title">Exclusive Challenges</h2>
-        
         <PremiumGate 
           feature="premium challenges"
           className="feature-tease"
@@ -477,6 +601,13 @@ function Goals() {
                 <div className="challenge-header">
                   <h3>Diamond Week Challenge</h3>
                   <span className="challenge-reward">+200 points</span>
+                  <button 
+                    className="claim-btn"
+                    onClick={handleClaimDiamondWeek}
+                    disabled={!diamondWeekComplete || diamondWeekClaimed}
+                  >
+                    {diamondWeekClaimed ? 'Claimed' : 'Claim'}
+                  </button>
                 </div>
                 <p>Complete 125% of all goals for 7 consecutive days</p>
                 <div className="challenge-participants">
@@ -484,13 +615,19 @@ function Goals() {
                 </div>
               </div>
             </div>
-            
             <div className="challenge-card premium">
               <div className="challenge-icon">🎯</div>
               <div className="challenge-content">
                 <div className="challenge-header">
                   <h3>Perfect Balance</h3>
                   <span className="challenge-reward">+150 points</span>
+                  <button 
+                    className="claim-btn"
+                    onClick={handleClaimPerfectBalance}
+                    disabled={!perfectBalanceComplete || perfectBalanceClaimed}
+                  >
+                    {perfectBalanceClaimed ? 'Claimed' : 'Claim'}
+                  </button>
                 </div>
                 <p>Hit exactly 100% on all three goals in one day</p>
                 <div className="challenge-participants">
