@@ -36,6 +36,7 @@ function Dashboard() {
   const [affirmation, setAffirmation] = useState(getRandomAffirmation());
   const [isLoading, setIsLoading] = useState(true);
   const [showTrialModal, setShowTrialModal] = useState(false);
+  const [userPoints, setUserPoints] = useState(0);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -157,6 +158,17 @@ function Dashboard() {
     }
   }, [userProfile]);
 
+  // Fetch user points after user is loaded
+  useEffect(() => {
+    const fetchPoints = async () => {
+      if (firebaseUser?.uid) {
+        const points = await authService.getPoints(firebaseUser.uid);
+        setUserPoints(points);
+      }
+    };
+    fetchPoints();
+  }, [firebaseUser]);
+
   // Loading states (unchanged)
   if (authLoading || isLoading) {
     return <div className="dashboard-loading">Loading...</div>;
@@ -187,6 +199,10 @@ function Dashboard() {
 
   return (
     <div className="dashboard-page">
+      {/* Points Balance Display */}
+      <div className="points-balance">
+        <span role="img" aria-label="points">⭐</span> {userPoints} Points
+      </div>
       {/* Updated welcome section with today's focus */}
       <div className="welcome-section">
         <h1>Welcome back, {userProfile.firstName}!</h1>

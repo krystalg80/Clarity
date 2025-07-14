@@ -24,6 +24,7 @@ function Goals() {
   const [customWorkoutGoal, setCustomWorkoutGoal] = useState(30);
   const [customWaterGoal, setCustomWaterGoal] = useState(64);
   const [customMeditationGoal, setCustomMeditationGoal] = useState(15);
+  const [userPoints, setUserPoints] = useState(0);
 
   // Helper function to get days remaining in the current week
   const getDaysRemainingInWeek = () => {
@@ -81,6 +82,17 @@ function Goals() {
     };
 
     fetchWeeklyData();
+  }, [firebaseUser]);
+
+  // Fetch user points after user is loaded
+  useEffect(() => {
+    const fetchPoints = async () => {
+      if (firebaseUser?.uid) {
+        const points = await authService.getPoints(firebaseUser.uid);
+        setUserPoints(points);
+      }
+    };
+    fetchPoints();
   }, [firebaseUser]);
 
   const calculateAchievements = () => {
@@ -170,6 +182,10 @@ function Goals() {
 
   return (
     <div className="goals-page">
+      {/* Points Balance Display */}
+      <div className="points-balance">
+        <span role="img" aria-label="points">⭐</span> {userPoints} Points
+      </div>
       {/* Weekly Progress Header */}
       <div className="weekly-header">
         <h1 className="goals-title">Weekly Goals</h1>

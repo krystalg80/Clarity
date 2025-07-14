@@ -1140,3 +1140,13 @@
   0%, 100% { opacity: 0.7; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.1); }
 }
+
+.points-balance {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--sage-600);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
