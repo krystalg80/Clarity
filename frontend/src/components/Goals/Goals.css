@@ -801,7 +801,7 @@
 .challenge-card.premium {
   background: var(--white);
   border-radius: 16px;
-  padding: 20px;
+  padding: 24px 20px;
   display: flex;
   align-items: center;
   gap: 16px;
