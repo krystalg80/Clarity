@@ -38,36 +38,40 @@ function Goals() {
       if (firebaseUser?.uid) {
         try {
           setIsLoading(true);
-          
-          console.log('🌍 Goals timezone:', timezoneUtils.getUserTimezone());
-          
+
+          // Fetch user profile to get custom goals
+          const profileResponse = await authService.getUserProfile(firebaseUser.uid);
+          const userProfile = profileResponse.user;
+
+          // Set custom goals from profile if they exist, otherwise use defaults
+          setCustomWorkoutGoal(userProfile.exerciseGoalMinutes || 30);
+          setCustomWaterGoal(userProfile.waterGoalOz || 64);
+          setCustomMeditationGoal(userProfile.meditationGoalMinutes || 15);
+
           // Get current week's data (7 days)
           const [workoutData, waterData, meditationData] = await Promise.all([
             workoutService.getWorkoutSummary(firebaseUser.uid, 7),
-            waterService.getWaterSummary(firebaseUser.uid, 7), // Use existing method
+            waterService.getWaterSummary(firebaseUser.uid, 7),
             meditationService.getMeditationSummary(firebaseUser.uid, 7)
           ]);
 
-          console.log('📊 Weekly data fetched:', { workoutData, waterData, meditationData });
-
           setWeeklyData({
-            workout: { 
-              current: workoutData.totalMinutes || 0, 
-              goal: 210
+            workout: {
+              current: workoutData.totalMinutes || 0,
+              goal: (userProfile.exerciseGoalMinutes || 30) * 7
             },
-            water: { 
-              current: waterData.totalOz || 0, 
-              goal: 448 
+            water: {
+              current: waterData.totalOz || 0,
+              goal: (userProfile.waterGoalOz || 64) * 7
             },
-            meditation: { 
-              current: meditationData.totalMinutes || 0, 
-              goal: 105 
+            meditation: {
+              current: meditationData.totalMinutes || 0,
+              goal: (userProfile.meditationGoalMinutes || 15) * 7
             }
           });
 
           // Calculate achievements after setting the data
           setTimeout(() => calculateAchievements(), 100);
-          
         } catch (error) {
           console.error('Error fetching weekly data:', error);
         } finally {

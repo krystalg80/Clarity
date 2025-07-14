@@ -3,8 +3,66 @@ import {
   signInWithEmailAndPassword, 
   signOut 
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase/config';
+
+// Add points to user profile
+async function addPoints(userId, amount) {
+  try {
+    const userRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userRef);
+    let currentPoints = 0;
+    if (userDoc.exists() && typeof userDoc.data().points === 'number') {
+      currentPoints = userDoc.data().points;
+    }
+    await updateDoc(userRef, {
+      points: currentPoints + amount,
+      updatedAt: new Date()
+    });
+    return { success: true, newPoints: currentPoints + amount };
+  } catch (error) {
+    console.error('Error adding points:', error);
+    return { success: false, error };
+  }
+}
+
+// Deduct points from user profile
+async function deductPoints(userId, amount) {
+  try {
+    const userRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userRef);
+    let currentPoints = 0;
+    if (userDoc.exists() && typeof userDoc.data().points === 'number') {
+      currentPoints = userDoc.data().points;
+    }
+    if (currentPoints < amount) {
+      return { success: false, error: 'Not enough points' };
+    }
+    await updateDoc(userRef, {
+      points: currentPoints - amount,
+      updatedAt: new Date()
+    });
+    return { success: true, newPoints: currentPoints - amount };
+  } catch (error) {
+    console.error('Error deducting points:', error);
+    return { success: false, error };
+  }
+}
+
+// Get current points for user
+async function getPoints(userId) {
+  try {
+    const userRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userRef);
+    if (userDoc.exists() && typeof userDoc.data().points === 'number') {
+      return userDoc.data().points;
+    }
+    return 0;
+  } catch (error) {
+    console.error('Error getting points:', error);
+    return 0;
+  }
+}
 
 export const authService = {
   // Register new user (replaces Redux session actions)
@@ -88,7 +146,11 @@ export const authService = {
     } catch (error) {
       throw new Error('Error updating profile: ' + error.message);
     }
-  }
+  },
+
+  addPoints,
+  deductPoints,
+  getPoints
 };
 
 export default authService;
