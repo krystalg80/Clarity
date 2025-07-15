@@ -30,6 +30,7 @@ function Meditation() {
 
   //Sentiment Analysis State
   const [sentimentFeedback, setSentimentFeedback] = useState(null);
+  const [showSentimentModal, setShowSentimentModal] = useState(false);
   const [keywords, setKeywords] = useState([]);
 
   //Mood Tracking State
@@ -995,31 +996,36 @@ function Meditation() {
     e.preventDefault();
     if (!firebaseUser?.uid) return;
     
-    setIsSubmitting(true);
-    setError('');
-
     try {
-      console.log('🌍 Submitting meditation in timezone:', timezoneUtils.getUserTimezone());
-      
+      setIsSubmitting(true);
+      setError('');
       // Convert form date to proper timezone-aware date
-      const meditationDate = formData.date ? 
-        timezoneUtils.toLocalTimezone(formData.date) : 
-        timezoneUtils.getCurrentLocalTime();
-      
+      let meditationDate;
+      if (formData.date) {
+        const dateParts = formData.date.split('-');
+        const year = parseInt(dateParts[0]);
+        const month = parseInt(dateParts[1]);
+        const day = parseInt(dateParts[2]);
+        const now = new Date();
+        meditationDate = new Date(
+          year,
+          month - 1,
+          day,
+          now.getHours(),
+          now.getMinutes(),
+          now.getSeconds()
+        );
+      } else {
+        meditationDate = timezoneUtils.getCurrentLocalTime();
+      }
       const submitData = {
         ...formData,
         date: meditationDate,
         durationMinutes: parseInt(formData.durationMinutes),
         userTimezone: timezoneUtils.getUserTimezone()
       };
-      
-      console.log('📝 Meditation submit data:', submitData);
-      console.log('📅 Local meditation time:', timezoneUtils.formatLocalDateTime(meditationDate));
-      
       if (editMode) {
         await meditationService.updateMeditation(firebaseUser.uid, editId, submitData);
-        
-        // Update local state with timezone formatting
         setMeditations(prev => prev.map(meditation => 
           meditation.id === editId 
             ? { 
@@ -1032,15 +1038,18 @@ function Meditation() {
               }
             : meditation
         ));
-        
         setEditMode(false);
         setEditId(null);
-        console.log('✅ Meditation updated successfully');
-        
       } else {
-        const response = await meditationService.logMeditation(firebaseUser.uid, submitData);
-        
-        // Add timezone formatting to new meditation
+        // Create new meditation with sentiment
+        const sentimentResult = analyzeSentiment(formData.notes);
+        setSentimentFeedback(sentimentResult);
+        setShowSentimentModal(!!sentimentResult);
+        const submitDataWithSentiment = {
+          ...submitData,
+          sentiment: sentimentResult ? sentimentResult.score : null
+        };
+        const response = await meditationService.logMeditation(firebaseUser.uid, submitDataWithSentiment);
         const newMeditation = {
           ...response.meditation,
           localDate: timezoneUtils.formatLocalDate(response.meditation.date),
@@ -1048,11 +1057,8 @@ function Meditation() {
           relativeTime: timezoneUtils.getRelativeTime(response.meditation.date),
           isToday: timezoneUtils.isToday(response.meditation.date)
         };
-        
         setMeditations(prev => [newMeditation, ...prev]);
-        console.log('✅ Meditation logged successfully');
       }
-      
       // Reset form with today's date
       setFormData({
         date: timezoneUtils.formatLocalDate(new Date()),
@@ -1063,33 +1069,7 @@ function Meditation() {
         moodAfter: '',
         notes: ''
       });
-      
-      // After logging, analyze sentiment and extract keywords
-      const sentimentResult = analyzeSentiment(formData.notes);
-      setSentimentFeedback(sentimentResult);
-      setKeywords(extractKeywords(formData.notes));
-
-      // When logging meditation, include sentiment
-      if (!editMode) {
-        const submitDataWithSentiment = {
-          ...submitData,
-          sentiment: sentimentResult ? sentimentResult.score : null
-        };
-        const response = await meditationService.logMeditation(firebaseUser.uid, submitDataWithSentiment);
-        
-        // Add timezone formatting to new meditation
-        const newMeditation = {
-          ...response.meditation,
-          localDate: timezoneUtils.formatLocalDate(response.meditation.date),
-          localDateTime: timezoneUtils.formatLocalDateTime(response.meditation.date),
-          relativeTime: timezoneUtils.getRelativeTime(response.meditation.date),
-          isToday: timezoneUtils.isToday(response.meditation.date)
-        };
-        
-        setMeditations(prev => [newMeditation, ...prev]);
-        console.log('✅ Meditation logged successfully');
-      }
-      
+      setError('');
     } catch (error) {
       console.error('Error saving meditation:', error);
       setError(editMode ? 'Failed to update meditation' : 'Failed to log meditation');
@@ -1522,17 +1502,19 @@ function Meditation() {
         </div>
       )}
 
-      {/* After the form or log, show feedback */}
-      {sentimentFeedback && (
-        <div className="sentiment-feedback">
-          {sentimentFeedback.score > 0 && "Your note sounds positive! 😊"}
-          {sentimentFeedback.score < 0 && "Your note sounds a bit negative. 😟"}
-          {sentimentFeedback.score === 0 && "Your note sounds neutral. 😐"}
-          {keywords.length > 0 && (
-            <div className="keywords">
-              <strong>Keywords:</strong> {keywords.join(', ')}
-            </div>
-          )}
+      {/* After the form or log, show feedback as a dismissible modal */}
+      {sentimentFeedback && showSentimentModal && (
+        <div className="sentiment-modal-overlay">
+          <div className="sentiment-modal">
+            <span className="sentiment-message">
+              {sentimentFeedback.score > 0 && "Your note sounds positive! 😊"}
+              {sentimentFeedback.score < 0 && "Your note sounds a bit negative. 😟"}
+              {sentimentFeedback.score === 0 && "Your note sounds neutral. 😐"}
+            </span>
+            <button className="close-modal-btn" onClick={() => setShowSentimentModal(false)}>
+              Dismiss
+            </button>
+          </div>
         </div>
       )}
 

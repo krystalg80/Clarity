@@ -22,7 +22,7 @@ function Water() {
     const [todayTotal, setTodayTotal] = useState(0);
     const [userGoal, setUserGoal] = useState(64);
     const [sentimentFeedback, setSentimentFeedback] = useState(null);
-    const [keywords, setKeywords] = useState([]);
+    const [showSentimentModal, setShowSentimentModal] = useState(false);
 
     // Replace the simple today calculation with this timezone-aware version:
     const today = new Date().toISOString().split('T')[0];
@@ -153,10 +153,15 @@ function Water() {
                 setEditMode(false);
                 setEditId(null);
             } else {
-                // Create new water intake
-                const response = await waterService.logWaterIntake(firebaseUser.uid, waterData);
-                
-                // Add to local state
+                // Create new water intake with sentiment
+                const sentimentResult = analyzeSentiment(formData.notes);
+                setSentimentFeedback(sentimentResult);
+                setShowSentimentModal(!!sentimentResult);
+                const waterDataWithSentiment = {
+                  ...waterData,
+                  sentiment: sentimentResult ? sentimentResult.score : null
+                };
+                const response = await waterService.logWaterIntake(firebaseUser.uid, waterDataWithSentiment);
                 setWaters(prev => [response.waterIntake, ...prev]);
             }
             
@@ -173,21 +178,6 @@ function Water() {
             });
             
             console.log('✅ Water intake logged successfully!');
-            
-            // After logging, analyze sentiment and extract keywords
-            const sentimentResult = analyzeSentiment(formData.notes);
-            setSentimentFeedback(sentimentResult);
-            setKeywords(extractKeywords(formData.notes));
-
-            // When logging water intake, include sentiment
-            if (!editMode) {
-              const waterDataWithSentiment = {
-                ...waterData,
-                sentiment: sentimentResult ? sentimentResult.score : null
-              };
-              const response = await waterService.logWaterIntake(firebaseUser.uid, waterDataWithSentiment);
-              setWaters(prev => [response.waterIntake, ...prev]);
-            }
             
         } catch (error) {
             console.error('💥 Water logging error:', error);
@@ -471,17 +461,19 @@ function Water() {
                 </form>
             </div>
             
-            {/* After the form or log, show feedback */}
-            {sentimentFeedback && (
-              <div className="sentiment-feedback">
-                {sentimentFeedback.score > 0 && "Your note sounds positive! 😊"}
-                {sentimentFeedback.score < 0 && "Your note sounds a bit negative. 😟"}
-                {sentimentFeedback.score === 0 && "Your note sounds neutral. 😐"}
-                {keywords.length > 0 && (
-                  <div className="keywords">
-                    <strong>Keywords:</strong> {keywords.join(', ')}
-                  </div>
-                )}
+            {/* After the form or log, show feedback as a dismissible modal */}
+            {sentimentFeedback && showSentimentModal && (
+              <div className="sentiment-modal-overlay">
+                <div className="sentiment-modal">
+                  <span className="sentiment-message">
+                    {sentimentFeedback.score > 0 && "Your note sounds positive! 😊"}
+                    {sentimentFeedback.score < 0 && "Your note sounds a bit negative. 😟"}
+                    {sentimentFeedback.score === 0 && "Your note sounds neutral. 😐"}
+                  </span>
+                  <button className="close-modal-btn" onClick={() => setShowSentimentModal(false)}>
+                    Dismiss
+                  </button>
+                </div>
               </div>
             )}
 

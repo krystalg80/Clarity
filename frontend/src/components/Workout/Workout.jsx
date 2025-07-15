@@ -22,7 +22,7 @@ function Workout() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [sentimentFeedback, setSentimentFeedback] = useState(null);
-    const [keywords, setKeywords] = useState([]);
+    const [showSentimentModal, setShowSentimentModal] = useState(false);
     
     const today = new Date().toISOString().split('T')[0];
 
@@ -75,47 +75,25 @@ function Workout() {
         try {
             setIsSubmitting(true);
             setError('');
-            
             // Use timezone utilities for proper date handling
             let workoutDate;
             if (formData.date) {
-                // Parse the date string manually to avoid UTC conversion
-                const dateParts = formData.date.split('-'); // ['2025', '06', '25']
-                const year = parseInt(dateParts[0]);   // 2025
-                const month = parseInt(dateParts[1]);  // 6 (June in human terms)
-                const day = parseInt(dateParts[2]);    // 25
-                
+                const dateParts = formData.date.split('-');
+                const year = parseInt(dateParts[0]);
+                const month = parseInt(dateParts[1]);
+                const day = parseInt(dateParts[2]);
                 const now = new Date();
-                
-                console.log('🔍 Date parsing debug:');
-                console.log('  Form input:', formData.date);
-                console.log('  Split parts:', dateParts);
-                console.log('  Parsed year:', year);
-                console.log('  Parsed month (human readable):', month);
-                console.log('  Parsed day:', day);
-                console.log('  Month for Date constructor (0-indexed):', month - 1);
-                
-                // Create date in LOCAL timezone with CORRECT month indexing
                 workoutDate = new Date(
-                    year,           // 2025
-                    month - 1,      // 6 - 1 = 5 (June in 0-indexed terms)
-                    day,            // 25
+                    year,
+                    month - 1,
+                    day,
                     now.getHours(),
                     now.getMinutes(),
                     now.getSeconds()
                 );
-                
-                console.log('📅 Created date:', workoutDate);
-                console.log('📅 Verify - Year:', workoutDate.getFullYear());
-                console.log('📅 Verify - Month (0-indexed):', workoutDate.getMonth());
-                console.log('📅 Verify - Month (human):', workoutDate.getMonth() + 1);
-                console.log('📅 Verify - Day:', workoutDate.getDate());
-                console.log('📅 Final formatted:', workoutDate.toLocaleDateString());
-                
             } else {
                 workoutDate = timezoneUtils.getCurrentLocalTime();
             }
-            
             const workoutData = {
                 title: formData.title,
                 type: formData.type,
@@ -124,60 +102,43 @@ function Workout() {
                 notes: formData.notes,
                 caloriesBurned: formData.caloriesBurned ? parseInt(formData.caloriesBurned) : 0
             };
-            
-            console.log('📝 Final workout data:', workoutData);
-            console.log('📅 Will be saved as:', timezoneUtils.formatLocalDateTime(workoutData.date));
-            
             let result;
             if (editMode && editId) {
                 // Update existing workout
                 result = await workoutService.updateWorkout(firebaseUser.uid, editId, workoutData);
-            } else {
-                // Create new workout
-                result = await workoutService.logWorkout(firebaseUser.uid, workoutData);
-            }
-            
-            console.log('✅ Workout service result:', result);
-            
-            if (result.success) {
-                console.log('🎉 Workout logged successfully!');
-                
-                // Refresh the workouts list
-                const response = await workoutService.fetchWorkoutsByUser(firebaseUser.uid);
-                setWorkouts(response.workouts || []);
-                
-                // Reset form
-                setFormData({
-                    date: '',
-                    durationMinutes: '',
-                    title: '',
-                    type: 'General',
-                    notes: '',
-                    caloriesBurned: ''
-                });
-                
-                // Exit edit mode
+                // Update local state
+                setWorkouts(prev => prev.map(workout => 
+                    workout.id === editId 
+                        ? { ...workout, ...workoutData }
+                        : workout
+                ));
                 setEditMode(false);
                 setEditId(null);
-                
-                // Show success message
-                setError(''); // Clear any previous errors
-
-                // After logging, analyze sentiment and extract keywords
+            } else {
+                // Create new workout with sentiment
                 const sentimentResult = analyzeSentiment(formData.notes);
                 setSentimentFeedback(sentimentResult);
-                setKeywords(extractKeywords(formData.notes));
-
-                // When logging workout, include sentiment
-                if (!editMode || !editId) {
-                  const workoutDataWithSentiment = {
-                    ...workoutData,
-                    sentiment: sentimentResult ? sentimentResult.score : null
-                  };
-                  result = await workoutService.logWorkout(firebaseUser.uid, workoutDataWithSentiment);
-                }
+                setShowSentimentModal(!!sentimentResult);
+                const workoutDataWithSentiment = {
+                  ...workoutData,
+                  sentiment: sentimentResult ? sentimentResult.score : null
+                };
+                result = await workoutService.logWorkout(firebaseUser.uid, workoutDataWithSentiment);
+                setWorkouts(prev => [
+                  { ...workoutDataWithSentiment, id: result.id },
+                  ...prev
+                ]);
             }
-            
+            // Reset form
+            setFormData({
+                date: '',
+                durationMinutes: '',
+                title: '',
+                type: 'General',
+                notes: '',
+                caloriesBurned: ''
+            });
+            setError('');
         } catch (error) {
             console.error('💥 Workout logging error:', error);
             setError('Failed to save workout. Please try again.');
@@ -419,17 +380,19 @@ function Workout() {
                     </ul>
                 )}
             </div>
-            {/* After the form or log, show feedback */}
-            {sentimentFeedback && (
-              <div className="sentiment-feedback">
-                {sentimentFeedback.score > 0 && "Your note sounds positive! 😊"}
-                {sentimentFeedback.score < 0 && "Your note sounds a bit negative. 😟"}
-                {sentimentFeedback.score === 0 && "Your note sounds neutral. 😐"}
-                {keywords.length > 0 && (
-                  <div className="keywords">
-                    <strong>Keywords:</strong> {keywords.join(', ')}
-                  </div>
-                )}
+            {/* After the form or log, show feedback as a dismissible modal */}
+            {sentimentFeedback && showSentimentModal && (
+              <div className="sentiment-modal-overlay">
+                <div className="sentiment-modal">
+                  <span className="sentiment-message">
+                    {sentimentFeedback.score > 0 && "Your note sounds positive! 😊"}
+                    {sentimentFeedback.score < 0 && "Your note sounds a bit negative. 😟"}
+                    {sentimentFeedback.score === 0 && "Your note sounds neutral. 😐"}
+                  </span>
+                  <button className="close-modal-btn" onClick={() => setShowSentimentModal(false)}>
+                    Dismiss
+                  </button>
+                </div>
               </div>
             )}
         </div>
