@@ -27,6 +27,16 @@ function Meditation() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  //Sentiment Analysis State
+  const [sentimentFeedback, setSentimentFeedback] = useState(null);
+  const [keywords, setKeywords] = useState([]);
+
+  //Mood Tracking State
+  const [moodBefore, setMoodBefore] = useState('');
+  const [moodAfter, setMoodAfter] = useState('');
+  const [notes, setNotes] = useState('');
+  
   
   // Session State
   const [isSessionActive, setIsSessionActive] = useState(false);
