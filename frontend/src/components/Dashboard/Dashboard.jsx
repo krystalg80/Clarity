@@ -223,20 +223,6 @@ function Dashboard() {
 
   return (
     <div className="dashboard-page">
-      {/* AI Recommendations Section */}
-      {recommendations.length > 0 && (
-        <div className="ai-recommendations">
-          <h2>AI-Powered Recommendations</h2>
-          <ul>
-            {recommendations.map((rec, idx) => (
-              <li key={idx} className="recommendation-item">
-                <strong>{rec.type && rec.type.charAt(0).toUpperCase() + rec.type.slice(1)}:</strong> {rec.message}
-                {rec.action && <div className="recommendation-action">Action: {rec.action}</div>}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
       {/* Points Balance Display */}
       <div className="points-balance">
         <span role="img" aria-label="points">⭐</span> {userPoints} Points
@@ -376,6 +362,21 @@ function Dashboard() {
           <span className="stat-label">Minutes Meditated Today</span>
         </div>
       </div>
+
+      {/* AI Recommendations Section (moved to bottom) */}
+      {recommendations.length > 0 && (
+        <div className="ai-recommendations soft-card">
+          <h2>AI-Powered Recommendations</h2>
+          <ul>
+            {recommendations.map((rec, idx) => (
+              <li key={idx} className="recommendation-item">
+                <strong>{rec.type && rec.type.charAt(0).toUpperCase() + rec.type.slice(1)}:</strong> {rec.message}
+                {rec.action && <div className="recommendation-action">Action: {rec.action}</div>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* AI Analytics Coming Soon Section */}
       {/* <div className="ai-analytics-coming-soon">

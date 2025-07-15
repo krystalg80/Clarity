@@ -855,3 +855,38 @@
     text-align: center;
   }
 }
+
+.soft-card {
+  background: linear-gradient(135deg, var(--sage-50) 0%, var(--white) 100%);
+  border-radius: 16px;
+  border: 1px solid var(--sage-100);
+  box-shadow: 0 2px 8px rgba(107, 128, 105, 0.06);
+  padding: 18px 20px;
+  margin: 28px 0 0 0;
+}
+.ai-recommendations {
+  margin-bottom: 0;
+}
+.ai-recommendations h2 {
+  font-size: 1.15rem;
+  color: var(--sage-700);
+  margin-bottom: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.recommendation-item {
+  font-size: 0.98rem;
+  color: var(--sage-600);
+  margin-bottom: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--sage-50);
+}
+.recommendation-item:last-child {
+  border-bottom: none;
+}
+.recommendation-action {
+  font-size: 0.93rem;
+  color: var(--mint);
+  margin-top: 2px;
+  font-weight: 600;
+}
