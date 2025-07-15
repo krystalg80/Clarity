@@ -3,6 +3,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { waterService } from "../../services/waterService";
 import './Water.css';
 import timezoneUtils from "../../utils/timezone";
+import { analyzeSentiment, extractKeywords } from '../../services/aiService';
 
 function Water() {
     const { user: firebaseUser } = useAuth();
@@ -20,6 +21,8 @@ function Water() {
     const [error, setError] = useState('');
     const [todayTotal, setTodayTotal] = useState(0);
     const [userGoal, setUserGoal] = useState(64);
+    const [sentimentFeedback, setSentimentFeedback] = useState(null);
+    const [keywords, setKeywords] = useState([]);
 
     // Replace the simple today calculation with this timezone-aware version:
     const today = new Date().toISOString().split('T')[0];
@@ -170,6 +173,11 @@ function Water() {
             });
             
             console.log('✅ Water intake logged successfully!');
+            
+            // After logging, analyze sentiment and extract keywords
+            const sentimentResult = analyzeSentiment(formData.notes);
+            setSentimentFeedback(sentimentResult);
+            setKeywords(extractKeywords(formData.notes));
             
         } catch (error) {
             console.error('💥 Water logging error:', error);
@@ -452,6 +460,20 @@ function Water() {
                 </form>
             </div>
             
+            {/* After the form or log, show feedback */}
+            {sentimentFeedback && (
+              <div className="sentiment-feedback">
+                {sentimentFeedback.score > 0 && "Your note sounds positive! 😊"}
+                {sentimentFeedback.score < 0 && "Your note sounds a bit negative. 😟"}
+                {sentimentFeedback.score === 0 && "Your note sounds neutral. 😐"}
+                {keywords.length > 0 && (
+                  <div className="keywords">
+                    <strong>Keywords:</strong> {keywords.join(', ')}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="water-log">
                 <h2 className="log-title">Today's Water Intake ({todayWaters.length} entries)</h2>
                 

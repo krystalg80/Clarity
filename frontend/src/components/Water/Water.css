@@ -482,3 +482,18 @@ select.form-input {
 .log-item:first-child {
   animation: waterDrop 0.4s ease;
 }
+
+.sentiment-feedback {
+  margin-top: 12px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--sage-600);
+  background: var(--sage-50);
+  border-radius: 8px;
+  padding: 10px 16px;
+}
+.keywords {
+  font-size: 0.95rem;
+  color: var(--sage-700);
+  margin-top: 4px;
+}

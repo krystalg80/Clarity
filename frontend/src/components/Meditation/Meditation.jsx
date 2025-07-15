@@ -6,6 +6,7 @@ import timezoneUtils from '../../utils/timezone';
 import './Meditation.css';
 import PremiumGate from '../Premium/PremiumGate';
 import { startStripeUpgrade } from '../../services/stripeUpgrade';
+import { analyzeSentiment, extractKeywords } from '../../services/aiService';
 
 function Meditation() {
   const { user: firebaseUser, isPremium } = useAuth();
@@ -1051,6 +1052,11 @@ function Meditation() {
         notes: ''
       });
       
+      // After logging, analyze sentiment and extract keywords
+      const sentimentResult = analyzeSentiment(formData.notes);
+      setSentimentFeedback(sentimentResult);
+      setKeywords(extractKeywords(formData.notes));
+      
     } catch (error) {
       console.error('Error saving meditation:', error);
       setError(editMode ? 'Failed to update meditation' : 'Failed to log meditation');
@@ -1480,6 +1486,20 @@ function Meditation() {
               )}
             </div>
           </form>
+        </div>
+      )}
+
+      {/* After the form or log, show feedback */}
+      {sentimentFeedback && (
+        <div className="sentiment-feedback">
+          {sentimentFeedback.score > 0 && "Your note sounds positive! 😊"}
+          {sentimentFeedback.score < 0 && "Your note sounds a bit negative. 😟"}
+          {sentimentFeedback.score === 0 && "Your note sounds neutral. 😐"}
+          {keywords.length > 0 && (
+            <div className="keywords">
+              <strong>Keywords:</strong> {keywords.join(', ')}
+            </div>
+          )}
         </div>
       )}
 

@@ -805,7 +805,8 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  box-shadow: 0 2px 8px rgba(107, 128, 105, 0.08);
+  box-shadow: 0 2px 8px rgba(1Analyze the note text when a user logs a workout, meditation, or water entry (i.e., in the submit handler for each log).
+Show instant feedback (e.g., “Your note sounds positive!”) in the UI after submission.07, 128, 105, 0.08);
   border: 1px solid var(--sage-100);
   transition: all 0.2s ease;
   position: relative;

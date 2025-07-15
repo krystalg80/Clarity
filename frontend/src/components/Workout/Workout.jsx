@@ -3,6 +3,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { workoutService } from "../../services/workoutService";
 import timezoneUtils from '../../utils/timezone';
 import './Workout.css';
+import { analyzeSentiment, extractKeywords } from '../../services/aiService';
 
 function Workout() {
     const { user: firebaseUser } = useAuth();
@@ -20,6 +21,8 @@ function Workout() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
+    const [sentimentFeedback, setSentimentFeedback] = useState(null);
+    const [keywords, setKeywords] = useState([]);
     
     const today = new Date().toISOString().split('T')[0];
 
@@ -159,6 +162,11 @@ function Workout() {
                 
                 // Show success message
                 setError(''); // Clear any previous errors
+
+                // After logging, analyze sentiment and extract keywords
+                const sentimentResult = analyzeSentiment(formData.notes);
+                setSentimentFeedback(sentimentResult);
+                setKeywords(extractKeywords(formData.notes));
             }
             
         } catch (error) {
@@ -402,6 +410,19 @@ function Workout() {
                     </ul>
                 )}
             </div>
+            {/* After the form or log, show feedback */}
+            {sentimentFeedback && (
+              <div className="sentiment-feedback">
+                {sentimentFeedback.score > 0 && "Your note sounds positive! 😊"}
+                {sentimentFeedback.score < 0 && "Your note sounds a bit negative. 😟"}
+                {sentimentFeedback.score === 0 && "Your note sounds neutral. 😐"}
+                {keywords.length > 0 && (
+                  <div className="keywords">
+                    <strong>Keywords:</strong> {keywords.join(', ')}
+                  </div>
+                )}
+              </div>
+            )}
         </div>
     );
 }
