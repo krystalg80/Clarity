@@ -178,6 +178,16 @@ function Water() {
             const sentimentResult = analyzeSentiment(formData.notes);
             setSentimentFeedback(sentimentResult);
             setKeywords(extractKeywords(formData.notes));
+
+            // When logging water intake, include sentiment
+            if (!editMode) {
+              const waterDataWithSentiment = {
+                ...waterData,
+                sentiment: sentimentResult ? sentimentResult.score : null
+              };
+              const response = await waterService.logWaterIntake(firebaseUser.uid, waterDataWithSentiment);
+              setWaters(prev => [response.waterIntake, ...prev]);
+            }
             
         } catch (error) {
             console.error('💥 Water logging error:', error);
@@ -259,7 +269,8 @@ function Water() {
                 date: todayDate,
                 amount: amount,
                 type: 'water',
-                notes: ''
+                notes: '',
+                sentiment: null
             });
             
             // Refresh data

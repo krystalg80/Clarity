@@ -167,6 +167,15 @@ function Workout() {
                 const sentimentResult = analyzeSentiment(formData.notes);
                 setSentimentFeedback(sentimentResult);
                 setKeywords(extractKeywords(formData.notes));
+
+                // When logging workout, include sentiment
+                if (!editMode || !editId) {
+                  const workoutDataWithSentiment = {
+                    ...workoutData,
+                    sentiment: sentimentResult ? sentimentResult.score : null
+                  };
+                  result = await workoutService.logWorkout(firebaseUser.uid, workoutDataWithSentiment);
+                }
             }
             
         } catch (error) {

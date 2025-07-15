@@ -37,6 +37,7 @@ function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [showTrialModal, setShowTrialModal] = useState(false);
   const [userPoints, setUserPoints] = useState(0);
+  const [recommendations, setRecommendations] = useState([]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -169,6 +170,29 @@ function Dashboard() {
     fetchPoints();
   }, [firebaseUser]);
 
+  // Fetch recommendations for the dashboard
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      if (!firebaseUser?.uid) return;
+      try {
+        const [meditationRec, waterRec, workoutRec] = await Promise.all([
+          meditationService.getPersonalizedRecommendations(firebaseUser.uid),
+          waterService.getPersonalizedWaterRecommendations(firebaseUser.uid),
+          workoutService.getPersonalizedWorkoutRecommendations(firebaseUser.uid)
+        ]);
+        const allRecs = [
+          ...(meditationRec?.recommendations || []),
+          ...(waterRec?.recommendations || []),
+          ...(workoutRec?.recommendations || [])
+        ];
+        setRecommendations(allRecs);
+      } catch (error) {
+        console.error('Error fetching recommendations:', error);
+      }
+    };
+    fetchRecommendations();
+  }, [firebaseUser]);
+
   // Loading states (unchanged)
   if (authLoading || isLoading) {
     return <div className="dashboard-loading">Loading...</div>;
@@ -199,6 +223,20 @@ function Dashboard() {
 
   return (
     <div className="dashboard-page">
+      {/* AI Recommendations Section */}
+      {recommendations.length > 0 && (
+        <div className="ai-recommendations">
+          <h2>AI-Powered Recommendations</h2>
+          <ul>
+            {recommendations.map((rec, idx) => (
+              <li key={idx} className="recommendation-item">
+                <strong>{rec.type && rec.type.charAt(0).toUpperCase() + rec.type.slice(1)}:</strong> {rec.message}
+                {rec.action && <div className="recommendation-action">Action: {rec.action}</div>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {/* Points Balance Display */}
       <div className="points-balance">
         <span role="img" aria-label="points">⭐</span> {userPoints} Points

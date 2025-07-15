@@ -21,7 +21,8 @@ export const waterService = {
         date: timezoneUtils.toLocalTimezone(waterData.date || new Date()),
         userId,
         createdAt: timezoneUtils.getCurrentLocalTime(),
-        userTimezone: timezoneUtils.getUserTimezone()
+        userTimezone: timezoneUtils.getUserTimezone(),
+        sentiment: waterData.sentiment || null // Store sentiment
       };
       
       const docRef = await addDoc(collection(db, `users/${userId}/waterIntake`), docData);
@@ -232,6 +233,61 @@ export const waterService = {
         hasWaterToday: false,
         userTimezone: timezoneUtils.getUserTimezone()
       };
+    }
+  },
+
+  // Get water analytics for sentiment insights
+  async getWaterAnalytics(userId, days = 30) {
+    try {
+      const response = await this.fetchWaterIntakeByUser(userId, days);
+      const entries = response.waterIntakes;
+      if (entries.length === 0) {
+        return {
+          totalEntries: 0,
+          averageAmount: 0,
+          averageSentiment: 0,
+          sentimentTrend: 'neutral',
+        };
+      }
+      const totalAmount = entries.reduce((sum, e) => sum + (e.amount || 0), 0);
+      const sentimentScores = entries.map(e => typeof e.sentiment === 'number' ? e.sentiment : 0);
+      const averageSentiment = sentimentScores.length > 0 ? sentimentScores.reduce((a, b) => a + b, 0) / sentimentScores.length : 0;
+      let sentimentTrend = 'neutral';
+      if (averageSentiment > 0) sentimentTrend = 'positive';
+      else if (averageSentiment < 0) sentimentTrend = 'negative';
+      return {
+        totalEntries: entries.length,
+        averageAmount: totalAmount / entries.length,
+        averageSentiment,
+        sentimentTrend,
+      };
+    } catch (error) {
+      throw new Error('Error fetching water analytics: ' + error.message);
+    }
+  },
+
+  // Get personalized water recommendations based on sentiment
+  async getPersonalizedWaterRecommendations(userId) {
+    try {
+      const analytics = await this.getWaterAnalytics(userId);
+      const recommendations = [];
+      if (analytics.averageSentiment < 0) {
+        recommendations.push({
+          type: 'sentiment',
+          message: 'Your water intake notes have been a bit negative. Try associating hydration with positive routines or rewards!',
+          action: 'Pair water breaks with something you enjoy.'
+        });
+      }
+      if (analytics.averageAmount < 32) {
+        recommendations.push({
+          type: 'hydration',
+          message: 'Your average daily water intake is below recommended levels. Aim for at least 64oz per day.',
+          action: 'Set reminders to drink more water.'
+        });
+      }
+      return { recommendations };
+    } catch (error) {
+      throw new Error('Error generating water recommendations: ' + error.message);
     }
   },
 

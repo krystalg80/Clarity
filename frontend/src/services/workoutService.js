@@ -35,7 +35,8 @@ export const workoutService = {
         completed: true,
         createdAt: timezoneUtils.getCurrentLocalTime(),
         updatedAt: timezoneUtils.getCurrentLocalTime(),
-        userTimezone: timezoneUtils.getUserTimezone()
+        userTimezone: timezoneUtils.getUserTimezone(),
+        sentiment: workoutData.sentiment || null // Store sentiment
       };
       
       const docRef = await addDoc(collection(db, `users/${userId}/workouts`), docData);
@@ -188,6 +189,61 @@ export const workoutService = {
     } catch (error) {
       console.error('Error fetching daily workout summary:', error);
       return this.getEmptyDailySummary(date);
+    }
+  },
+
+  // Get workout analytics for sentiment insights
+  async getWorkoutAnalytics(userId, days = 30) {
+    try {
+      const response = await this.fetchWorkoutsByUser(userId);
+      const entries = response.workouts;
+      if (entries.length === 0) {
+        return {
+          totalEntries: 0,
+          averageDuration: 0,
+          averageSentiment: 0,
+          sentimentTrend: 'neutral',
+        };
+      }
+      const totalDuration = entries.reduce((sum, e) => sum + (e.durationMinutes || 0), 0);
+      const sentimentScores = entries.map(e => typeof e.sentiment === 'number' ? e.sentiment : 0);
+      const averageSentiment = sentimentScores.length > 0 ? sentimentScores.reduce((a, b) => a + b, 0) / sentimentScores.length : 0;
+      let sentimentTrend = 'neutral';
+      if (averageSentiment > 0) sentimentTrend = 'positive';
+      else if (averageSentiment < 0) sentimentTrend = 'negative';
+      return {
+        totalEntries: entries.length,
+        averageDuration: totalDuration / entries.length,
+        averageSentiment,
+        sentimentTrend,
+      };
+    } catch (error) {
+      throw new Error('Error fetching workout analytics: ' + error.message);
+    }
+  },
+
+  // Get personalized workout recommendations based on sentiment
+  async getPersonalizedWorkoutRecommendations(userId) {
+    try {
+      const analytics = await this.getWorkoutAnalytics(userId);
+      const recommendations = [];
+      if (analytics.averageSentiment < 0) {
+        recommendations.push({
+          type: 'sentiment',
+          message: 'Your workout notes have been a bit negative. Try celebrating small wins and focusing on progress, not perfection!',
+          action: 'Reflect on what went well after each workout.'
+        });
+      }
+      if (analytics.averageDuration < 20) {
+        recommendations.push({
+          type: 'duration',
+          message: 'Your average workout duration is below 20 minutes. Consider increasing your session length for better results.',
+          action: 'Try a 30-minute session this week.'
+        });
+      }
+      return { recommendations };
+    } catch (error) {
+      throw new Error('Error generating workout recommendations: ' + error.message);
     }
   },
 

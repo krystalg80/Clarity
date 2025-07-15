@@ -36,7 +36,8 @@ export const meditationService = {
         focusLevel: meditationData.focusLevel || null, // 1-10 scale
         createdAt: timezoneUtils.getCurrentLocalTime(),
         updatedAt: timezoneUtils.getCurrentLocalTime(),
-        userTimezone: timezoneUtils.getUserTimezone()
+        userTimezone: timezoneUtils.getUserTimezone(),
+        sentiment: meditationData.sentiment || null // Store sentiment
       };
       
       const docRef = await addDoc(collection(db, `users/${userId}/meditations`), docData);
@@ -101,6 +102,7 @@ export const meditationService = {
       const soundFrequency = {};
       const timeOfDay = {};
       const moodChanges = [];
+      const sentimentScores = [];
       
       sessions.forEach(session => {
         // Sound preferences
@@ -120,6 +122,11 @@ export const meditationService = {
           const after = moodValues[session.moodAfter] || 3;
           moodChanges.push(after - before);
         }
+
+        // Sentiment tracking
+        if (session.sentiment) {
+          sentimentScores.push(session.sentiment);
+        }
       });
       
       return {
@@ -129,7 +136,8 @@ export const meditationService = {
         favoriteTime: Object.keys(timeOfDay).reduce((a, b) => timeOfDay[a] > timeOfDay[b] ? a : b, 'morning'),
         favoriteSound: Object.keys(soundFrequency).reduce((a, b) => soundFrequency[a] > soundFrequency[b] ? a : b, 'silence'),
         moodImprovement: moodChanges.length > 0 ? moodChanges.reduce((sum, change) => sum + change, 0) / moodChanges.length : 0,
-        consistency: sessions.length / days // sessions per day
+        consistency: sessions.length / days, // sessions per day
+        averageSentiment: sentimentScores.length > 0 ? sentimentScores.reduce((sum, score) => sum + score, 0) / sentimentScores.length : 0
       };
     } catch (error) {
       throw new Error('Error fetching meditation analytics: ' + error.message);
@@ -164,6 +172,15 @@ export const meditationService = {
           type: 'consistency',
           message: `Your best time is ${analytics.favoriteTime}. Set a daily reminder for consistent practice.`,
           action: 'Set daily reminder'
+        });
+      }
+
+      // Analyze sentiment patterns and recommend improvements
+      if (analytics.averageSentiment < 4) {
+        recommendations.push({
+          type: 'sentiment',
+          message: 'Your recent meditations have been on the lower end of the scale. Try to maintain a more positive mindset during your sessions.',
+          action: 'Focus on positive thoughts'
         });
       }
       

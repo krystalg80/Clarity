@@ -935,7 +935,9 @@ function Meditation() {
         targetDuration: targetTime,
         sessionStartTime: sessionStartTime,
         sessionEndTime: timezoneUtils.getCurrentLocalTime(),
-        userTimezone: timezoneUtils.getUserTimezone()
+        userTimezone: timezoneUtils.getUserTimezone(),
+        notes: formData.notes,
+        sentiment: formData.notes ? analyzeSentiment(formData.notes)?.score : null
       };
       
       console.log('📊 Session data being saved:', sessionData);
@@ -1056,6 +1058,27 @@ function Meditation() {
       const sentimentResult = analyzeSentiment(formData.notes);
       setSentimentFeedback(sentimentResult);
       setKeywords(extractKeywords(formData.notes));
+
+      // When logging meditation, include sentiment
+      if (!editMode) {
+        const submitDataWithSentiment = {
+          ...submitData,
+          sentiment: sentimentResult ? sentimentResult.score : null
+        };
+        const response = await meditationService.logMeditation(firebaseUser.uid, submitDataWithSentiment);
+        
+        // Add timezone formatting to new meditation
+        const newMeditation = {
+          ...response.meditation,
+          localDate: timezoneUtils.formatLocalDate(response.meditation.date),
+          localDateTime: timezoneUtils.formatLocalDateTime(response.meditation.date),
+          relativeTime: timezoneUtils.getRelativeTime(response.meditation.date),
+          isToday: timezoneUtils.isToday(response.meditation.date)
+        };
+        
+        setMeditations(prev => [newMeditation, ...prev]);
+        console.log('✅ Meditation logged successfully');
+      }
       
     } catch (error) {
       console.error('Error saving meditation:', error);
