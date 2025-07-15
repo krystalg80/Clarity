@@ -13,6 +13,15 @@ function Navigation() {
           <img src={logo} alt="Clarity logo" className="logo" />
           <span className="logo-text">Your Mind + Wellness Tracker</span>
         </div>
+        {/* Help icon for support */}
+        <a
+          href="mailto:help@loveclaritywellness.com"
+          className="help-icon"
+          title="Contact Support"
+          style={{ marginRight: '16px', fontSize: '1.6rem', textDecoration: 'none' }}
+        >
+          ❓
+        </a>
         <ProfileButton />
       </div>
 
