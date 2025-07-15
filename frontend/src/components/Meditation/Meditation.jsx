@@ -7,6 +7,7 @@ import './Meditation.css';
 import PremiumGate from '../Premium/PremiumGate';
 import { startStripeUpgrade } from '../../services/stripeUpgrade';
 import { analyzeSentiment, extractKeywords } from '../../services/aiService';
+import { analyzeTextHybrid, getAIRecommendation } from '../../services/aiAnalyticsService';
 
 function Meditation() {
   const { user: firebaseUser, isPremium } = useAuth();
@@ -1041,15 +1042,17 @@ function Meditation() {
         setEditMode(false);
         setEditId(null);
       } else {
-        // Create new meditation with sentiment
-        const sentimentResult = analyzeSentiment(formData.notes);
-        setSentimentFeedback(sentimentResult);
-        setShowSentimentModal(!!sentimentResult);
-        const submitDataWithSentiment = {
+        // Hybrid AI analytics for notes
+        const aiResult = await analyzeTextHybrid(formData.notes);
+        setSentimentFeedback({ score: aiResult.sentiment });
+        setShowSentimentModal(aiResult.sentiment !== null);
+        setAiRecommendation(getAIRecommendation(aiResult.sentiment, aiResult.entities));
+        const submitDataWithAI = {
           ...submitData,
-          sentiment: sentimentResult ? sentimentResult.score : null
+          sentiment: aiResult.sentiment,
+          entities: aiResult.entities
         };
-        const response = await meditationService.logMeditation(firebaseUser.uid, submitDataWithSentiment);
+        const response = await meditationService.logMeditation(firebaseUser.uid, submitDataWithAI);
         const newMeditation = {
           ...response.meditation,
           localDate: timezoneUtils.formatLocalDate(response.meditation.date),
@@ -1511,6 +1514,11 @@ function Meditation() {
               {sentimentFeedback.score < 0 && "Your note sounds a bit negative. 😟"}
               {sentimentFeedback.score === 0 && "Your note sounds neutral. 😐"}
             </span>
+            {aiRecommendation && (
+              <div className="ai-recommendation">
+                <strong>AI Suggestion:</strong> {aiRecommendation}
+              </div>
+            )}
             <button className="close-modal-btn" onClick={() => setShowSentimentModal(false)}>
               Dismiss
             </button>

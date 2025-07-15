@@ -1,173 +1,106 @@
-// import { getFunctions, httpsCallable } from "firebase/functions";
-// import { getAuth } from "firebase/auth";
+// src/services/aiAnalyticsService.js
 
-// class AIAnalyticsService {
-//   constructor() {
-//     this.functions = getFunctions();
-//     this.auth = getAuth();
-//   }
+import { analyzeSentiment } from './aiService';
 
-//   // Get AI-powered wellness insights
-//   async getWellnessInsights(userId, timeRange = '7d') {
-//     try {
-//       const getInsights = httpsCallable(this.functions, 'getWellnessInsights');
-//       const result = await getInsights({ userId, timeRange });
-//       return result.data;
-//     } catch (error) {
-//       console.error('Error getting AI insights:', error);
-//       // Fallback to client-side analysis
-//       return this.getClientSideInsights(userId, timeRange);
-//     }
-//   }
+const AI_ANALYTICS_URL = "https://us-central1-clarity-311c3.cloudfunctions.net/analyzeText"; // or your Cloud Run URL
 
-//   // Client-side AI analysis as fallback
-//   async getClientSideInsights(userId, timeRange) {
-//     // This would analyze local data patterns
-//     // For now, return mock insights for presentation
-//     return {
-//       insights: [
-//         {
-//           type: 'pattern',
-//           title: 'Optimal Meditation Time',
-//           description: 'You\'re 40% more consistent with morning meditation sessions',
-//           confidence: 0.85,
-//           recommendation: 'Schedule meditation for 7:00 AM on weekdays',
-//           icon: '🌅'
-//         },
-//         {
-//           type: 'correlation',
-//           title: 'Water & Energy Correlation',
-//           description: 'Your energy levels peak 2 hours after optimal hydration',
-//           confidence: 0.78,
-//           recommendation: 'Drink water at 9 AM for peak afternoon energy',
-//           icon: '⚡'
-//         },
-//         {
-//           type: 'prediction',
-//           title: 'Anxiety Risk Prediction',
-//           description: 'Based on your patterns, you may experience higher anxiety on Tuesdays',
-//           confidence: 0.72,
-//           recommendation: 'Schedule extra meditation time on Tuesday evenings',
-//           icon: '🧠'
-//         }
-//       ],
-//       trends: {
-//         meditationConsistency: '+25%',
-//         waterIntake: '+15%',
-//         anxietyLevels: '-30%'
-//       }
-//     };
-//   }
+export async function analyzeTextWithAI(text) {
+  try {
+    const response = await fetch(AI_ANALYTICS_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ text })
+    });
 
-//   // Get personalized recommendations
-//   async getPersonalizedRecommendations(userId) {
-//     try {
-//       const getRecommendations = httpsCallable(this.functions, 'getPersonalizedRecommendations');
-//       const result = await getRecommendations({ userId });
-//       return result.data;
-//     } catch (error) {
-//       console.error('Error getting AI recommendations:', error);
-//       return this.getMockRecommendations();
-//     }
-//   }
+    if (!response.ok) {
+      throw new Error("AI analytics request failed");
+    }
 
-//   // Mock recommendations for presentation
-//   getMockRecommendations() {
-//     return {
-//       recommendations: [
-//         {
-//           category: 'meditation',
-//           title: 'Increase Morning Sessions',
-//           description: 'Your morning meditation sessions show 40% better consistency',
-//           impact: 'high',
-//           action: 'Schedule 10-minute sessions at 7 AM'
-//         },
-//         {
-//           category: 'workout',
-//           title: 'Optimize Workout Timing',
-//           description: 'Your energy peaks at 5 PM - perfect for strength training',
-//           impact: 'medium',
-//           action: 'Move workouts to 5-6 PM window'
-//         },
-//         {
-//           category: 'hydration',
-//           title: 'Smart Hydration Reminders',
-//           description: 'You tend to forget water intake between 2-4 PM',
-//           impact: 'medium',
-//           action: 'Set reminders for 2:30 PM and 4:00 PM'
-//         }
-//       ]
-//     };
-//   }
+    return await response.json();
+  } catch (error) {
+    console.error("AI analytics error:", error);
+    return null;
+  }
+}
 
-//   // Analyze user patterns for predictive insights
-//   async analyzeUserPatterns(userId) {
-//     try {
-//       const analyzePatterns = httpsCallable(this.functions, 'analyzeUserPatterns');
-//       const result = await analyzePatterns({ userId });
-//       return result.data;
-//     } catch (error) {
-//       console.error('Error analyzing patterns:', error);
-//       return this.getMockPatternAnalysis();
-//     }
-//   }
+export async function analyzeTextHybrid(text) {
+  try {
+    const response = await fetch(AI_ANALYTICS_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ text })
+    });
 
-//   // Mock pattern analysis for presentation
-//   getMockPatternAnalysis() {
-//     return {
-//       patterns: {
-//         weeklyRhythm: {
-//           bestDay: 'Wednesday',
-//           worstDay: 'Monday',
-//           confidence: 0.82
-//         },
-//         dailyCycles: {
-//           peakEnergy: '9:30 AM',
-//           lowEnergy: '3:00 PM',
-//           bestMeditation: '7:00 AM',
-//           bestWorkout: '5:00 PM'
-//         },
-//         moodCorrelations: {
-//           waterIntake: 0.75,
-//           meditation: 0.68,
-//           exercise: 0.62
-//         }
-//       }
-//     };
-//   }
+    if (!response.ok) {
+      throw new Error("AI analytics request failed");
+    }
 
-//   // Get AI coaching insights
-//   async getAICoaching(userId) {
-//     try {
-//       const getCoaching = httpsCallable(this.functions, 'getAICoaching');
-//       const result = await getCoaching({ userId });
-//       return result.data;
-//     } catch (error) {
-//       console.error('Error getting AI coaching:', error);
-//       return this.getMockCoaching();
-//     }
-//   }
+    const aiResult = await response.json();
+    return {
+      sentiment: aiResult.sentiment?.score ?? null,
+      entities: aiResult.entities ?? [],
+      source: 'cloud'
+    };
+  } catch (error) {
+    console.error("AI analytics error (falling back to local):", error);
+    // Fallback to local sentiment
+    const localSentiment = analyzeSentiment(text);
+    return {
+      sentiment: localSentiment?.score ?? null,
+      entities: [],
+      source: 'local'
+    };
+  }
+}
 
-//   // Mock AI coaching for presentation
-//   getMockCoaching() {
-//     return {
-//       coach: {
-//         name: 'Clarity AI Coach',
-//         avatar: '🤖',
-//         message: 'Based on your wellness data, I\'ve identified some key patterns that can help optimize your mental health journey.',
-//         insights: [
-//           'Your meditation consistency improves by 40% when done before 8 AM',
-//           'You experience 30% less anxiety on days with 64+ oz water intake',
-//           'Your workout performance peaks during 5-6 PM time slots'
-//         ],
-//         nextSteps: [
-//           'Try morning meditation at 7 AM this week',
-//           'Set hydration reminders for 2 PM and 4 PM',
-//           'Schedule your next workout for 5:30 PM'
-//         ]
-//       }
-//     };
-//   }
-// }
+/**
+ * Generate a personalized AI recommendation based on sentiment and extracted entities.
+ * @param {number|null} sentiment - Sentiment score (-1 to 1)
+ * @param {string[]} entities - Extracted keywords/topics
+ * @returns {string|null} Recommendation message
+ */
+export function getAIRecommendation(sentiment, entities) {
+  if (!entities || entities.length === 0) return null;
+  const e = entities.map(x => x.toLowerCase());
 
-// export const aiAnalyticsService = new AIAnalyticsService(); 
+  // Fatigue/Stress
+  if ((e.includes('tired') || e.includes('fatigue') || e.includes('stressed') || e.includes('stress')) && sentiment !== null && sentiment < 0) {
+    return "Sorry you're feeling tired or stressed. Try a 10-minute guided meditation or a relaxing soundscape to unwind.";
+  }
+  // Sleep
+  if ((e.includes('sleep') || e.includes('insomnia')) && sentiment !== null && sentiment < 0) {
+    return "Having trouble sleeping? Try a sleep meditation or a calming bedtime routine tonight.";
+  }
+  // Workout soreness
+  if ((e.includes('sore') || e.includes('soreness')) && e.includes('workout')) {
+    return "Great job on your workout! Since you're sore, consider a gentle stretching session or a rest day tomorrow.";
+  }
+  // Hydration
+  if (e.includes('water') || e.includes('hydration')) {
+    return "Remember to stay hydrated! Try setting a water reminder or keeping a bottle at your desk.";
+  }
+  // Motivation
+  if (e.includes('motivation') && sentiment !== null && sentiment < 0) {
+    return "Feeling unmotivated? Try a short walk, a new workout, or listen to an uplifting playlist!";
+  }
+  // Work stress
+  if ((e.includes('work') || e.includes('meeting')) && (e.includes('stress') || e.includes('tired'))) {
+    return "Work can be draining. Take a mindful break or try a breathing exercise after your next meeting.";
+  }
+  // Positive workout
+  if (e.includes('workout') && sentiment !== null && sentiment > 0) {
+    return "Awesome job on your workout! Keep up the great work and celebrate your progress!";
+  }
+  // General encouragement
+  if (sentiment !== null && sentiment < -0.3) {
+    return "It's okay to have tough days. Be kind to yourself and try a wellness activity you enjoy.";
+  }
+  if (sentiment !== null && sentiment > 0.5) {
+    return "You're on a roll! Keep up the positive momentum!";
+  }
+  return null;
+}

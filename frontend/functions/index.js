@@ -1,7 +1,28 @@
 const { onRequest } = require('firebase-functions/v2/https');
 const admin = require('firebase-admin');
+const { LanguageServiceClient } = require('@google-cloud/language');
 
 admin.initializeApp();
+
+// Update the path to your service account JSON as needed
+const nlpClient = new LanguageServiceClient({
+  keyFilename: './clarity-311c3-27632d39dd54.json'
+});
+
+// Helper for dynamic CORS
+function setDynamicCors(res, req) {
+  const allowedOrigins = [
+    'https://loveclaritywellness.com',
+    'https://clarity-one-beryl.vercel.app'
+  ];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.set('Access-Control-Allow-Origin', origin);
+  }
+  res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.set('Access-Control-Allow-Credentials', 'true');
+}
 
 // Simple HTTP function for creating Stripe checkout sessions
 exports.createStripeCheckoutSession = onRequest(
@@ -9,10 +30,7 @@ exports.createStripeCheckoutSession = onRequest(
     const stripe = require('stripe')(process.env.STRIPE_SECRET);
 
     // Set CORS headers
-    res.set('Access-Control-Allow-Origin', 'https://clarity-one-beryl.vercel.app');
-    res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.set('Access-Control-Allow-Credentials', 'true');
+    setDynamicCors(res, req);
 
     // Handle preflight requests
     if (req.method === 'OPTIONS') {
@@ -62,6 +80,11 @@ exports.createStripeCheckoutSession = onRequest(
 exports.stripeWebhook = onRequest(
   { rawBody: true },
   async (req, res) => {
+    setDynamicCors(res, req);
+    if (req.method === 'OPTIONS') {
+      res.status(204).send('');
+      return;
+    }
     console.log('🔔 Webhook received!');
     console.log('📡 Method:', req.method);
     console.log('📡 URL:', req.url);
@@ -167,3 +190,29 @@ exports.stripeWebhook = onRequest(
     res.json({ received: true });
   }
 );
+
+exports.analyzeText = onRequest(async (req, res) => {
+  setDynamicCors(res, req);
+  if (req.method === 'OPTIONS') {
+    res.status(204).send('');
+    return;
+  }
+
+  const { text } = req.body;
+  if (!text) return res.status(400).json({ error: 'No text provided' });
+
+  const document = { content: text, type: 'PLAIN_TEXT' };
+
+  try {
+    const [sentimentResult] = await nlpClient.analyzeSentiment({ document });
+    const [entityResult] = await nlpClient.analyzeEntities({ document });
+
+    res.json({
+      sentiment: sentimentResult.documentSentiment,
+      entities: entityResult.entities.map(e => e.name)
+    });
+  } catch (error) {
+    console.error('❌ Google NLP error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});

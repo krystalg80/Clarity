@@ -67,3 +67,5 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+frontend/functions/clarity-311c3-27632d39dd54.json
+functions/clarity-311c3-27632d39dd54.json

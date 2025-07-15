@@ -363,20 +363,41 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* AI Recommendations Section (moved to bottom) */}
-      {recommendations.length > 0 && (
-        <div className="ai-recommendations soft-card">
-          <h2>AI-Powered Recommendations</h2>
-          <ul>
-            {recommendations.map((rec, idx) => (
-              <li key={idx} className="recommendation-item">
-                <strong>{rec.type && rec.type.charAt(0).toUpperCase() + rec.type.slice(1)}:</strong> {rec.message}
-                {rec.action && <div className="recommendation-action">Action: {rec.action}</div>}
-              </li>
-            ))}
-          </ul>
+      {/* AI Coach Recommendations Section (upgraded) */}
+      <div className="ai-coach-section soft-card">
+        <h2 className="ai-coach-title">🤖 Clarity AI Coach</h2>
+        <div className="ai-coach-avatar-row">
+          <div className="ai-coach-avatar" aria-label="AI Coach">🧠</div>
+          <div className="ai-coach-chat">
+            {recommendations.length > 0 ? (
+              <ul className="ai-coach-chat-list">
+                {recommendations.map((rec, idx) => (
+                  <li key={idx} className="ai-coach-message">
+                    <div className="ai-coach-bubble">
+                      <span className="ai-coach-label">Coach:</span> {rec.message}
+                      {rec.action && (
+                        <div className="ai-coach-action">
+                          <span className="ai-coach-action-label">Try this:</span> {rec.action}
+                        </div>
+                      )}
+                    </div>
+                    {rec.type && (
+                      <div className="ai-coach-type-tag">{rec.type.charAt(0).toUpperCase() + rec.type.slice(1)}</div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="ai-coach-empty">
+                <div className="ai-coach-bubble ai-coach-bubble-empty">
+                  "Log your workouts, meditations, water, and notes to unlock smart, personalized insights!"
+                </div>
+                <div className="ai-coach-tip">The more you log, the smarter your AI Coach gets. Keep going! 💡</div>
+              </div>
+            )}
+          </div>
         </div>
-      )}
+      </div>
 
       {/* AI Analytics Coming Soon Section */}
       {/* <div className="ai-analytics-coming-soon">

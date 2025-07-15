@@ -4,6 +4,7 @@ import { waterService } from "../../services/waterService";
 import './Water.css';
 import timezoneUtils from "../../utils/timezone";
 import { analyzeSentiment, extractKeywords } from '../../services/aiService';
+import { analyzeTextHybrid, getAIRecommendation } from '../../services/aiAnalyticsService';
 
 function Water() {
     const { user: firebaseUser } = useAuth();
@@ -23,6 +24,7 @@ function Water() {
     const [userGoal, setUserGoal] = useState(64);
     const [sentimentFeedback, setSentimentFeedback] = useState(null);
     const [showSentimentModal, setShowSentimentModal] = useState(false);
+    const [aiRecommendation, setAiRecommendation] = useState(null);
 
     // Replace the simple today calculation with this timezone-aware version:
     const today = new Date().toISOString().split('T')[0];
@@ -153,15 +155,17 @@ function Water() {
                 setEditMode(false);
                 setEditId(null);
             } else {
-                // Create new water intake with sentiment
-                const sentimentResult = analyzeSentiment(formData.notes);
-                setSentimentFeedback(sentimentResult);
-                setShowSentimentModal(!!sentimentResult);
-                const waterDataWithSentiment = {
+                // Hybrid AI analytics for notes
+                const aiResult = await analyzeTextHybrid(formData.notes);
+                setSentimentFeedback({ score: aiResult.sentiment });
+                setShowSentimentModal(aiResult.sentiment !== null);
+                setAiRecommendation(getAIRecommendation(aiResult.sentiment, aiResult.entities));
+                const waterDataWithAI = {
                   ...waterData,
-                  sentiment: sentimentResult ? sentimentResult.score : null
+                  sentiment: aiResult.sentiment,
+                  entities: aiResult.entities
                 };
-                const response = await waterService.logWaterIntake(firebaseUser.uid, waterDataWithSentiment);
+                const response = await waterService.logWaterIntake(firebaseUser.uid, waterDataWithAI);
                 setWaters(prev => [response.waterIntake, ...prev]);
             }
             
@@ -470,6 +474,11 @@ function Water() {
                     {sentimentFeedback.score < 0 && "Your note sounds a bit negative. 😟"}
                     {sentimentFeedback.score === 0 && "Your note sounds neutral. 😐"}
                   </span>
+                  {aiRecommendation && (
+                    <div className="ai-recommendation">
+                      <strong>AI Suggestion:</strong> {aiRecommendation}
+                    </div>
+                  )}
                   <button className="close-modal-btn" onClick={() => setShowSentimentModal(false)}>
                     Dismiss
                   </button>

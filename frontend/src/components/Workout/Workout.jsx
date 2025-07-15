@@ -4,6 +4,7 @@ import { workoutService } from "../../services/workoutService";
 import timezoneUtils from '../../utils/timezone';
 import './Workout.css';
 import { analyzeSentiment, extractKeywords } from '../../services/aiService';
+import { analyzeTextHybrid, getAIRecommendation } from '../../services/aiAnalyticsService';
 
 function Workout() {
     const { user: firebaseUser } = useAuth();
@@ -23,6 +24,7 @@ function Workout() {
     const [error, setError] = useState('');
     const [sentimentFeedback, setSentimentFeedback] = useState(null);
     const [showSentimentModal, setShowSentimentModal] = useState(false);
+    const [aiRecommendation, setAiRecommendation] = useState(null);
     
     const today = new Date().toISOString().split('T')[0];
 
@@ -115,17 +117,19 @@ function Workout() {
                 setEditMode(false);
                 setEditId(null);
             } else {
-                // Create new workout with sentiment
-                const sentimentResult = analyzeSentiment(formData.notes);
-                setSentimentFeedback(sentimentResult);
-                setShowSentimentModal(!!sentimentResult);
-                const workoutDataWithSentiment = {
+                // Hybrid AI analytics for notes
+                const aiResult = await analyzeTextHybrid(formData.notes);
+                setSentimentFeedback({ score: aiResult.sentiment });
+                setShowSentimentModal(aiResult.sentiment !== null);
+                setAiRecommendation(getAIRecommendation(aiResult.sentiment, aiResult.entities));
+                const workoutDataWithAI = {
                   ...workoutData,
-                  sentiment: sentimentResult ? sentimentResult.score : null
+                  sentiment: aiResult.sentiment,
+                  entities: aiResult.entities
                 };
-                result = await workoutService.logWorkout(firebaseUser.uid, workoutDataWithSentiment);
+                result = await workoutService.logWorkout(firebaseUser.uid, workoutDataWithAI);
                 setWorkouts(prev => [
-                  { ...workoutDataWithSentiment, id: result.id },
+                  { ...workoutDataWithAI, id: result.id },
                   ...prev
                 ]);
             }
@@ -389,6 +393,11 @@ function Workout() {
                     {sentimentFeedback.score < 0 && "Your note sounds a bit negative. 😟"}
                     {sentimentFeedback.score === 0 && "Your note sounds neutral. 😐"}
                   </span>
+                  {aiRecommendation && (
+                    <div className="ai-recommendation">
+                      <strong>AI Suggestion:</strong> {aiRecommendation}
+                    </div>
+                  )}
                   <button className="close-modal-btn" onClick={() => setShowSentimentModal(false)}>
                     Dismiss
                   </button>
