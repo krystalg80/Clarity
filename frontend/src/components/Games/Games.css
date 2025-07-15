@@ -408,9 +408,8 @@
   background: linear-gradient(135deg, var(--mint) 0%, var(--sage-400) 100%);
   color: var(--white);
   border: none;
-  border-radius: 10px;
-  padding: 5px 12px;
-  font-size: 0.89rem;
+  padding: 3px 8px;
+  font-size: 0.82rem;
   font-weight: 700;
   box-shadow: 0 2px 8px rgba(107, 128, 105, 0.10);
   cursor: pointer;

@@ -1153,19 +1153,9 @@
 
 /* --- Compact Claim and Redeem Buttons (move to end of file for linter compatibility) --- */
 .claim-btn, .redeem-btn {
-  background: linear-gradient(135deg, var(--mint) 0%, var(--sage-400) 100%);
-  color: var(--white);
-  border: none;
-  border-radius: 10px;
-  padding: 5px 12px;
-  font-size: 0.89rem;
-  font-weight: 700;
-  box-shadow: 0 2px 8px rgba(107, 128, 105, 0.10);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  letter-spacing: 0.01em;
-  margin-top: 2px;
-  margin-bottom: 1px;
+  padding: 3px 8px;
+  font-size: 0.82rem;
+  border-radius: 8px;
 }
 .claim-btn:hover:not(:disabled), .redeem-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, var(--sage-500) 0%, var(--mint) 100%);
