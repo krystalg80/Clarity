@@ -197,13 +197,8 @@ function Workout() {
         });
     };
 
-    // Filter today's workouts
-    const todayWorkouts = workouts.filter(workout => {
-        const workoutDate = workout.date instanceof Date 
-            ? workout.date.toISOString().split('T')[0]
-            : new Date(workout.date).toISOString().split('T')[0];
-        return workoutDate === today;
-    });
+    // Filter today's workouts using timezone utilities
+    const todayWorkouts = workouts.filter(workout => timezoneUtils.isToday(workout.date));
 
     if (isLoading) {
         return <div className="workout-loading">Loading workouts...</div>;

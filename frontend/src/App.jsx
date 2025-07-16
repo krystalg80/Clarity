@@ -14,11 +14,30 @@ import InstallPrompt from './components/PWA/InstallPrompt';
 import FloatingInstallButton from './components/PWA/FloatingInstallButton';
 import './App.css'; // Import global styles
 import Games from './components/Games/Games';
+import { useState, useEffect } from 'react';
+import WelcomeModal from './components/Welcome/WelcomeModal';
 
 function App() {
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+
+  useEffect(() => {
+    // Only show for authenticated users on first login/signup
+    const unsub = setInterval(() => {
+      const user = JSON.parse(localStorage.getItem('firebase:authUser:default'));
+      if (user && !localStorage.getItem('clarity_welcome_shown')) {
+        setShowWelcomeModal(true);
+        localStorage.setItem('clarity_welcome_shown', 'true');
+        clearInterval(unsub);
+      }
+    }, 500);
+    // Clean up
+    return () => clearInterval(unsub);
+  }, []);
+
   return (
     <AuthProvider>
       <Router>
+        {showWelcomeModal && <WelcomeModal onClose={() => setShowWelcomeModal(false)} />}
         <Routes>
           {/* Public Routes */}
           <Route path="/welcome" element={<Welcome />} />
