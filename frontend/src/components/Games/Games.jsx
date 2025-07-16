@@ -51,25 +51,32 @@ function Games() {
         console.log('🎮 Loaded saved game stats:', parsedStats);
       }
       
-      // Sync with actual tamed monsters count
-      const tamedMonsters = localStorage.getItem('anxiety_game_tamed_monsters');
-      if (tamedMonsters) {
-        const monsterIds = JSON.parse(tamedMonsters);
-        const actualMonsterCount = monsterIds.length;
-        
-        setGameStats(prev => {
-          const updatedStats = {
-            ...prev,
-            anxietyGameScore: Math.max(prev.anxietyGameScore, actualMonsterCount)
-          };
-          
-          // Save the corrected stats
-          localStorage.setItem('clarity_game_stats', JSON.stringify(updatedStats));
-          console.log('🎮 Synced monster count:', actualMonsterCount);
-          
-          return updatedStats;
-        });
+      // Check if we need to reset today's monster count
+      const today = new Date().toDateString();
+      const lastMonsterReset = localStorage.getItem('anxiety_game_last_reset');
+      
+      if (lastMonsterReset !== today) {
+        // Reset today's monster count
+        localStorage.setItem('anxiety_game_today_monsters', '0');
+        localStorage.setItem('anxiety_game_last_reset', today);
+        console.log('🎮 Reset today\'s monster count for new day');
       }
+      
+      // Get today's monster count
+      const todayMonsters = parseInt(localStorage.getItem('anxiety_game_today_monsters') || '0');
+      
+      setGameStats(prev => {
+        const updatedStats = {
+          ...prev,
+          anxietyGameScore: todayMonsters
+        };
+        
+        // Save the corrected stats
+        localStorage.setItem('clarity_game_stats', JSON.stringify(updatedStats));
+        console.log('🎮 Today\'s monster count:', todayMonsters);
+        
+        return updatedStats;
+      });
     } catch (error) {
       console.error('Error loading game stats:', error);
     }
@@ -78,10 +85,14 @@ function Games() {
   const handleUpdateStats = (stats) => {
     console.log('🎮 handleUpdateStats called with:', stats);
     
+    // Increment today's monster count
+    const todayMonsters = parseInt(localStorage.getItem('anxiety_game_today_monsters') || '0') + 1;
+    localStorage.setItem('anxiety_game_today_monsters', todayMonsters.toString());
+    
     setGameStats(prev => {
       const updatedStats = {
         ...prev,
-        anxietyGameScore: stats.anxietyGameScore || prev.anxietyGameScore,
+        anxietyGameScore: todayMonsters,
         mindfulnessPoints: prev.mindfulnessPoints + (stats.mindfulnessPoints || 0),
         totalGamesPlayed: prev.totalGamesPlayed + 1
       };
@@ -103,23 +114,20 @@ function Games() {
   // Debug function to manually refresh stats
   const refreshStats = () => {
     try {
-      const tamedMonsters = localStorage.getItem('anxiety_game_tamed_monsters');
+      const todayMonsters = localStorage.getItem('anxiety_game_today_monsters');
       const playerStats = localStorage.getItem('anxiety_game_player_stats');
       
-      console.log('🎮 Debug - Tamed monsters:', tamedMonsters);
+      console.log('🎮 Debug - Today\'s monsters:', todayMonsters);
       console.log('🎮 Debug - Player stats:', playerStats);
       
-      if (tamedMonsters) {
-        const monsterIds = JSON.parse(tamedMonsters);
-        const actualMonsterCount = monsterIds.length;
-        
-        setGameStats(prev => ({
-          ...prev,
-          anxietyGameScore: actualMonsterCount
-        }));
-        
-        console.log('🎮 Debug - Updated anxietyGameScore to:', actualMonsterCount);
-      }
+      const todayMonsterCount = parseInt(todayMonsters || '0');
+      
+      setGameStats(prev => ({
+        ...prev,
+        anxietyGameScore: todayMonsterCount
+      }));
+      
+      console.log('🎮 Debug - Updated anxietyGameScore to:', todayMonsterCount);
     } catch (error) {
       console.error('Error refreshing stats:', error);
     }
@@ -247,7 +255,7 @@ function Games() {
                   width: `${Math.min((gameStats.anxietyGameScore / 3) * 100, 100)}%` 
                 }}></div>
               </div>
-             
+              <span className="challenge-status">{gameStats.anxietyGameScore}/3 tamed today</span>
             </div>
           </div>
           <div className="challenge-reward">
