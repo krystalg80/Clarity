@@ -180,14 +180,16 @@ function Dashboard() {
           waterService.getPersonalizedWaterRecommendations(firebaseUser.uid),
           workoutService.getPersonalizedWorkoutRecommendations(firebaseUser.uid)
         ]);
+        // Overwrite recommendations with the latest only
         const allRecs = [
           ...(meditationRec?.recommendations || []),
           ...(waterRec?.recommendations || []),
           ...(workoutRec?.recommendations || [])
         ];
-        setRecommendations(allRecs);
+        setRecommendations(allRecs); // Overwrite, do not stack
       } catch (error) {
         console.error('Error fetching recommendations:', error);
+        setRecommendations([]); // Clear on error
       }
     };
     fetchRecommendations();
@@ -394,7 +396,7 @@ function Dashboard() {
               ) : (
                 <div className="ai-coach-empty">
                   <div className="ai-coach-bubble ai-coach-bubble-empty">
-                    "Log your workouts, meditations, water, and notes to unlock smart, personalized insights!"
+                    I’m your Clarity AI Coach! Log a meditation, workout, or water entry and I’ll start making personalized recommendations for you.
                   </div>
                   <div className="ai-coach-tip">The more you log, the smarter your AI Coach gets. Keep going! 💡</div>
                 </div>

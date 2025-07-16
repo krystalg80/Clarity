@@ -16,23 +16,21 @@ import './App.css'; // Import global styles
 import Games from './components/Games/Games';
 import { useState, useEffect } from 'react';
 import WelcomeModal from './components/Welcome/WelcomeModal';
+import { useAuth } from './contexts/AuthContext';
 
 function App() {
+  const { user, loading } = useAuth();
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
   useEffect(() => {
-    // Only show for authenticated users on first login/signup
-    const unsub = setInterval(() => {
-      const user = JSON.parse(localStorage.getItem('firebase:authUser:default'));
-      if (user && !localStorage.getItem('clarity_welcome_shown')) {
+    if (!loading && user) {
+      const welcomeKey = `clarity_welcome_shown_${user.uid}`;
+      if (!localStorage.getItem(welcomeKey)) {
         setShowWelcomeModal(true);
-        localStorage.setItem('clarity_welcome_shown', 'true');
-        clearInterval(unsub);
+        localStorage.setItem(welcomeKey, 'true');
       }
-    }, 500);
-    // Clean up
-    return () => clearInterval(unsub);
-  }, []);
+    }
+  }, [user, loading]);
 
   return (
     <AuthProvider>
