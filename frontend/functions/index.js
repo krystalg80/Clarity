@@ -11,9 +11,10 @@ const nlpClient = new LanguageServiceClient({
 
 // Helper for dynamic CORS
 function setDynamicCors(res, req) {
+  // Allow both production and preview domains
   const allowedOrigins = [
-    'https://loveclaritywellness.com',
-    'https://clarity-one-beryl.vercel.app'
+    'https://www.loveclaritywellness.com',
+    'https://clarity-wellness.vercel.app'
   ];
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {

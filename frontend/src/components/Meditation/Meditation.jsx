@@ -33,6 +33,7 @@ function Meditation() {
   const [sentimentFeedback, setSentimentFeedback] = useState(null);
   const [showSentimentModal, setShowSentimentModal] = useState(false);
   const [keywords, setKeywords] = useState([]);
+  const [aiRecommendation, setAiRecommendation] = useState(null);
 
   //Mood Tracking State
   const [moodBefore, setMoodBefore] = useState('');
