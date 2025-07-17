@@ -11,10 +11,6 @@ export async function startStripeUpgrade() {
   }
 
   try {
-    console.log('🔧 Starting Stripe upgrade with direct HTTP call');
-    console.log('👤 User ID:', user.uid);
-    console.log('🌐 Function URL:', functionUrl);
-    
     const response = await fetch(functionUrl, {
       method: 'POST',
       headers: {
@@ -23,9 +19,6 @@ export async function startStripeUpgrade() {
       body: JSON.stringify({ uid: user.uid }),
     });
 
-    console.log('📡 Response status:', response.status);
-    console.log('📡 Response headers:', response.headers);
-
     if (!response.ok) {
       const errorText = await response.text();
       console.error('❌ HTTP error response:', errorText);
@@ -33,10 +26,8 @@ export async function startStripeUpgrade() {
     }
 
     const result = await response.json();
-    console.log('✅ Function call successful:', result);
     
     const { url } = result;
-    console.log('🔗 Redirecting to Stripe checkout:', url);
     window.location.href = url;
   } catch (error) {
     console.error('❌ Error creating Stripe checkout session:', error);

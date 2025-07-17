@@ -59,12 +59,7 @@ function Workout() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        console.log('🚀 Workout submit started');
-        console.log('📊 Form data:', formData);
-        console.log('👤 Firebase user:', firebaseUser?.uid);
-        
         if (!firebaseUser?.uid) {
-            console.error('❌ No user ID found');
             setError('Please log in to save workouts');
             return;
         }

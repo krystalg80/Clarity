@@ -43,8 +43,6 @@ export const waterService = {
       const startDate = timezoneUtils.getStartOfDay(new Date());
       startDate.setDate(startDate.getDate() - days);
       
-      console.log('💧 fetchWaterIntakeByUser - Start date:', startDate.toLocaleDateString());
-      
       const q = query(
         collection(db, `users/${userId}/waterIntake`),
         where('date', '>=', startDate),
@@ -61,11 +59,8 @@ export const waterService = {
         };
       });
       
-      console.log('💧 fetchWaterIntakeByUser - Found intakes:', waterIntakes.length);
-      
       return { waterIntakes };
     } catch (error) {
-      console.error('💧 fetchWaterIntakeByUser error:', error);
       throw new Error('Error fetching water intake: ' + error.message);
     }
   },
@@ -109,13 +104,6 @@ export const waterService = {
       const tomorrow = timezoneUtils.getEndOfDay(new Date());
       tomorrow.setMilliseconds(tomorrow.getMilliseconds() + 1); // Add 1ms to make it exclusive
       
-      console.log('💧 getTodayWaterIntake - Date range:', {
-        today: today.toLocaleDateString(),
-        tomorrow: tomorrow.toLocaleDateString(),
-        todayISO: today.toISOString(),
-        tomorrowISO: tomorrow.toISOString()
-      });
-      
       const q = query(
         collection(db, `users/${userId}/waterIntake`),
         where('date', '>=', today),
@@ -132,11 +120,6 @@ export const waterService = {
         };
       });
       
-      console.log('💧 getTodayWaterIntake - Found intakes:', todayIntakes.length);
-      todayIntakes.forEach(intake => {
-        console.log('  -', intake.amount, 'oz on', intake.date?.toLocaleDateString());
-      });
-      
       const totalOz = todayIntakes.reduce((sum, intake) => 
         sum + (intake.amount || 0), 0
       );
@@ -147,7 +130,6 @@ export const waterService = {
         intakes: todayIntakes
       };
     } catch (error) {
-      console.error('💧 getTodayWaterIntake error:', error);
       throw new Error('Error fetching today\'s water intake: ' + error.message);
     }
   },
@@ -224,7 +206,6 @@ export const waterService = {
         userTimezone: timezoneUtils.getUserTimezone()
       };
     } catch (error) {
-      console.error('Error fetching daily water intake:', error);
       return {
         date: timezoneUtils.formatLocalDate(date),
         totalOz: 0,

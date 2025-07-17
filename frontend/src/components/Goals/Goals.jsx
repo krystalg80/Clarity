@@ -273,8 +273,6 @@ function Goals() {
       // Recalculate achievements with new goals
       setTimeout(() => calculateAchievements(), 100);
       
-      console.log('✅ Goals updated successfully');
-      
     } catch (error) {
       console.error('❌ Error updating goals:', error);
     } finally {

@@ -85,7 +85,6 @@ function Profile() {
     setSuccessMessage('');
 
     try {
-      console.log('Submitting profile update:', formData);
       
       // Convert string values to numbers for goals
       const profileData = {

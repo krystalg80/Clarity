@@ -14,10 +14,8 @@ const PWARegistration = () => {
         setOfflineReady(true);
       },
       onRegistered(swRegistration) {
-        console.log('SW registered: ', swRegistration);
       },
       onRegisterError(error) {
-        console.log('SW registration error', error);
       },
     });
   }, []);

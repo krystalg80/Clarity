@@ -57,8 +57,6 @@ function Dashboard() {
         
         // Get today in user's local timezone
         const today = timezoneUtils.getCurrentLocalTime();
-        console.log('🌍 Dashboard timezone:', timezoneUtils.getUserTimezone());
-        console.log('📅 Local today:', timezoneUtils.formatLocalDateTime(today));
         
         // Fetch user profile first
         const profileResponse = await authService.getUserProfile(firebaseUser.uid);
@@ -70,7 +68,6 @@ function Dashboard() {
         setWaterGoalOz(profileResponse.user.waterGoalOz || 64);
         
         // Fetch TODAY'S data using daily functions
-        console.log('📊 Fetching workout data for date:', today);
         
         const [workoutData, meditationData, waterData] = await Promise.all([
           workoutService.getDailyWorkoutSummary(firebaseUser.uid, today),
@@ -78,9 +75,6 @@ function Dashboard() {
           waterService.getDailyWaterIntake(firebaseUser.uid, today)
         ]);
         
-        console.log('📊 Raw workout data from Dashboard:', workoutData);
-        console.log('🧘 Raw meditation data:', meditationData);
-        console.log('💧 Raw water data:', waterData);
         
         // Set daily data with proper field mapping
         setDailyData({
@@ -136,7 +130,6 @@ function Dashboard() {
 
   // Trial modal logic
   useEffect(() => {
-    console.log("Trial modal effect running", userProfile);
     if (
       userProfile &&
       userProfile.subscriptionStatus === "trial_expired" &&
@@ -144,8 +137,6 @@ function Dashboard() {
     ) {
       const dontRemind = localStorage.getItem("dontRemindTrial");
       const lastReminded = localStorage.getItem("lastTrialReminded");
-      console.log("dontRemindTrial:", dontRemind);
-      console.log("lastReminded:", lastReminded);
       const oneWeek = 1000 * 60 * 60 * 24 * 7;
       const now = Date.now();
 
@@ -153,7 +144,6 @@ function Dashboard() {
         if (!lastReminded || now - Number(lastReminded) > oneWeek) {
           setShowTrialModal(true);
           localStorage.setItem("lastTrialReminded", now);
-          console.log("Showing trial modal!");
         }
       }
     }
@@ -180,20 +170,33 @@ function Dashboard() {
           waterService.getPersonalizedWaterRecommendations(firebaseUser.uid),
           workoutService.getPersonalizedWorkoutRecommendations(firebaseUser.uid)
         ]);
-        // Overwrite recommendations with the latest only
+        // Combine all recommendations
         const allRecs = [
           ...(meditationRec?.recommendations || []),
           ...(waterRec?.recommendations || []),
           ...(workoutRec?.recommendations || [])
         ];
-        setRecommendations(allRecs); // Overwrite, do not stack
+        // Limit to 3 recommendations
+        const limitedRecs = allRecs.slice(0, 3);
+
+        // Only show recommendations if user has any logs
+        const hasAnyLogs =
+          dailyData.workout.totalMinutes > 0 ||
+          dailyData.meditation.totalMinutes > 0 ||
+          dailyData.water.totalOz > 0;
+
+        if (hasAnyLogs && limitedRecs.length > 0) {
+          setRecommendations(limitedRecs);
+        } else {
+          setRecommendations([]); // Show onboarding message
+        }
       } catch (error) {
         console.error('Error fetching recommendations:', error);
-        setRecommendations([]); // Clear on error
+        setRecommendations([]); // Show onboarding message on error
       }
     };
     fetchRecommendations();
-  }, [firebaseUser]);
+  }, [firebaseUser, dailyData]);
 
   // Loading states (unchanged)
   if (authLoading || isLoading) {

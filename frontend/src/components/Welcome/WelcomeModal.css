@@ -55,7 +55,7 @@
   gap: 0.5em;
 }
 .feature-list.premium li {
-  color: var(--mint);
+  color: var(--forest);
   font-weight: 600;
 }
 .modal-section.help {

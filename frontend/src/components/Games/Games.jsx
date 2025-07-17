@@ -48,7 +48,6 @@ function Games() {
       if (savedStats) {
         const parsedStats = JSON.parse(savedStats);
         setGameStats(parsedStats);
-        console.log('🎮 Loaded saved game stats:', parsedStats);
       }
       
       // Check if we need to reset today's monster count
@@ -59,7 +58,6 @@ function Games() {
         // Reset today's monster count
         localStorage.setItem('anxiety_game_today_monsters', '0');
         localStorage.setItem('anxiety_game_last_reset', today);
-        console.log('🎮 Reset today\'s monster count for new day');
       }
       
       // Get today's monster count
@@ -73,7 +71,6 @@ function Games() {
         
         // Save the corrected stats
         localStorage.setItem('clarity_game_stats', JSON.stringify(updatedStats));
-        console.log('🎮 Today\'s monster count:', todayMonsters);
         
         return updatedStats;
       });
@@ -83,7 +80,6 @@ function Games() {
   }, []);
 
   const handleUpdateStats = (stats) => {
-    console.log('🎮 handleUpdateStats called with:', stats);
     
     // Increment today's monster count
     const todayMonsters = parseInt(localStorage.getItem('anxiety_game_today_monsters') || '0') + 1;
@@ -100,7 +96,6 @@ function Games() {
       // Save to localStorage
       try {
         localStorage.setItem('clarity_game_stats', JSON.stringify(updatedStats));
-        console.log('🎮 Saved game stats to localStorage:', updatedStats);
       } catch (error) {
         console.error('Error saving game stats:', error);
       }
@@ -108,7 +103,6 @@ function Games() {
       return updatedStats;
     });
     
-    console.log('🎮 Game stats updated:', stats);
   };
 
   // Debug function to manually refresh stats
@@ -117,9 +111,6 @@ function Games() {
       const todayMonsters = localStorage.getItem('anxiety_game_today_monsters');
       const playerStats = localStorage.getItem('anxiety_game_player_stats');
       
-      console.log('🎮 Debug - Today\'s monsters:', todayMonsters);
-      console.log('🎮 Debug - Player stats:', playerStats);
-      
       const todayMonsterCount = parseInt(todayMonsters || '0');
       
       setGameStats(prev => ({
@@ -127,7 +118,6 @@ function Games() {
         anxietyGameScore: todayMonsterCount
       }));
       
-      console.log('🎮 Debug - Updated anxietyGameScore to:', todayMonsterCount);
     } catch (error) {
       console.error('Error refreshing stats:', error);
     }

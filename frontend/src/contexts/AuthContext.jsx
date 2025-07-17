@@ -61,9 +61,6 @@ export const AuthProvider = ({ children }) => {
         // Use the ACTUAL trial dates from Firestore, not createdAt
         const trialStatus = calculateTrialStatus(profileData.trialStartDate, profileData.trialEndDate);
         
-        console.log('🔍 Profile Data:', profileData);
-        console.log('📅 Trial Status:', trialStatus);
-        
         // Only update state if component is still mounted
         if (!isMounted.current) return;
         
@@ -107,7 +104,6 @@ export const AuthProvider = ({ children }) => {
   // Auth state change listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log('🔥 Auth state changed:', firebaseUser ? 'User logged in' : 'User logged out');
       
       try {
         // Only update state if component is still mounted
@@ -188,7 +184,6 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const { user: firebaseUser } = await signInWithEmailAndPassword(auth, email, password);
-      console.log('✅ Login successful, Firebase will trigger auth state change');
       return { success: true, user: firebaseUser };
     } catch (error) {
       console.error('Login error:', error);

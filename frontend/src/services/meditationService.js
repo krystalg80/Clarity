@@ -255,7 +255,6 @@ export const meditationService = {
         moodImprovement: this.calculateMoodImprovement(meditations)
       };
     } catch (error) {
-      console.error('Error fetching meditation summary:', error);
       throw new Error('Error fetching meditation summary: ' + error.message);
     }
   },
@@ -283,13 +282,11 @@ export const meditationService = {
       // Handle Firestore timestamp
       dateObj = new Date(date.seconds * 1000);
     } else {
-      console.warn('Invalid date format:', date);
       return 'unknown';
     }
     
     // Validate the date object
     if (isNaN(dateObj.getTime())) {
-      console.warn('Invalid date object:', date);
       return 'unknown';
     }
     
@@ -325,8 +322,6 @@ export const meditationService = {
     try {
       const startOfDay = timezoneUtils.getStartOfDay(date);
       const endOfDay = timezoneUtils.getEndOfDay(date);
-      
-      console.log('🌍 Daily meditation query for timezone:', timezoneUtils.getUserTimezone());
       
       const q = query(
         collection(db, `users/${userId}/meditations`),
@@ -385,7 +380,6 @@ export const meditationService = {
         userTimezone: timezoneUtils.getUserTimezone()
       };
     } catch (error) {
-      console.error('Error fetching daily meditation summary:', error);
       return {
         date: date.toISOString().split('T')[0],
         totalSessions: 0,

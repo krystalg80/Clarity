@@ -17,7 +17,6 @@ export const workoutService = {
   // Log workout with timezone awareness
   async logWorkout(userId, workoutData) {
     try {
-      console.log('🌍 Logging workout in timezone:', timezoneUtils.getUserTimezone());
       
       // Handle date in user's local timezone
       let workoutDate = timezoneUtils.getCurrentLocalTime();
@@ -110,9 +109,6 @@ export const workoutService = {
     try {
       const { startDate, endDate } = timezoneUtils.getCurrentWeekRange();
 
-      console.log('🌍 Weekly workout query for timezone:', timezoneUtils.getUserTimezone());
-      console.log('📅 Query range:', timezoneUtils.formatLocalDateTime(startDate), 'to', timezoneUtils.formatLocalDateTime(endDate));
-
       const q = query(
         collection(db, `users/${userId}/workouts`),
         where('date', '>=', startDate),
@@ -151,9 +147,6 @@ export const workoutService = {
         endDate: timezoneUtils.getEndOfDay(date)
       };
       
-      console.log('🌍 Daily workout query for timezone:', timezoneUtils.getUserTimezone());
-      console.log('📅 Query range:', timezoneUtils.formatLocalDateTime(startDate), 'to', timezoneUtils.formatLocalDateTime(endDate));
-      
       const q = query(
         collection(db, `users/${userId}/workouts`),
         where('date', '>=', startDate),
@@ -167,8 +160,6 @@ export const workoutService = {
         ...doc.data(),
         date: doc.data().date?.toDate()
       }));
-      
-      console.log('💪 Found workouts for today:', workouts.length);
       
       const totalMinutes = workouts.reduce((sum, w) => sum + (w.durationMinutes || 0), 0);
       const totalWorkouts = workouts.length;
