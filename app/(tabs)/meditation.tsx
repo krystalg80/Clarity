@@ -45,7 +45,6 @@ export default function MeditationScreen() {
 
   // Pickers
   const [showSoundscapePicker, setShowSoundscapePicker] = useState(false);
-  const [showTypePicker, setShowTypePicker] = useState(false);
 
   // AI recommendation
   const [aiRec, setAiRec] = useState<SoundscapeRecommendation | null>(null);
@@ -243,11 +242,19 @@ export default function MeditationScreen() {
             </View>
 
             {/* AI Soundscape Suggestion */}
-            {sessionMoodBefore ? (
-              <View style={s.aiSection}>
+            <View style={s.aiSection}>
                 {!aiRec && !aiLoading && (
-                  <TouchableOpacity style={s.aiBtn} onPress={handleAiRecommend}>
-                    <Text style={s.aiBtnText}>Recommend a soundscape for my mood</Text>
+                  <TouchableOpacity
+                    style={[s.aiBtn, !sessionMoodBefore && s.aiBtnDimmed]}
+                    onPress={() => {
+                      if (!sessionMoodBefore) {
+                        Alert.alert('Select a mood', 'Pick how you\'re feeling above first.');
+                        return;
+                      }
+                      handleAiRecommend();
+                    }}
+                  >
+                    <Text style={s.aiBtnText}>✨ Recommend a soundscape for my mood</Text>
                     <Text style={s.aiBtnArrow}>→</Text>
                   </TouchableOpacity>
                 )}
@@ -300,15 +307,31 @@ export default function MeditationScreen() {
                     </View>
                   </View>
                 )}
-              </View>
-            ) : null}
+            </View>
 
             {/* Type */}
             <Text style={s.label}>Type</Text>
-            <TouchableOpacity style={s.picker} onPress={() => setShowTypePicker(true)}>
-              <Text style={s.pickerText}>{meditationTypes[sessionType]?.name}</Text>
-              <Text style={s.pickerChevron}>›</Text>
-            </TouchableOpacity>
+            <View style={s.typeGrid}>
+              {Object.entries(meditationTypes).map(([key, mt]) => {
+                const isSelected = key === sessionType;
+                const isLocked   = mt.premium && !isPremium;
+                return (
+                  <TouchableOpacity
+                    key={key}
+                    style={[s.typeCard, isSelected && s.typeCardSelected, isLocked && s.typeCardLocked]}
+                    onPress={() => {
+                      if (isLocked) { Alert.alert('Premium', 'Upgrade to unlock this meditation type.'); return; }
+                      setSessionType(key);
+                    }}
+                  >
+                    <Text style={s.typeCardIcon}>{mt.icon}</Text>
+                    <Text style={[s.typeCardName, isSelected && s.typeCardNameSelected]}>{mt.name}</Text>
+                    <Text style={s.typeCardDesc} numberOfLines={2}>{mt.description}</Text>
+                    {isLocked && <Text style={s.typeCardLockTag}>✦ Premium</Text>}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
 
             {/* Duration */}
             <Text style={s.label}>Duration</Text>
@@ -432,36 +455,6 @@ export default function MeditationScreen() {
         </View>
       </Modal>
 
-      {/* Type Picker */}
-      <Modal visible={showTypePicker} transparent animationType="slide">
-        <View style={s.modalOverlay}>
-          <View style={s.pickerModal}>
-            <Text style={s.pickerModalTitle}>Meditation Type</Text>
-            {Object.entries(meditationTypes).map(([key, mt]) => {
-              const isLocked   = mt.premium && !isPremium;
-              const isSelected = key === sessionType;
-              return (
-                <TouchableOpacity
-                  key={key}
-                  style={[s.pickerOption, isSelected && s.pickerOptionSelected]}
-                  onPress={() => { if (!isLocked) { setSessionType(key); setShowTypePicker(false); } }}
-                >
-                  <View style={{ flex: 1 }}>
-                    <View style={s.pickerOptionRow}>
-                      <Text style={[s.pickerOptionText, isSelected && s.pickerOptionTextSelected]}>{mt.name}</Text>
-                      {isLocked && <Text style={s.premiumTag}>Premium</Text>}
-                    </View>
-                    <Text style={s.pickerOptionSub}>{mt.description}</Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-            <TouchableOpacity style={s.cancelBtn} onPress={() => setShowTypePicker(false)}>
-              <Text style={s.cancelBtnText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
 
       {/* Mood After Modal */}
       <Modal visible={showMoodAfterModal} transparent animationType="fade">
@@ -514,6 +507,15 @@ const s = StyleSheet.create({
   pickerChevron:       { fontSize: 20, color: colors.textMuted, lineHeight: 22 },
 
   // Duration
+  typeGrid:            { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 4 },
+  typeCard:            { width: '47%', backgroundColor: colors.background, borderRadius: 14, padding: 12, borderWidth: 1.5, borderColor: colors.border },
+  typeCardSelected:    { borderColor: colors.meditationPurple, backgroundColor: '#F3EEF9' },
+  typeCardLocked:      { opacity: 0.6 },
+  typeCardIcon:        { fontSize: 26, marginBottom: 6 },
+  typeCardName:        { fontSize: 13, fontWeight: '700', color: colors.textDark, marginBottom: 3 },
+  typeCardNameSelected:{ color: colors.meditationPurple },
+  typeCardDesc:        { fontSize: 11, color: colors.textMuted, lineHeight: 15 },
+  typeCardLockTag:     { fontSize: 10, color: colors.meditationPurple, fontWeight: '700', marginTop: 5 },
   durationRow:         { flexDirection: 'row', gap: 8, marginBottom: 4, flexWrap: 'wrap' },
   durationBtn:         { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border },
   durationBtnSelected: { backgroundColor: colors.meditationPurple, borderColor: colors.meditationPurple },
@@ -575,6 +577,7 @@ const s = StyleSheet.create({
   // AI recommendation
   aiSection:           { marginTop: 8, marginBottom: 4 },
   aiBtn:               { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3EEF9', borderRadius: 10, paddingVertical: 11, paddingHorizontal: 14, borderWidth: 1, borderColor: '#D4C5F0' },
+  aiBtnDimmed:         { opacity: 0.5 },
   aiBtnText:           { fontSize: 14, color: colors.meditationPurple, fontWeight: '600', flex: 1 },
   aiBtnArrow:          { fontSize: 16, color: colors.meditationPurple },
   aiLoadingRow:        { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10 },

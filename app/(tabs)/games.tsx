@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Fragment, useMemo } from 'react';
 import {
   View, Text, TouchableOpacity, ScrollView, StyleSheet,
-  ActivityIndicator, Alert, Animated,
+  ActivityIndicator, Alert, Animated, Pressable, Modal, useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { authService } from '../../src/services/authService';
@@ -62,28 +63,32 @@ const SENSES = [
   { sense: 'TASTE', icon: '👅',  count: 1, bg: '#FEF0F0', accent: colors.error,             prompt: 'Be present in your body. Notice 1 thing you can taste.' },
 ];
 
-const MONSTERS: Record<string, any> = {
-  worry_worm: {
-    name: 'Worry Worm', icon: '🐛', size: 'small', technique: 'calm', targetCycles: 1,
-    description: "Those nagging worries that won't stop circling",
-    tamedMessage: 'Worry Worm is at peace. You breathed through it.',
-  },
-  panic_bear: {
-    name: 'Panic Bear', icon: '🐻', size: 'large', technique: 'box', targetCycles: 2,
-    description: 'Big scary feelings that make your heart race',
-    tamedMessage: 'Panic Bear is now your gentle guardian.',
-  },
-  overthink_octopus: {
-    name: 'Overthink Octopus', icon: '🐙', size: 'medium', technique: 'sleep', targetCycles: 1,
-    description: 'Eight arms of spiraling, tangled thoughts',
-    tamedMessage: 'Overthink Octopus is now zen and quiet.',
-  },
-  doom_dragon: {
-    name: 'Doom Dragon', icon: '🐉', size: 'boss', technique: 'calm', targetCycles: 3,
-    description: 'The big bad — catastrophic, worst-case thinking',
-    tamedMessage: 'Doom Dragon is now your wise protector.',
-  },
-};
+// ─── Flappy Mind constants ────────────────────────────────────────────────────
+
+const BIRD_R   = 14;
+const BIRD_X   = 90;
+const OBS_W    = 58;
+const GRAV     = 0.20;
+const LIFT     = -0.63;
+const BASE_SPD = 1.6;
+const WIN_SC   = 10;
+const GAP_MAX  = 165;
+const GAP_MIN  = 120;
+
+const THOUGHTS_LIST = [
+  "What if I fail?", "I'm not enough", "Nobody cares",
+  "It's too much", "Can't cope", "What's the point?",
+  "Will I mess up?", "Too overwhelmed", "I'm falling behind",
+  "I'm a burden",
+];
+const AFFIRM_LIST = [
+  "I am enough", "I can do this", "Breathe", "I am safe",
+  "One step at a time", "I am worthy", "I choose peace",
+  "I am strong", "Keep going", "I am here now",
+];
+
+type FMPhase = 'intro' | 'ready' | 'playing' | 'dead' | 'win';
+interface FMObs { id: number; x: number; gapY: number; passed: boolean; thought: string; affirm: string; }
 
 // ─── Breathing Circle (shared visual) ─────────────────────────────────────────
 
@@ -401,302 +406,194 @@ function GroundingGame({ onComplete }: { onComplete: () => void }) {
   );
 }
 
-// ─── Anxiety Monster Tamer ────────────────────────────────────────────────────
+// ─── Flappy Mind Game ─────────────────────────────────────────────────────────
 
-function AnxietyMonsterTamer({ onUpdateStats }: { onUpdateStats: (s: any) => void }) {
-  const [gameState, setGameState]     = useState<'menu' | 'encounter' | 'taming' | 'victory' | 'sanctuary'>('menu');
-  const [currentMonster, setCurrentMonster] = useState<any>(null);
-  const [tamedMonsters, setTamedMonsters]   = useState<any[]>([]);
-  const [playerStats, setPlayerStats] = useState({
-    level: 1, experience: 0, calmness: 100, monstersDefeated: 0, sanctuaryPoints: 0,
+function FlappyMindGame({ onComplete, onClose }: { onComplete: () => void; onClose: () => void }) {
+  const { width: winW, height: winH } = useWindowDimensions();
+  const insets   = useSafeAreaInsets();
+  const canvasW  = winW;
+  const canvasH  = winH - insets.top - 52 - insets.bottom;
+  const dimRef   = useRef({ w: canvasW, h: canvasH });
+  dimRef.current = { w: canvasW, h: canvasH };
+
+  const stars = useMemo(() =>
+    Array.from({ length: 22 }, (_, i) => ({
+      x: ((i * 53 + 7) % Math.max(1, canvasW - 6)) + 3,
+      y: ((i * 37 + 11) % Math.max(1, canvasH - 6)) + 3,
+      r: 1 + (i % 3 === 0 ? 2 : i % 2),
+    })), [canvasW, canvasH]
+  );
+
+  const gv = useRef({
+    birdY: 300, vel: 0,
+    obs: [] as FMObs[], score: 0,
+    held: false, phase: 'intro' as FMPhase,
+    nextId: 0, spawnIn: 90,
   });
-  const [phaseIdx, setPhaseIdx]       = useState(0);
-  const [countdown, setCountdown]     = useState(4);
-  const [tamingCycles, setTamingCycles] = useState(0);
+  const [phase, setPhase] = useState<FMPhase>('intro');
+  const [, tick]  = useState(0);
+  const loopRef   = useRef<ReturnType<typeof setInterval>>();
+  const bobAnim   = useRef(new Animated.Value(0)).current;
+  const bobRef    = useRef<Animated.CompositeAnimation | null>(null);
 
-  const scaleAnim        = useRef(new Animated.Value(0.5)).current;
-  const monsterFadeAnim  = useRef(new Animated.Value(1)).current;
-  const runningRef       = useRef(false);
-  const currentMonsterRef = useRef<any>(null);
-  const tamingCyclesRef  = useRef(0);
-  const phaseTimer       = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const cdInterval       = useRef<ReturnType<typeof setInterval> | null>(null);
+  const stopLoop = () => { if (loopRef.current) clearInterval(loopRef.current); };
+  const stopBob  = () => { bobRef.current?.stop(); bobAnim.setValue(0); };
+  useEffect(() => () => { stopLoop(); stopBob(); }, []);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const [sm, ss] = await Promise.all([
-          AsyncStorage.getItem(STORAGE_KEYS.TAMED_MONSTERS),
-          AsyncStorage.getItem(STORAGE_KEYS.PLAYER_STATS),
-        ]);
-        if (sm) {
-          const ids: string[] = JSON.parse(sm);
-          setTamedMonsters(ids.map(id => MONSTERS[id] ? { ...MONSTERS[id], id } : null).filter(Boolean));
-        }
-        if (ss) setPlayerStats(JSON.parse(ss));
-      } catch {}
-    };
-    load();
-    return () => {
-      runningRef.current = false;
-      if (phaseTimer.current)  clearTimeout(phaseTimer.current);
-      if (cdInterval.current) clearInterval(cdInterval.current);
-    };
-  }, []);
-
-  useEffect(() => {
-    AsyncStorage.setItem(STORAGE_KEYS.TAMED_MONSTERS, JSON.stringify(tamedMonsters.map(m => m.id)));
-  }, [tamedMonsters]);
-
-  useEffect(() => {
-    AsyncStorage.setItem(STORAGE_KEYS.PLAYER_STATS, JSON.stringify(playerStats));
-  }, [playerStats]);
-
-  const clearTimers = () => {
-    if (phaseTimer.current)  clearTimeout(phaseTimer.current);
-    if (cdInterval.current) clearInterval(cdInterval.current);
+  const goToReady = () => {
+    stopLoop(); stopBob();
+    const g = gv.current;
+    g.birdY = dimRef.current.h / 2; g.vel = 0; g.obs = []; g.score = 0;
+    g.held = false; g.nextId = 0; g.spawnIn = 90; g.phase = 'ready';
+    setPhase('ready'); tick(n => n + 1);
+    bobRef.current = Animated.loop(Animated.sequence([
+      Animated.timing(bobAnim, { toValue: -10, duration: 700, useNativeDriver: true }),
+      Animated.timing(bobAnim, { toValue: 10,  duration: 700, useNativeDriver: true }),
+    ]));
+    bobRef.current.start();
   };
 
-  const encounterMonster = () => {
-    const keys    = Object.keys(MONSTERS);
-    const key     = keys[Math.floor(Math.random() * keys.length)];
-    const monster = { ...MONSTERS[key], id: key };
-    currentMonsterRef.current = monster;
-    setCurrentMonster(monster);
-    const drop = monster.size === 'boss' ? 30 : monster.size === 'large' ? 20 : 10;
-    setPlayerStats(p => ({ ...p, calmness: Math.max(0, p.calmness - drop) }));
-    setGameState('encounter');
-  };
+  const startGame = (boost = false) => {
+    stopBob(); stopLoop();
+    const g = gv.current;
+    g.birdY = dimRef.current.h / 2; g.vel = boost ? -3 : 0; g.obs = []; g.score = 0;
+    g.held = boost; g.nextId = 0; g.spawnIn = 90; g.phase = 'playing';
+    setPhase('playing');
 
-  const tamingRunPhaseRef = useRef<(idx: number) => void>();
-  tamingRunPhaseRef.current = (idx: number) => {
-    if (!runningRef.current) return;
-    const monster = currentMonsterRef.current;
-    if (!monster) return;
-    const phases  = BREATH_PATTERNS[monster.technique as PatternKey]?.phases || BREATH_PATTERNS.calm.phases;
-    const phase   = phases[idx];
+    loopRef.current = setInterval(() => {
+      const g = gv.current;
+      const { w: cW, h: cH } = dimRef.current;
+      if (g.phase !== 'playing') return;
 
-    setPhaseIdx(idx);
-    setCountdown(phase.duration);
-    scaleAnim.stopAnimation();
-    Animated.timing(scaleAnim, {
-      toValue: phase.scale, duration: phase.duration * 1000, useNativeDriver: true,
-    }).start();
+      g.vel = Math.max(-9, Math.min(9, g.vel + GRAV + (g.held ? LIFT : 0)));
+      g.birdY += g.vel;
 
-    let rem = phase.duration - 1;
-    if (cdInterval.current) clearInterval(cdInterval.current);
-    cdInterval.current = setInterval(() => {
-      if (rem >= 0) { setCountdown(rem--); } else clearInterval(cdInterval.current!);
-    }, 1000);
-
-    phaseTimer.current = setTimeout(() => {
-      if (!runningRef.current) return;
-      const next = (idx + 1) % phases.length;
-      if (next === 0) {
-        tamingCyclesRef.current++;
-        setTamingCycles(tamingCyclesRef.current);
-        // Pulse monster fade to show progress
-        Animated.sequence([
-          Animated.timing(monsterFadeAnim, { toValue: 0.3, duration: 300, useNativeDriver: true }),
-          Animated.timing(monsterFadeAnim, { toValue: 1.0, duration: 300, useNativeDriver: true }),
-        ]).start();
-
-        if (tamingCyclesRef.current >= monster.targetCycles) {
-          runningRef.current = false;
-          clearInterval(cdInterval.current!);
-          completeTaming();
-          return;
-        }
+      if (g.birdY - BIRD_R <= 0 || g.birdY + BIRD_R >= cH) {
+        g.phase = 'dead'; setPhase('dead'); stopLoop(); tick(n => n + 1); return;
       }
-      tamingRunPhaseRef.current!(next);
-    }, phase.duration * 1000);
+
+      const speed = BASE_SPD + Math.floor(g.score / 3) * 0.18;
+      const gapH  = Math.max(GAP_MIN, GAP_MAX - Math.floor(g.score / 4) * 7);
+
+      for (const o of g.obs) o.x -= speed;
+      g.obs = g.obs.filter(o => o.x > -OBS_W - 10);
+
+      g.spawnIn--;
+      if (g.spawnIn <= 0) {
+        const margin = BIRD_R * 5;
+        const gapY   = margin + Math.random() * (cH - margin * 2);
+        g.obs.push({
+          id: g.nextId++, x: cW + OBS_W, gapY, passed: false,
+          thought: THOUGHTS_LIST[Math.floor(Math.random() * THOUGHTS_LIST.length)],
+          affirm:  AFFIRM_LIST[Math.floor(Math.random() * AFFIRM_LIST.length)],
+        });
+        g.spawnIn = Math.round(220 / speed);
+      }
+
+      let died = false;
+      for (const o of g.obs) {
+        const gapTop = o.gapY - gapH / 2;
+        const gapBot = o.gapY + gapH / 2;
+        const inX    = BIRD_X + BIRD_R > o.x && BIRD_X - BIRD_R < o.x + OBS_W;
+        if (inX && (g.birdY - BIRD_R < gapTop || g.birdY + BIRD_R > gapBot)) { died = true; break; }
+        if (!o.passed && o.x + OBS_W < BIRD_X) { o.passed = true; g.score++; }
+      }
+
+      if (died) {
+        g.phase = 'dead'; setPhase('dead'); stopLoop();
+      } else if (g.score >= WIN_SC) {
+        g.phase = 'win'; setPhase('win'); stopLoop(); onComplete();
+      }
+
+      tick(n => n + 1);
+    }, 16);
   };
 
-  const startTaming = () => {
-    clearTimers();
-    runningRef.current    = true;
-    tamingCyclesRef.current = 0;
-    setTamingCycles(0);
-    scaleAnim.setValue(0.5);
-    monsterFadeAnim.setValue(1);
-    setGameState('taming');
-    setPhaseIdx(0);
-    tamingRunPhaseRef.current!(0);
-  };
+  const g    = gv.current;
+  const gapH = Math.max(GAP_MIN, GAP_MAX - Math.floor(g.score / 4) * 7);
 
-  const completeTaming = () => {
-    const m           = currentMonsterRef.current;
-    const expGained   = m.size === 'boss' ? 100 : m.size === 'large' ? 50 : 25;
-    const sanctuaryPts = m.size === 'boss' ? 20 : 10;
-    setTamedMonsters(prev => [...prev, m]);
-    setPlayerStats(p => ({
-      ...p,
-      experience:       p.experience + expGained,
-      calmness:         Math.min(100, p.calmness + 30),
-      monstersDefeated: p.monstersDefeated + 1,
-      sanctuaryPoints:  p.sanctuaryPoints + sanctuaryPts,
-      level:            Math.floor((p.experience + expGained) / 100) + 1,
-    }));
-    setGameState('victory');
-    onUpdateStats({ mindfulnessPoints: sanctuaryPts });
-  };
-
-  const monster     = currentMonster;
-  const pattern     = monster ? BREATH_PATTERNS[monster.technique as PatternKey] : BREATH_PATTERNS.calm;
-  const currentPhase = pattern.phases[phaseIdx];
-  const expForMonster = monster?.size === 'boss' ? 100 : monster?.size === 'large' ? 50 : 25;
-
-  // ── Menu ──
-  if (gameState === 'menu') return (
-    <View style={m.game}>
-      <View style={m.statsRow}>
-        {[['⭐', `Lv${playerStats.level}`], ['💚', `${playerStats.calmness}%`], ['👾', `${playerStats.monstersDefeated}`], ['🌿', `${playerStats.sanctuaryPoints}`]].map(([icon, val]) => (
-          <View key={String(val)} style={m.statBox}>
-            <Text style={m.statIcon}>{icon}</Text>
-            <Text style={m.statVal}>{val}</Text>
-          </View>
-        ))}
-      </View>
-
-      <TouchableOpacity
-        style={[m.primaryBtn, playerStats.calmness < 10 && m.btnDisabled]}
-        onPress={encounterMonster}
-        disabled={playerStats.calmness < 10}
-      >
-        <Text style={m.primaryBtnText}>
-          {playerStats.calmness < 10 ? 'Too anxious — rest first' : 'Encounter a Monster'}
-        </Text>
-      </TouchableOpacity>
-
-      {playerStats.calmness < 20 && (
-        <TouchableOpacity
-          style={[m.primaryBtn, m.restBtn]}
-          onPress={() => setPlayerStats(p => ({ ...p, calmness: Math.min(100, p.calmness + 50) }))}
-        >
-          <Text style={m.primaryBtnText}>Rest & Recover  +50 Calmness</Text>
+  return (
+    <View style={fl.screen}>
+      <View style={[fl.header, { paddingTop: insets.top }]}>
+        <TouchableOpacity onPress={onClose} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <Text style={fl.backBtn}>← Back</Text>
         </TouchableOpacity>
-      )}
-
-      {tamedMonsters.length > 0 && (
-        <>
-          <Text style={m.sectionLabel}>Your Companions</Text>
-          <View style={m.tamedGrid}>
-            {tamedMonsters.map((tm, i) => (
-              <View key={i} style={m.tamedCard}>
-                <Text style={m.tamedIcon}>{tm.icon}</Text>
-                <Text style={m.tamedName}>{tm.name}</Text>
-              </View>
-            ))}
-          </View>
-        </>
-      )}
-
-      {tamedMonsters.length === 0 && (
-        <Text style={m.emptyHint}>Face a monster and breathe through it to tame it.</Text>
-      )}
-    </View>
-  );
-
-  // ── Encounter ──
-  if (gameState === 'encounter' && monster) return (
-    <View style={m.game}>
-      <Text style={m.monsterEmoji}>{monster.icon}</Text>
-      <Text style={m.encounterTitle}>A {monster.name} appears</Text>
-      <Text style={m.encounterDesc}>{monster.description}</Text>
-      <View style={[m.techniqueTag, { backgroundColor: colors.primaryLight }]}>
-        <Text style={[m.techniqueTagText, { color: colors.primary }]}>
-          Technique: {pattern.label}  ·  {monster.targetCycles} {monster.targetCycles === 1 ? 'cycle' : 'cycles'}
-        </Text>
+        {(phase === 'playing' || phase === 'dead') && (
+          <Text style={fl.hudScore}>{g.score} <Text style={fl.hudOf}>/ {WIN_SC}</Text></Text>
+        )}
       </View>
-      <TouchableOpacity style={m.primaryBtn} onPress={startTaming}>
-        <Text style={m.primaryBtnText}>Start Breathing to Tame</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={m.fleeBtn} onPress={() => setGameState('menu')}>
-        <Text style={m.fleeBtnText}>Not now — flee</Text>
-      </TouchableOpacity>
-    </View>
-  );
 
-  // ── Taming ──
-  if (gameState === 'taming' && monster) return (
-    <View style={m.game}>
-      <Animated.Text style={[m.tamingMonster, { opacity: monsterFadeAnim }]}>{monster.icon}</Animated.Text>
-      <Text style={m.tamingTitle}>Taming {monster.name}</Text>
-
-      <BreathingCircle
-        scaleAnim={scaleAnim}
-        phaseColor={currentPhase.color}
-        phaseName={currentPhase.name}
-        countdown={countdown}
-      />
-
-      <View style={m.cycleDotsRow}>
-        {Array.from({ length: monster.targetCycles }).map((_, i) => (
-          <View key={i} style={[m.cycleDot, i < tamingCycles && m.cycleDotDone]} />
-        ))}
-      </View>
-      <Text style={m.cycleLabel}>{tamingCycles}/{monster.targetCycles} cycles</Text>
-      <Text style={m.tamingHint}>Stay with the breath. You've got this.</Text>
-    </View>
-  );
-
-  // ── Victory ──
-  if (gameState === 'victory' && monster) return (
-    <View style={m.game}>
-      <Text style={[m.monsterEmoji, { fontSize: 72 }]}>{monster.icon}</Text>
-      <Text style={m.victoryTitle}>Monster Tamed</Text>
-      <Text style={m.victoryMessage}>{monster.tamedMessage}</Text>
-      <View style={m.rewardsBox}>
-        <Text style={m.rewardItem}>+30 Calmness</Text>
-        <Text style={m.rewardItem}>+{expForMonster} Experience</Text>
-        <Text style={m.rewardItem}>+{monster.size === 'boss' ? 20 : 10} Sanctuary Points</Text>
-      </View>
-      <TouchableOpacity style={m.primaryBtn} onPress={() => setGameState('menu')}>
-        <Text style={m.primaryBtnText}>Continue</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={m.sanctuaryBtn} onPress={() => setGameState('sanctuary')}>
-        <Text style={m.sanctuaryBtnText}>Visit Sanctuary</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  // ── Sanctuary ──
-  if (gameState === 'sanctuary') return (
-    <View style={m.game}>
-      <Text style={m.sanctuaryTitle}>Your Sanctuary</Text>
-      <Text style={m.sanctuaryDesc}>A safe space built from every breath you've taken.</Text>
-      <View style={m.statsRow}>
-        {[['🌿', `${playerStats.sanctuaryPoints} pts`], ['👾', `${tamedMonsters.length} companions`], ['💚', `${playerStats.calmness}% calm`]].map(([icon, val]) => (
-          <View key={String(val)} style={m.statBox}>
-            <Text style={m.statIcon}>{icon}</Text>
-            <Text style={[m.statVal, { fontSize: 11 }]}>{val}</Text>
-          </View>
-        ))}
-      </View>
-      {tamedMonsters.length > 0 && (
-        <View style={m.tamedGrid}>
-          {tamedMonsters.map((tm, i) => (
-            <View key={i} style={[m.tamedCard, { backgroundColor: colors.primaryLight }]}>
-              <Text style={m.tamedIcon}>{tm.icon}</Text>
-              <Text style={m.tamedName}>{tm.name}</Text>
-              <Text style={m.tamedStatus}>at peace ✨</Text>
-            </View>
-          ))}
+      {phase === 'intro' && (
+        <View style={fl.fullCenter}>
+          <View style={fl.introOrb} />
+          <Text style={fl.title}>Flappy Mind</Text>
+          <Text style={fl.desc}>{'Hold to breathe upward.\nRelease to exhale and fall.\n\nNavigate through negative thoughts\nto reach the affirmations inside.'}</Text>
+          <TouchableOpacity style={fl.btn} onPress={goToReady}><Text style={fl.btnText}>Begin Flying</Text></TouchableOpacity>
         </View>
       )}
-      <TouchableOpacity
-        style={[m.primaryBtn, { backgroundColor: colors.sage500, marginTop: 12 }]}
-        onPress={() => setPlayerStats(p => ({ ...p, calmness: Math.min(100, p.calmness + 10) }))}
-      >
-        <Text style={m.primaryBtnText}>Meditate Here  +10 Calmness</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={m.fleeBtn} onPress={() => setGameState('menu')}>
-        <Text style={m.fleeBtnText}>← Back to Adventure</Text>
-      </TouchableOpacity>
+
+      {phase === 'win' && (
+        <View style={fl.fullCenter}>
+          <View style={fl.winOrb} />
+          <Text style={fl.title}>Mind Cleared</Text>
+          <Text style={fl.winSub}>You passed through {WIN_SC} thought barriers</Text>
+          <Text style={fl.desc}>{'Every obstacle was a thought you moved through.\nThe affirmations were always in the gaps —\nyou just had to keep breathing.'}</Text>
+          <TouchableOpacity style={fl.btn} onPress={goToReady}><Text style={fl.btnText}>Fly Again</Text></TouchableOpacity>
+        </View>
+      )}
+
+      {(phase === 'ready' || phase === 'playing' || phase === 'dead') && (
+        <Pressable
+          style={[fl.canvas, { width: canvasW, height: canvasH }]}
+          onPressIn={() => {
+            if (phase === 'ready') { startGame(true); return; }
+            g.held = true;
+            if (phase === 'dead') startGame(false);
+          }}
+          onPressOut={() => { g.held = false; }}
+        >
+          {stars.map((st, i) => (
+            <View key={i} style={[fl.star, { left: st.x, top: st.y, width: st.r, height: st.r, borderRadius: st.r }]} />
+          ))}
+
+          {phase !== 'ready' && g.obs.map(obs => {
+            const gapTop = obs.gapY - gapH / 2;
+            const gapBot = obs.gapY + gapH / 2;
+            return (
+              <Fragment key={obs.id}>
+                <View style={[fl.obsTop, { left: obs.x, height: Math.max(0, gapTop), width: OBS_W }]}>
+                  <Text style={fl.obsText} numberOfLines={4}>{obs.thought}</Text>
+                </View>
+                <View style={[fl.obsBot, { left: obs.x, top: gapBot, height: Math.max(0, canvasH - gapBot), width: OBS_W }]}>
+                  <Text style={fl.obsText} numberOfLines={4}>{obs.thought}</Text>
+                </View>
+                <Text style={[fl.gapText, { left: obs.x, top: obs.gapY - 10, width: OBS_W }]} numberOfLines={2}>{obs.affirm}</Text>
+              </Fragment>
+            );
+          })}
+
+          {phase === 'ready'
+            ? <Animated.View style={[fl.bird, { top: g.birdY - BIRD_R, left: BIRD_X - BIRD_R, transform: [{ translateY: bobAnim }] }]} />
+            : <View style={[fl.bird, { top: g.birdY - BIRD_R, left: BIRD_X - BIRD_R }]} />
+          }
+
+          {phase === 'ready' && (
+            <View style={fl.readyOverlay}>
+              <Text style={fl.readyTitle}>Tap anywhere to begin</Text>
+              <Text style={fl.readyHint}>Hold to rise  ·  Release to fall</Text>
+            </View>
+          )}
+
+          {phase === 'dead' && (
+            <View style={fl.overlay}>
+              <Text style={fl.overlayTitle}>Caught in a thought</Text>
+              <Text style={fl.overlaySub}>Score: {g.score}  ·  Tap to try again</Text>
+            </View>
+          )}
+        </Pressable>
+      )}
     </View>
   );
-
-  return null;
 }
 
 // ─── Games Screen ─────────────────────────────────────────────────────────────
@@ -721,11 +618,11 @@ const GAME_CARDS = [
     bg:    colors.primaryLight,
   },
   {
-    id: 'monster' as const,
-    icon:  '🐉',
-    title: 'Monster Tamer',
-    desc:  'Face your anxiety monsters and tame them through breathing techniques.',
-    meta:  '5–15 min  ·  Mindfulness',
+    id: 'flappy' as const,
+    icon:  '🌌',
+    title: 'Flappy Mind',
+    desc:  'Fly through negative thoughts and breathe toward the affirmations inside.',
+    meta:  '2–5 min  ·  Mindfulness',
     color: colors.meditationPurple,
     bg:    '#F3EEF9',
   },
@@ -840,29 +737,7 @@ export default function GamesScreen() {
 
   if (isLoading) return <View style={s.centered}><ActivityIndicator size="large" color={colors.primary} /></View>;
 
-  // ── Active Game View ──
-  if (activeGame) {
-    const card = GAME_CARDS.find(c => c.id === activeGame)!;
-    return (
-      <ScrollView style={s.container} contentContainerStyle={s.content}>
-        <TouchableOpacity style={s.backRow} onPress={() => setActiveGame(null)}>
-          <Text style={s.backText}>← Games</Text>
-        </TouchableOpacity>
-        <View style={[s.gameCard, { borderTopColor: card.color, borderTopWidth: 3 }]}>
-          <View style={s.gameCardHeader}>
-            <Text style={s.gameCardIcon}>{card.icon}</Text>
-            <View>
-              <Text style={s.gameCardTitle}>{card.title}</Text>
-              <Text style={[s.gameCardMeta, { color: card.color }]}>{card.meta}</Text>
-            </View>
-          </View>
-          {activeGame === 'breath'    && <BreathBubbleGame onCycleComplete={handleBreathCycle} />}
-          {activeGame === 'grounding' && <GroundingGame    onComplete={handleGroundingComplete} />}
-          {activeGame === 'monster'   && <AnxietyMonsterTamer onUpdateStats={handleMonsterUpdate} />}
-        </View>
-      </ScrollView>
-    );
-  }
+  const activeCard = activeGame ? GAME_CARDS.find(c => c.id === activeGame) : null;
 
   // ── Home View ──
   return (
@@ -905,7 +780,7 @@ export default function GamesScreen() {
         {[
           { icon: '💨', title: 'Deep Breather',       desc: 'Complete 5 breathing cycles',     current: todayBreath,    target: 5,  pts: 40, claimed: breathClaimed,    setClaimed: setBreathClaimed,    id: 'breath_daily' },
           { icon: '🌱', title: 'Stay Grounded',        desc: 'Complete 1 grounding session',    current: todayGrounding, target: 1,  pts: 30, claimed: groundingClaimed,  setClaimed: setGroundingClaimed,  id: 'grounding_daily' },
-          { icon: '🐉', title: 'Monster Tamer',        desc: 'Tame 3 anxiety monsters',         current: todayMonsters,  target: 3,  pts: 50, claimed: monsterClaimed,    setClaimed: setMonsterClaimed,    id: 'monster_tamer_daily' },
+          { icon: '🌌', title: 'Flappy Mind',            desc: 'Complete 3 Flappy Mind runs',     current: todayMonsters,  target: 3,  pts: 50, claimed: monsterClaimed,    setClaimed: setMonsterClaimed,    id: 'monster_tamer_daily' },
         ].map(ch => (
           <View key={ch.id} style={s.challengeRow}>
             <Text style={s.challengeIcon}>{ch.icon}</Text>
@@ -938,7 +813,7 @@ export default function GamesScreen() {
           {[
             { icon: '💨', val: todayBreath,    label: 'Breath Cycles' },
             { icon: '🌱', val: todayGrounding, label: 'Groundings' },
-            { icon: '👾', val: todayMonsters,  label: 'Monsters' },
+            { icon: '🌌', val: todayMonsters,  label: 'Flappy Runs' },
             { icon: '🎮', val: totalGames,     label: 'Total Sessions' },
           ].map(st => (
             <View key={st.label} style={s.statCard}>
@@ -949,6 +824,26 @@ export default function GamesScreen() {
           ))}
         </View>
       </View>
+      {/* Game Modals */}
+      <Modal visible={activeGame === 'flappy'} animationType="slide" statusBarTranslucent onRequestClose={() => setActiveGame(null)}>
+        <FlappyMindGame onComplete={() => handleMonsterUpdate({})} onClose={() => setActiveGame(null)} />
+      </Modal>
+
+      <Modal visible={activeGame === 'breath' || activeGame === 'grounding'} animationType="slide" onRequestClose={() => setActiveGame(null)}>
+        <SafeAreaView style={s.modalFull}>
+          <View style={s.modalHeader}>
+            <TouchableOpacity onPress={() => setActiveGame(null)}>
+              <Text style={s.modalBack}>← Back</Text>
+            </TouchableOpacity>
+            <Text style={s.modalTitle}>{activeCard?.title ?? ''}</Text>
+            <View style={{ width: 60 }} />
+          </View>
+          <ScrollView contentContainerStyle={s.modalContent}>
+            {activeGame === 'breath'    && <BreathBubbleGame onCycleComplete={handleBreathCycle} />}
+            {activeGame === 'grounding' && <GroundingGame    onComplete={handleGroundingComplete} />}
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
     </ScrollView>
   );
 }
@@ -1108,4 +1003,39 @@ const s = StyleSheet.create({
   statIcon:       { fontSize: 24, marginBottom: 4 },
   statNum:        { fontSize: 20, fontWeight: '800', color: colors.textDark },
   statLabel:      { fontSize: 11, color: colors.textMuted, textAlign: 'center', marginTop: 2 },
+  modalFull:      { flex: 1, backgroundColor: colors.background },
+  modalHeader:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.border },
+  modalBack:      { fontSize: 15, color: colors.primary, fontWeight: '600', width: 60 },
+  modalTitle:     { fontSize: 17, fontWeight: '800', color: colors.textDark },
+  modalContent:   { padding: 16, paddingBottom: 40 },
+});
+
+// ─── Flappy Mind styles ───────────────────────────────────────────────────────
+const fl = StyleSheet.create({
+  screen:       { flex: 1, backgroundColor: '#1A0F2E' },
+  header:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 8, backgroundColor: '#1A0F2E' },
+  backBtn:      { fontSize: 15, color: '#C8A8F5', fontWeight: '600' },
+  fullCenter:   { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
+  readyOverlay: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 50 },
+  readyTitle:   { fontSize: 18, fontWeight: '800', color: '#fff', marginBottom: 8 },
+  readyHint:    { fontSize: 13, color: '#C0A8E8' },
+  introOrb:     { width: 52, height: 52, borderRadius: 26, backgroundColor: colors.meditationPurple, marginBottom: 14, shadowColor: colors.meditationPurple, shadowRadius: 16, shadowOpacity: 0.7, shadowOffset: { width: 0, height: 0 } },
+  winOrb:       { width: 52, height: 52, borderRadius: 26, backgroundColor: colors.primary, marginBottom: 14, shadowColor: colors.primary, shadowRadius: 16, shadowOpacity: 0.7, shadowOffset: { width: 0, height: 0 } },
+  title:        { fontSize: 20, fontWeight: '800', color: '#fff', marginBottom: 8, textAlign: 'center' },
+  winSub:       { fontSize: 14, color: '#C8A8F5', fontWeight: '600', textAlign: 'center', marginBottom: 8 },
+  desc:         { fontSize: 13, color: '#A090C0', textAlign: 'center', lineHeight: 21, marginBottom: 20 },
+  btn:          { backgroundColor: colors.meditationPurple, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 36, alignItems: 'center' },
+  btnText:      { color: '#fff', fontWeight: '700', fontSize: 15 },
+  hudScore:     { fontSize: 17, fontWeight: '800', color: '#C8A8F5' },
+  hudOf:        { fontSize: 13, fontWeight: '600', color: '#8878A8' },
+  canvas:       { backgroundColor: '#1A0F2E', overflow: 'hidden' },
+  star:         { position: 'absolute', backgroundColor: 'rgba(255,255,255,0.3)' },
+  bird:         { position: 'absolute', width: BIRD_R * 2, height: BIRD_R * 2, borderRadius: BIRD_R, backgroundColor: '#C8A8F5', shadowColor: '#A070E0', shadowRadius: 12, shadowOpacity: 1, shadowOffset: { width: 0, height: 0 }, elevation: 8 },
+  obsTop:       { position: 'absolute', top: 0, backgroundColor: '#2A1650', borderBottomWidth: 2, borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#5A3090', alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 6, paddingHorizontal: 4 },
+  obsBot:       { position: 'absolute', backgroundColor: '#2A1650', borderTopWidth: 2, borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#5A3090', alignItems: 'center', justifyContent: 'flex-start', paddingTop: 6, paddingHorizontal: 4 },
+  obsText:      { fontSize: 9, color: '#8A7AAA', textAlign: 'center', fontWeight: '600', lineHeight: 13 },
+  gapText:      { position: 'absolute', fontSize: 9, color: '#C0A0F0', textAlign: 'center', fontWeight: '700', lineHeight: 13 },
+  overlay:      { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(10,5,20,0.75)', alignItems: 'center', justifyContent: 'center' },
+  overlayTitle: { fontSize: 17, fontWeight: '800', color: '#fff', marginBottom: 6 },
+  overlaySub:   { fontSize: 13, color: '#C0A8E8' },
 });

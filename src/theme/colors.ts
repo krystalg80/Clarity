@@ -1,26 +1,26 @@
-// Sage green light theme — Oura-inspired design language
+// Warm cream — Oura-inspired design language
 export const colors = {
   // Backgrounds
-  background: '#F4F7F4',      // soft sage-tinted white
-  surface: '#FFFFFF',          // pure white cards
-  surfaceAlt: '#F0F5F0',       // inputs / nested surfaces
-  surfaceHigh: '#E8F0E8',      // pressed / elevated states
+  background: '#F7F4EF',      // warm cream linen
+  surface: '#FFFFFF',          // white cards
+  surfaceAlt: '#F0EDE8',       // inputs / nested surfaces
+  surfaceHigh: '#E8E4DE',      // pressed / elevated states
 
   // Borders
-  border: '#D8E4D8',
-  borderSubtle: '#E8F0E8',
+  border: '#DDD8D0',
+  borderSubtle: '#EAE6E0',
 
   // Text
-  textDark: '#1C2B1C',         // deep forest near-black
-  textMid: '#2E4A2A',          // medium sage (darkened)
-  textLight: '#4A6741',        // light sage (darkened)
-  textMuted: '#6B8F6B',        // muted sage (darkened)
+  textDark: '#1A1612',         // warm near-black
+  textMid: '#3D3530',          // warm dark brown
+  textLight: '#6B5E54',        // medium warm brown
+  textMuted: '#9A8E86',        // muted warm gray
   white: '#FFFFFF',
 
-  // Brand — sage
-  primary: '#5A8A5A',          // core sage green
-  primaryLight: '#E4F0E4',     // light sage tint
-  primaryDark: '#3D6B3D',      // deep sage
+  // Brand — sage green
+  primary: '#4A7A52',          // deep sage green
+  primaryLight: '#E0EDDF',     // soft sage tint
+  primaryDark: '#335A3A',      // deep forest
 
   // Legacy alias
   cardBg: '#FFFFFF',
@@ -29,19 +29,19 @@ export const colors = {
   workoutBlue: '#4A90A4',
   meditationPurple: '#7B68C8',
   waterBlue: '#4AA8C8',
-  gamingGreen: '#5A8A5A',
+  gamingGreen: '#4A7A52',
 
   // Status
-  success: '#5A8A5A',
-  warning: '#E09B4A',
+  success: '#4A7A52',
+  warning: '#C47B5A',
   error: '#C85A5A',
   info: '#4A90A4',
 
   // Sage scale
-  sage100: '#E4F0E4',
-  sage300: '#8FBF8F',
-  sage500: '#5A8A5A',
-  sage700: '#3D6B3D',
+  sage100: '#E0EDDF',
+  sage300: '#7AAF82',
+  sage500: '#4A7A52',
+  sage700: '#335A3A',
 
   // Premium
   gold: '#D4A84B',
@@ -51,11 +51,11 @@ export const colors = {
   mint: '#6ABFB0',
   skyBlue: '#87CEEB',
   deepBlue: '#4A90A4',
-  gradientStart: '#F4F7F4',
-  gradientEnd: '#E4F0E4',
+  gradientStart: '#F7F4EF',
+  gradientEnd: '#EDE9E2',
 
-  overlay: 'rgba(28,43,28,0.5)',
-  overlayLight: 'rgba(28,43,28,0.3)',
+  overlay: 'rgba(26,22,18,0.5)',
+  overlayLight: 'rgba(26,22,18,0.3)',
 };
 
 export default colors;

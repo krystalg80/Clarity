@@ -25,7 +25,7 @@ export function extractKeywords(text: string): string[] {
 
 const OPENROUTER_KEY = process.env.EXPO_PUBLIC_OPENROUTER_API_KEY ?? '';
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const OPENROUTER_MODEL = 'mistralai/mistral-7b-instruct:free';
+const OPENROUTER_MODEL = 'meta-llama/llama-3.1-8b-instruct:free';
 
 export interface SoundscapeRecommendation {
   message: string;
