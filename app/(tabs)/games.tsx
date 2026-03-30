@@ -3,7 +3,7 @@ import {
   View, Text, TouchableOpacity, ScrollView, StyleSheet,
   ActivityIndicator, Alert, Animated, Pressable, Modal, useWindowDimensions,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView, SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { authService } from '../../src/services/authService';
@@ -67,24 +67,38 @@ const SENSES = [
 
 const BIRD_R   = 14;
 const BIRD_X   = 90;
-const OBS_W    = 58;
-const GRAV     = 0.20;
-const LIFT     = -0.63;
-const BASE_SPD = 1.6;
+const OBS_W    = 72;
+const GRAV     = 0.13;
+const LIFT     = -0.35;
+const BASE_SPD = 1.1;
 const WIN_SC   = 10;
 const GAP_MAX  = 165;
 const GAP_MIN  = 120;
 
+// Each thought is paired with its affirmation at the same index
 const THOUGHTS_LIST = [
-  "What if I fail?", "I'm not enough", "Nobody cares",
-  "It's too much", "Can't cope", "What's the point?",
-  "Will I mess up?", "Too overwhelmed", "I'm falling behind",
-  "I'm a burden",
+  "It's too much",
+  "I'm falling behind",
+  "I can't keep up",
+  "Too overwhelmed",
+  "I'll never catch up",
+  "I'm exhausted",
+  "What's the point?",
+  "I'm not enough",
+  "I keep messing up",
+  "I can't do this",
 ];
 const AFFIRM_LIST = [
-  "I am enough", "I can do this", "Breathe", "I am safe",
-  "One step at a time", "I am worthy", "I choose peace",
-  "I am strong", "Keep going", "I am here now",
+  "Start with one breath",
+  "Your pace is enough",
+  "One small step forward",
+  "You don't have to do it all",
+  "Progress over perfection",
+  "Rest is part of the work",
+  "You matter, right now",
+  "You are already enough",
+  "Mistakes mean you're trying",
+  "You're doing it right now",
 ];
 
 type FMPhase = 'intro' | 'ready' | 'playing' | 'dead' | 'win';
@@ -456,7 +470,7 @@ function FlappyMindGame({ onComplete, onClose }: { onComplete: () => void; onClo
   const startGame = (boost = false) => {
     stopBob(); stopLoop();
     const g = gv.current;
-    g.birdY = dimRef.current.h / 2; g.vel = boost ? -3 : 0; g.obs = []; g.score = 0;
+    g.birdY = dimRef.current.h / 2; g.vel = boost ? -1.5 : 0; g.obs = []; g.score = 0;
     g.held = boost; g.nextId = 0; g.spawnIn = 90; g.phase = 'playing';
     setPhase('playing');
 
@@ -465,14 +479,14 @@ function FlappyMindGame({ onComplete, onClose }: { onComplete: () => void; onClo
       const { w: cW, h: cH } = dimRef.current;
       if (g.phase !== 'playing') return;
 
-      g.vel = Math.max(-9, Math.min(9, g.vel + GRAV + (g.held ? LIFT : 0)));
+      g.vel = Math.max(-5, Math.min(5, g.vel + GRAV + (g.held ? LIFT : 0)));
       g.birdY += g.vel;
 
       if (g.birdY - BIRD_R <= 0 || g.birdY + BIRD_R >= cH) {
         g.phase = 'dead'; setPhase('dead'); stopLoop(); tick(n => n + 1); return;
       }
 
-      const speed = BASE_SPD + Math.floor(g.score / 3) * 0.18;
+      const speed = BASE_SPD + Math.floor(g.score / 3) * 0.10;
       const gapH  = Math.max(GAP_MIN, GAP_MAX - Math.floor(g.score / 4) * 7);
 
       for (const o of g.obs) o.x -= speed;
@@ -482,12 +496,13 @@ function FlappyMindGame({ onComplete, onClose }: { onComplete: () => void; onClo
       if (g.spawnIn <= 0) {
         const margin = BIRD_R * 5;
         const gapY   = margin + Math.random() * (cH - margin * 2);
+        const pairIdx = Math.floor(Math.random() * THOUGHTS_LIST.length);
         g.obs.push({
           id: g.nextId++, x: cW + OBS_W, gapY, passed: false,
-          thought: THOUGHTS_LIST[Math.floor(Math.random() * THOUGHTS_LIST.length)],
-          affirm:  AFFIRM_LIST[Math.floor(Math.random() * AFFIRM_LIST.length)],
+          thought: THOUGHTS_LIST[pairIdx],
+          affirm:  AFFIRM_LIST[pairIdx],
         });
-        g.spawnIn = Math.round(220 / speed);
+        g.spawnIn = Math.round(320 / speed);
       }
 
       let died = false;
@@ -567,7 +582,7 @@ function FlappyMindGame({ onComplete, onClose }: { onComplete: () => void; onClo
                 <View style={[fl.obsBot, { left: obs.x, top: gapBot, height: Math.max(0, canvasH - gapBot), width: OBS_W }]}>
                   <Text style={fl.obsText} numberOfLines={4}>{obs.thought}</Text>
                 </View>
-                <Text style={[fl.gapText, { left: obs.x, top: obs.gapY - 10, width: OBS_W }]} numberOfLines={2}>{obs.affirm}</Text>
+                <Text style={[fl.gapText, { left: obs.x, top: obs.gapY - 14, width: OBS_W }]} numberOfLines={3}>{obs.affirm}</Text>
               </Fragment>
             );
           })}
@@ -826,10 +841,13 @@ export default function GamesScreen() {
       </View>
       {/* Game Modals */}
       <Modal visible={activeGame === 'flappy'} animationType="slide" statusBarTranslucent onRequestClose={() => setActiveGame(null)}>
-        <FlappyMindGame onComplete={() => handleMonsterUpdate({})} onClose={() => setActiveGame(null)} />
+        <SafeAreaProvider>
+          <FlappyMindGame onComplete={() => handleMonsterUpdate({})} onClose={() => setActiveGame(null)} />
+        </SafeAreaProvider>
       </Modal>
 
       <Modal visible={activeGame === 'breath' || activeGame === 'grounding'} animationType="slide" onRequestClose={() => setActiveGame(null)}>
+        <SafeAreaProvider>
         <SafeAreaView style={s.modalFull}>
           <View style={s.modalHeader}>
             <TouchableOpacity onPress={() => setActiveGame(null)}>
@@ -843,6 +861,7 @@ export default function GamesScreen() {
             {activeGame === 'grounding' && <GroundingGame    onComplete={handleGroundingComplete} />}
           </ScrollView>
         </SafeAreaView>
+        </SafeAreaProvider>
       </Modal>
     </ScrollView>
   );
@@ -1011,31 +1030,36 @@ const s = StyleSheet.create({
 });
 
 // ─── Flappy Mind styles ───────────────────────────────────────────────────────
+const SKY      = '#4E9FD4';
+const SKY_DARK = '#3A85BA';
+const CLOUD    = '#D6EEFA';
+const CLOUD_BD = '#8EC4E8';
+
 const fl = StyleSheet.create({
-  screen:       { flex: 1, backgroundColor: '#1A0F2E' },
-  header:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 8, backgroundColor: '#1A0F2E' },
-  backBtn:      { fontSize: 15, color: '#C8A8F5', fontWeight: '600' },
+  screen:       { flex: 1, backgroundColor: SKY },
+  header:       { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 8, backgroundColor: SKY_DARK },
+  backBtn:      { fontSize: 15, color: '#fff', fontWeight: '600' },
   fullCenter:   { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
   readyOverlay: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 50 },
   readyTitle:   { fontSize: 18, fontWeight: '800', color: '#fff', marginBottom: 8 },
-  readyHint:    { fontSize: 13, color: '#C0A8E8' },
-  introOrb:     { width: 52, height: 52, borderRadius: 26, backgroundColor: colors.meditationPurple, marginBottom: 14, shadowColor: colors.meditationPurple, shadowRadius: 16, shadowOpacity: 0.7, shadowOffset: { width: 0, height: 0 } },
-  winOrb:       { width: 52, height: 52, borderRadius: 26, backgroundColor: colors.primary, marginBottom: 14, shadowColor: colors.primary, shadowRadius: 16, shadowOpacity: 0.7, shadowOffset: { width: 0, height: 0 } },
+  readyHint:    { fontSize: 13, color: '#D6EEFA' },
+  introOrb:     { width: 52, height: 52, borderRadius: 26, backgroundColor: '#FFD966', marginBottom: 14, shadowColor: '#FFB800', shadowRadius: 16, shadowOpacity: 0.7, shadowOffset: { width: 0, height: 0 } },
+  winOrb:       { width: 52, height: 52, borderRadius: 26, backgroundColor: '#FFD966', marginBottom: 14, shadowColor: '#FFB800', shadowRadius: 16, shadowOpacity: 0.7, shadowOffset: { width: 0, height: 0 } },
   title:        { fontSize: 20, fontWeight: '800', color: '#fff', marginBottom: 8, textAlign: 'center' },
-  winSub:       { fontSize: 14, color: '#C8A8F5', fontWeight: '600', textAlign: 'center', marginBottom: 8 },
-  desc:         { fontSize: 13, color: '#A090C0', textAlign: 'center', lineHeight: 21, marginBottom: 20 },
-  btn:          { backgroundColor: colors.meditationPurple, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 36, alignItems: 'center' },
+  winSub:       { fontSize: 14, color: '#D6EEFA', fontWeight: '600', textAlign: 'center', marginBottom: 8 },
+  desc:         { fontSize: 13, color: '#D6EEFA', textAlign: 'center', lineHeight: 21, marginBottom: 20 },
+  btn:          { backgroundColor: SKY_DARK, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 36, alignItems: 'center' },
   btnText:      { color: '#fff', fontWeight: '700', fontSize: 15 },
-  hudScore:     { fontSize: 17, fontWeight: '800', color: '#C8A8F5' },
-  hudOf:        { fontSize: 13, fontWeight: '600', color: '#8878A8' },
-  canvas:       { backgroundColor: '#1A0F2E', overflow: 'hidden' },
-  star:         { position: 'absolute', backgroundColor: 'rgba(255,255,255,0.3)' },
-  bird:         { position: 'absolute', width: BIRD_R * 2, height: BIRD_R * 2, borderRadius: BIRD_R, backgroundColor: '#C8A8F5', shadowColor: '#A070E0', shadowRadius: 12, shadowOpacity: 1, shadowOffset: { width: 0, height: 0 }, elevation: 8 },
-  obsTop:       { position: 'absolute', top: 0, backgroundColor: '#2A1650', borderBottomWidth: 2, borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#5A3090', alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 6, paddingHorizontal: 4 },
-  obsBot:       { position: 'absolute', backgroundColor: '#2A1650', borderTopWidth: 2, borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#5A3090', alignItems: 'center', justifyContent: 'flex-start', paddingTop: 6, paddingHorizontal: 4 },
-  obsText:      { fontSize: 9, color: '#8A7AAA', textAlign: 'center', fontWeight: '600', lineHeight: 13 },
-  gapText:      { position: 'absolute', fontSize: 9, color: '#C0A0F0', textAlign: 'center', fontWeight: '700', lineHeight: 13 },
-  overlay:      { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(10,5,20,0.75)', alignItems: 'center', justifyContent: 'center' },
+  hudScore:     { fontSize: 17, fontWeight: '800', color: '#fff' },
+  hudOf:        { fontSize: 13, fontWeight: '600', color: '#B8DDF5' },
+  canvas:       { backgroundColor: SKY, overflow: 'hidden' },
+  star:         { position: 'absolute', backgroundColor: 'rgba(255,255,255,0.45)', borderRadius: 10 },
+  bird:         { position: 'absolute', width: BIRD_R * 2, height: BIRD_R * 2, borderRadius: BIRD_R, backgroundColor: '#FFE680', shadowColor: '#FFB800', shadowRadius: 12, shadowOpacity: 0.9, shadowOffset: { width: 0, height: 0 }, elevation: 8 },
+  obsTop:       { position: 'absolute', top: 0, backgroundColor: CLOUD, borderBottomWidth: 2, borderLeftWidth: 1, borderRightWidth: 1, borderColor: CLOUD_BD, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 5 },
+  obsBot:       { position: 'absolute', backgroundColor: CLOUD, borderTopWidth: 2, borderLeftWidth: 1, borderRightWidth: 1, borderColor: CLOUD_BD, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 5 },
+  obsText:      { fontSize: 10, color: '#2E6A90', textAlign: 'center', fontWeight: '600', lineHeight: 14 },
+  gapText:      { position: 'absolute', fontSize: 10, color: '#fff', textAlign: 'center', fontWeight: '700', lineHeight: 14 },
+  overlay:      { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(20,70,110,0.70)', alignItems: 'center', justifyContent: 'center' },
   overlayTitle: { fontSize: 17, fontWeight: '800', color: '#fff', marginBottom: 6 },
-  overlaySub:   { fontSize: 13, color: '#C0A8E8' },
+  overlaySub:   { fontSize: 13, color: '#D6EEFA' },
 });
