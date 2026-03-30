@@ -1,0 +1,290 @@
+.premium-gate {
+  position: relative;
+  width: 100%;
+}
+
+.premium-lock {
+  background: linear-gradient(135deg, rgba(107, 128, 105, 0.05) 0%, rgba(255, 255, 255, 0.9) 100%);
+  border: 2px dashed var(--sage-300);
+  border-radius: 20px;
+  padding: 40px 32px;
+  text-align: center;
+  position: relative;
+  backdrop-filter: blur(2px);
+  transition: all 0.3s ease;
+}
+
+.premium-lock:hover {
+  border-color: var(--sage-500);
+  background: linear-gradient(135deg, rgba(107, 128, 105, 0.08) 0%, rgba(255, 255, 255, 0.95) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(107, 128, 105, 0.15);
+}
+
+.lock-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  color: var(--sage-400);
+  filter: drop-shadow(0 2px 4px rgba(107, 128, 105, 0.2));
+  animation: gentle-bounce 2s ease-in-out infinite;
+}
+
+@keyframes gentle-bounce {
+  0%, 100% { 
+    transform: translateY(0px); 
+  }
+  50% { 
+    transform: translateY(-4px); 
+  }
+}
+
+.premium-lock h3 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--sage-700);
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.premium-lock p {
+  font-size: 16px;
+  color: var(--gray-600);
+  margin: 0 0 28px 0;
+  line-height: 1.5;
+}
+
+.unlock-button {
+  background: linear-gradient(135deg, var(--sage-500) 0%, var(--sage-600) 100%);
+  color: var(--white);
+  border: none;
+  border-radius: 25px;
+  padding: 16px 32px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(107, 128, 105, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.unlock-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(107, 128, 105, 0.4);
+  background: linear-gradient(135deg, var(--sage-600) 0%, var(--sage-700) 100%);
+}
+
+.unlock-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(107, 128, 105, 0.3);
+}
+
+/* Shimmer effect for the button */
+.unlock-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.unlock-button:hover::before {
+  left: 100%;
+}
+
+/* Premium gate variations */
+.premium-gate.compact .premium-lock {
+  padding: 24px 20px;
+}
+
+.premium-gate.compact .lock-icon {
+  font-size: 32px;
+  margin-bottom: 16px;
+}
+
+.premium-gate.compact h3 {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.premium-gate.compact p {
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.premium-gate.compact .unlock-button {
+  padding: 12px 24px;
+  font-size: 14px;
+}
+
+/* Inline premium gate (for smaller features) */
+.premium-gate.inline {
+  display: inline-block;
+  width: auto;
+}
+
+.premium-gate.inline .premium-lock {
+  padding: 16px 24px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+
+.premium-gate.inline .lock-icon {
+  font-size: 24px;
+  margin: 0;
+  animation: none;
+}
+
+.premium-gate.inline h3 {
+  font-size: 14px;
+  margin: 0;
+}
+
+.premium-gate.inline p {
+  font-size: 12px;
+  margin: 0;
+}
+
+.premium-gate.inline .unlock-button {
+  padding: 8px 16px;
+  font-size: 12px;
+  margin-left: auto;
+}
+
+/* Full-screen overlay version */
+.premium-gate.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.premium-gate.overlay .premium-lock {
+  max-width: 400px;
+  margin: 20px;
+  background: var(--white);
+  border: none;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .premium-lock {
+    padding: 32px 24px;
+  }
+  
+  .lock-icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+  }
+  
+  .premium-lock h3 {
+    font-size: 20px;
+  }
+  
+  .premium-lock p {
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  
+  .unlock-button {
+    padding: 14px 28px;
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 768px) {
+  .premium-lock {
+    padding: 48px 40px;
+  }
+  
+  .lock-icon {
+    font-size: 56px;
+    margin-bottom: 24px;
+  }
+  
+  .premium-lock h3 {
+    font-size: 28px;
+    margin-bottom: 16px;
+  }
+  
+  .premium-lock p {
+    font-size: 18px;
+    margin-bottom: 32px;
+  }
+  
+  .unlock-button {
+    padding: 18px 36px;
+    font-size: 18px;
+  }
+}
+
+/* Special effects for premium content tease */
+.premium-gate.feature-tease {
+  position: relative;
+}
+
+.premium-gate.feature-tease::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(107, 128, 105, 0.1) 50%,
+    transparent 70%
+  );
+  animation: tease-shimmer 3s ease-in-out infinite;
+  pointer-events: none;
+  border-radius: 20px;
+}
+
+@keyframes tease-shimmer {
+  0%, 100% {
+    transform: translateX(-100%) rotate(45deg);
+  }
+  50% {
+    transform: translateX(100%) rotate(45deg);
+  }
+}
+
+/* Premium badge overlay */
+.premium-badge-overlay {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: linear-gradient(135deg, var(--sage-500) 0%, var(--sage-600) 100%);
+  color: var(--white);
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(107, 128, 105, 0.3);
+  z-index: 10;
+}
+
+.premium-badge-overlay::before {
+  content: '💎';
+  margin-right: 4px;
+}
