@@ -51,13 +51,13 @@ npm install
 
 ```bash
 # Start the development server
-npm start
+npx expo start
 
 # Run on iOS
-npm run ios
+npx expo start --ios
 
 # Run on Android
-npm run android
+npx expo start --android
 ```
 
 ---
